@@ -4,10 +4,11 @@
  */
 #ifndef TEIL1_PARKHAUS_SIMULATION_PLANNUNG_TYPES_H
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_TYPES_H
+#include <stdatomic.h>
 #include <stdint.h>
 
 typedef struct SimulationObject SimulationObject; // No touchy
-typedef void (*SimulationTickFunction)(SimulationObject *p_self, int current_time); // No touchy
+typedef void (*SimulationTickFunction)(SimulationObject *p_self, uint32_t current_time); // No touchy
 
 /**
  * Base Simulation Object for polymorphism.
@@ -22,10 +23,10 @@ typedef struct Parkhaus {
     SimulationObject base; // base object
     char name[20]; // FIXME size is currently arbitrary, we should probably move this to a defined constant in the future
     uint32_t current_time; // Current tick time.
-    uint8_t size; // Number of total parking spaces
+    uint16_t size; // Number of total parking spaces
     uint8_t floors; // Number of floors. This is currently miscellaneous
-    uint8_t fill_size; // Number of slots filled
-    uint8_t queue_size; // Number of cars in queue
+    uint16_t fill_size; // Number of slots filled
+    uint16_t queue_size; // Number of cars in queue
 }Parkhaus;
 
 typedef struct Car {
@@ -33,18 +34,18 @@ typedef struct Car {
     uint32_t created_at; // Time created
     uint32_t queue_time; // Time wasted in queue
     uint32_t parking_time; // Current total parking time
-    uint8_t current_slot; // Currently occupied parking spot, 0 if none.
-    //uint8_t current_floor; // Currently occupied floor, 0 if none or don't care
+    uint16_t current_slot; // Currently occupied parking spot, 0 if none.
+    //uint16_t current_floor; // Currently occupied floor, 0 if none or don't care
 }Car;
 
 typedef struct Settings {
     char* src_path; // Relative path to settings file, if any. Settings takes ownership of the string.
-    uint8_t size; // Total parking spots
+    uint16_t size; // Total parking spots
     uint8_t floors; // Number of floors. This is currently miscellaneous
-    uint8_t real_equivalent; // Tick equivalent in real time (minutes)
+    uint16_t real_equivalent; // Tick equivalent in real time (seconds)
     uint8_t output_mode; // 0 normal, 1 verbose, 2 debug FIXME Needs specific definition @Dani
-    long max_ticks; // Max amount of ticks before the simulation stops. -1 for day equivalent.
-    double rand_seed; // Specified random seed, -1 if current time should be used.
+    uint32_t max_ticks; // Max amount of ticks before the simulation stops. -1 for day equivalent.
+    int32_t rand_seed; // Specified random seed, -1 if current time should be used.
 }Settings;
 
 
