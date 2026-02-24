@@ -24,6 +24,8 @@ typedef struct Parkhaus {
     uint32_t current_time; // Current tick time.
     uint8_t size; // Number of total parking spaces
     uint8_t floors; // Number of floors. This is currently miscellaneous
+    uint8_t fill_size; // Number of slots filled
+    uint8_t queue_size; // Number of cars in queue
 }Parkhaus;
 
 typedef struct Car {
@@ -32,7 +34,7 @@ typedef struct Car {
     uint32_t queue_time; // Time wasted in queue
     uint32_t parking_time; // Current total parking time
     uint8_t current_slot; // Currently occupied parking spot, 0 if none.
-    uint8_t current_floor; // Currently occupied floor, 0 if none or don't care
+    //uint8_t current_floor; // Currently occupied floor, 0 if none or don't care
 }Car;
 
 typedef struct Settings {
