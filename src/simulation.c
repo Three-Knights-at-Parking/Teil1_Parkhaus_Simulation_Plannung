@@ -6,11 +6,12 @@
 #include <stdio.h>
 #include "types.h"
 
-
- Pseudocode;
-int sim_tick()
+//--------------------
+//-----Pseudocode-----
+//--------------------
+int sim_tick() : GZ
 {
-    short status;
+    status : GZ;
 
     if (get.currentTick + 1 == get_maxTick)
     {
@@ -30,7 +31,7 @@ int sim_tick()
     return status;
 }
 
-int Parkhaus_Tick(uint32_t currentTick)
+int Parkhaus_Tick( currentTick ) : GZ
 {
     ///////////
     ///EXIT///
@@ -38,12 +39,12 @@ int Parkhaus_Tick(uint32_t currentTick)
     Node* currentNode = head_CarList;
     while (current != NULL) {
         if ( ((current->car.created_at - currentTick)) < current->car.leavingIn_Ticks) {
-            current = current->next;
+            currentNode = nextNode;
         }
         else if ( ((current->car.created_at - currentTick)) >= current->car.leavingIn_Ticks)
         {
             Car_leaving();
-            current = current->next;
+            currentNode = nextNode;
         }// nächstes Element
     }
 
@@ -59,9 +60,10 @@ int Parkhaus_Tick(uint32_t currentTick)
     if (CarEntrys > 0 || !queue.empty())
     {
         //cycles for max possible Entrys in the timespan of one Tick
-        for (int i = 0; i < possibleEntryPerTick; i++) //possible entrys per tick ergibt sich aus anzahl der schranken * (tick_insec / CarEntry_timeNeeded)
+        for (i = 0; i < possibleEntryPerTick; i++)
+            //possible entrys per tick ergibt sich aus anzahl der schranken * (tick_insec / CarEntry_timeNeeded)
         {
-            //Priorisizing cars in que then entrys from new cars
+            //Priorisizing cars in que then new entrys
             if (!queue.empty())
             {
                 entryFromQueue();   //set entry Tick in car object
@@ -87,7 +89,7 @@ int Parkhaus_Tick(uint32_t currentTick)
 
 
 //Parkhaus schließt - Alle Fahrzeuge müssen Ausfahren.
-int Parkhaus_end()
+void Parkhaus_end()
 {
     Node* currentNode = head_CarList;
     //Car list wird durchlaufen -> bei jedem car wird Car_leaviong gecalled
@@ -98,26 +100,27 @@ int Parkhaus_end()
     }
 }
 
-int Car_leaving(Parkhaus *p, car *c)
+//Es wird angenommen das die ausfahrt ohne Zeitliche tolleranz möglich ist
+void Car_leaving(Parkhaus p, car c)
 {
     if (p == NULL) return ERROR;
     if (c == NULL) return ERROR;
 
-    p->fill_size--;
-    p->total_left++;
+    p.fill_size--;
+    p.total_left++;
 
-    List->remove.Car();
+    List->remove.Car(c);
 }
 
 //Calculates how many new Cars wanna entry the parkingspace in one Tick
-int simEntrys()
+int simEntrys() : GZ
  {
-     int counter = 0;
+     counter = 0;
      //cycles for every entrance
-     for (int a = 0; a < anz_entrance; a++)
+     for (a = 0; a < anz_entrance; a++)
      {
          //cycle for all possible entrys in one Tick at one Entrance
-         for (int i = 0; i < Tick_inSec; i++0)
+         for (i = 0; i < Tick_inSec; i++0)
          {
              if ( (spawncalc(carspawn_perc) )
                  counter++;
@@ -127,3 +130,15 @@ int simEntrys()
  }
 
 
+void spawncalc( spawnrate_perc : FKZ )
+{
+    luckyNumber = rand() / RAND_MAX * 100.0; //100% max
+    if (luckyNumber >= spawncalc_perc)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}

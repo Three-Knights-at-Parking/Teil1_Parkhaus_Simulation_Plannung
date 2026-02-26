@@ -70,7 +70,7 @@ PARKHAUS:
  		- parking_time unnötig --> can be calculated durch created_at--> safe memory
 			parking_time müsste auch hochgezählt werden
 		- BadParking -> warscheinlichkeit
-		- CarEntry-perc -> Warscheinlichkeit
+		- CarSpawn-perc -> Warscheinlichkeit
 			Berrechnung ob car entry für jede Sekunde eines Ticks? Abzüglich einfahrtzeit?
 			Max mögliche einfahrten 1Car pro 4 Sekunden -> Pro schranke
 		- CarEntry_timeNeeded
