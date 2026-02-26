@@ -23,7 +23,9 @@ struct SimulationObject {
 //---------------------------------------
 // alles auf Ticks anpassen?????
 //--> Einfachere kodierung und nur speichern des Ticks -> Kein umrechnen while runtime nötig von Ticks in Uhrzeit
-typedef uint32_t tick_t;         // oder int
+
+//generalisierte definition for easy adjustment
+typedef uint32_t tick_t;
 typedef uint16_t ParkingSpaces;
 //---------------------------------------
 
