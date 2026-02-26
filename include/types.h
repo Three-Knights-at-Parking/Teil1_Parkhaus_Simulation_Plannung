@@ -62,7 +62,7 @@ typedef struct Settings {
 PARKHAUS:
 		- add total_left
 		- add total_entry
-		- add anz. Schranken --> important for Simulation
+		- add anz_entrance --> important for Simulation
 
  SETTINGS:
 	 	- maxParking_Ticks
@@ -70,9 +70,11 @@ PARKHAUS:
  		- parking_time unnötig --> can be calculated durch created_at--> safe memory
 			parking_time müsste auch hochgezählt werden
 		- BadParking -> warscheinlichkeit
-		- CarEntry-perSec -> Warscheinlichkeit
+		- CarEntry-perc -> Warscheinlichkeit
 			Berrechnung ob car entry für jede Sekunde eines Ticks? Abzüglich einfahrtzeit?
 			Max mögliche einfahrten 1Car pro 4 Sekunden -> Pro schranke
+		- CarEntry_timeNeeded
+		- Tick_inSec -> for simulation
 
 
  Allgemein bitte alle zeiten in Ticks bennenen -> verhindert verwirrung
