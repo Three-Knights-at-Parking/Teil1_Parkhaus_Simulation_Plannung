@@ -1,3 +1,5 @@
+INCLUDE FILE ui.h 
+
 FUNCTION user_input()
 
     OUTPUT "ENTER the number (int) you want navigate to: "
@@ -7,7 +9,7 @@ FUNCTION user_input()
 
 END FUNCTION
 
-FUNCTION validate_user_input(user_choice, max_valid_number)
+FUNCTION validate_user_input(int user_choice, const int max_valid_number)
 
     IF user_choice != type int THEN
         OUTPUT "Your input is not an integer!"

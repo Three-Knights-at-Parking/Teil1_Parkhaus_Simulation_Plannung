@@ -1,9 +1,5 @@
-/**
- * @brief Displays the Home-Menu and processes user input.
- *
- * @return Next UI-state.
- */
-INCLUDE FILE ui.psc
+INCLUDE FILE ui.h
+INCLUDE FILE home.h
 
 FUNCTION print_homescreen()
 
