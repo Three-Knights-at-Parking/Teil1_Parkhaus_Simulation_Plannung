@@ -12,14 +12,6 @@
     int simulation_init(Simulation *p_sim, const Settings *p_settings);
 
     /**
-     * Set new settings for this simulation.
-     * @param p_sim Pointer to the Simulation object to modify.
-     * @param p_settings Pointer to the new Settings.
-     * @return 0 on success, non-zero on error.
-     */
-    int simulation_set_settings(Simulation *p_sim, const Settings *p_settings);
-
-    /**
      * Progress the Simulation by one tick.
      * @param p_sim Pointer to the Simulation object to tick.
      * @return Short Status / Success of the tick (0 on success, non-zero on error or stop condition).
@@ -28,17 +20,23 @@
 
     /**
      * Start a Simulation with given settings.
-     * If p_settings is NULL, the current settings inside p_sim should be used.
      * @param p_sim Pointer to the Simulation object to run.
-     * @param p_settings Pointer to the Settings object or NULL to keep current settings.
      * @return 0 on success, non-zero on error.
      */
-    int simulation_start(Simulation *p_sim, const Settings *p_settings);
+    int simulation_start(Simulation *p_sim);
 
     /**
-     * End the Simulation.
+     * End the Simulation and free up its memory. Simulation takes ownership of its children, freeing them too.
      * @param p_sim Pointer to the Simulation object to stop.
      */
     void simulation_end(Simulation *p_sim);
+
+    /**
+     * Free this Simulation-Object's memory. Simulation takes ownership of its children, freeing them too. In general,
+     * freeing the Simulation-Object without ending it is not useful. Rather call simulation_end.
+     * @param p_sim Pointer to the Simulation object to stop.
+     * @return 0 on success, non-zero on error.
+     */
+    int free_simulation(Simulation *p_sim);
 
     #endif // TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SIMULATION_H

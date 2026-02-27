@@ -14,6 +14,7 @@ typedef struct Parkhaus Parkhaus;
 typedef struct Settings Settings;
 typedef struct Queue Queue;
 typedef struct Simulation Simulation;
+typedef struct GenericVehicle GenericVehicle;
 
 /**
  * Can be expanded in the future to simulate EVs or Motorcycles etc.
@@ -29,7 +30,12 @@ enum ObjectType {CAR, PARKHAUS, QUEUE};
 enum OutputMode {NONE, NORMAL, VERBOSE, DEBUG};
 
 /**
- * Base Simulation Object for polymorphism.
+ * Determines if vehicles can leave the queue early (at any position)
+ */
+enum QueueLeavable {LEAVABLE, NON_LEAVABLE};
+
+/**
+ * Polymorphic base for anything that has a tick.
  */
 struct SimulationObject {
     int id;
@@ -37,16 +43,28 @@ struct SimulationObject {
     enum ObjectType type;
 };
 
+/**
+ * Vehicle Base for everything that can enter a queue and parking slot.
+ */
+struct GenericVehicle {
+    SimulationObject base; // base object
+    GenericVehicle *p_next;  // Chain with other Vehicles
+    uint32_t created_at; // Tick of creation
+    uint32_t park_house_entered; // Entry tick, when the car started parking
+    uint32_t parking_time; // Max_tick it will park for (or wait in queue)
+    uint16_t current_slot; // Currently occupied parking spot, 0 if none.
+    uint16_t current_floor; // Currently occupied floor, 0 if none or don't care
+};
 
 struct Parkhaus {
     SimulationObject base; // base object.
-    char name[20]; // FIXME size is currently arbitrary, we should probably move this to a defined constant in the future
+    char name[20]; // FIXME size is currently arbitrary, we should probably move this to a defined constant in the future && Update in Documentation of Settings and Parkhaus!!
     uint16_t size; // Number of total parking spaces.
     uint8_t floors; // Number of floors. This is currently miscellaneous.
     float_t fill_size; // Number of slots filled.
     uint32_t num_gates; // Number of gates.
     Queue* queue; // Queue for waiting cars.
-    Car* parked_cars; // Dynamic List of currently parked cars.
+    GenericVehicle *p_parked_head; // linked list of parked vehicles.
     uint16_t missed_car_entries; // How many car spawns where missed because of full queue.
 };
 struct Simulation {
@@ -61,20 +79,27 @@ struct Simulation {
 struct Queue {
     SimulationObject base; // base object.
     uint16_t size; // Number of waiting cars.
-    Car* waiting_cars; // Dynamic List of waiting cars.
+    GenericVehicle *p_head; // first vehicle in queue
+    GenericVehicle *p_tail; // last vehicle in queue
     uint8_t max_size; // maximum size of Queue before no cars should be created anymore.
 };
 
 
 struct Car {
-    SimulationObject base; // base object
-    uint32_t created_at; // Time created
-    uint32_t park_house_entered; // Entry tick, when the car started parking
-    uint32_t parking_time; // Max_tick it will park for (or wait in queue)
-    uint16_t current_slot; // Currently occupied parking spot, 0 if none.
-    uint16_t current_floor; // Currently occupied floor, 0 if none or don't care
-    uint8_t spaces_needed; // Chance of this car parking shitty
+    GenericVehicle base; // base vehicle object
+    uint8_t minimum_spaces; // How many spaces this vehicle needs at least.
+    uint8_t spaces_needed; // How many spaces this vehicle needs
 };
+
+// --- EXAMPLE OF ANOTHER VEHICLE TYPE ---
+//
+//
+// struct ElectricCar {
+//     GenericVehicle base; // base vehicle object
+//     uint8_t minimum_spaces; // How many spaces this vehicle needs at least.
+//     uint8_t spaces_needed; // How many spaces this vehicle needs
+//     uint32_t charging_time; // The amount of time this car needs to charge. Can be randomized
+// };
 
 struct Settings {
     char* src_path; // Relative path to settings file, if any. Settings takes ownership of the string.
@@ -84,6 +109,7 @@ struct Settings {
     uint8_t gates; // Number of gates. This will affect queue time.
     uint16_t real_equivalent; // Tick equivalent in real time (seconds), min. 10.
     enum OutputMode output_mode; //FIXME Needs specific definition @Dani
+    enum QueueLeavable is_leavable; // Determines if vehicles can leave the queue early at any positions.
     int32_t max_ticks; // Max amount of ticks before the simulation stops. -1 for day equivalent. -2 for 2 day equivalent, ...
     int32_t rand_seed; // Specified random seed, -1 if current time should be used.
 };

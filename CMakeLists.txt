@@ -5,7 +5,6 @@ project(Teil1_Parkhaus_Simulation_Plannung C)
 set(CMAKE_C_STANDARD 17)
 
 add_executable(Teil1_Parkhaus_Simulation_Plannung
-        src/main.c
         include/types.h
         include/Car.h
         include/Queue.h
@@ -13,6 +12,7 @@ add_executable(Teil1_Parkhaus_Simulation_Plannung
         include/Simulation.h
         include/SimulationObject.h
         include/Settings.h
+        include/VehicleList.h
 )
 
 target_include_directories(Teil1_Parkhaus_Simulation_Plannung

@@ -27,4 +27,14 @@
      */
     SimulationTickFunction simulation_object_get_tick(const SimulationObject *p_obj);
 
+    /**
+     * Free this Simulation-Object's memory. SimulationObject does not take ownership of the tick function that belongs to the parent!
+     * In general, you never want to call this function directly, unless you created a plain Simulation-Object under your control.
+     * Call the parent object's free function, which takes ownership of the underlying Simulation-Object and the associated tick
+     * function.
+     * @param p_obj Pointer to the SimulationObject.
+     * @return 0 on success, non-zero on error.
+     */
+    int free_simulation_object(SimulationObject *p_obj);
+
 #endif

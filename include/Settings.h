@@ -124,13 +124,12 @@
      */
     int settings_to_parkhaus(const Settings *p_settings, Parkhaus *p_parkhaus);
 
-/**
-    * @brief Convert this to a Simulation-Object straight from this settings source.
-    *        The created Simulation will be filled with all required settings.
-    * @param p_settings Pointer to the Settings used as source.
-    * @param p_simulation Pointer to the Simulation object to initialize.
-    * @return 0 on success, non-zero on error.
-    */
-    int settings_to_simulation(const Settings *p_settings, Simulation *p_simulation);
+
+    /**
+     * Free up this Settings-Object and it's associated memory. Settings object has ownership of all underlying objects.
+     * @param p_settings Pointer to the Settings object to free.
+     * @return 0 on success, non-zero on error.
+     */
+    int delete_settings(Settings *p_settings);
 
     #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SETTINGS_H
