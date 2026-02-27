@@ -7,6 +7,9 @@ typedef enum {
     UI_KONFIG,
     UI_STORAGE,
     UI_EXIT
-} UiState;
+} ui_state;
+
+ui_state welcome_message();
+ui_state ui_start();
 
 #endif
