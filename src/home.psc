@@ -3,15 +3,17 @@
  *
  * @return Next UI-state.
  */
+INCLUDE FILE ui.psc
+
 FUNCTION print_homescreen()
 
     OUTPUT "=============================="
     OUTPUT "         Home-Menu "
     OUTPUT "=============================="
     OUTPUT "1 - Simulation"
-    OUTPUT "2 - Konfiguration"
-    OUTPUT "3 - Speicheroptionen"
-    OUTPUT "0 - Beenden"
+    OUTPUT "2 - Configuration"
+    OUTPUT "3 - Storage"
+    OUTPUT "0 - Quit"
     OUTPUT ""
 
 END FUNCTION
@@ -19,8 +21,8 @@ END FUNCTION
 FUNCTION home_menu()
 
     CALL print_homescreen()
-    
-    choice ← INPUT
+
+    CALL user_input()
 
     IF choice = 1 THEN
         return "SIMULATION"

@@ -1,3 +1,12 @@
+FUNCTION user_input()
+
+    OUTPUT "ENTER the number (int) you want navigate to: "
+    user_input ← INPUT
+
+    return user_input
+
+END FUNCTION
+
 FUNCTION welcome_message()
 
     OUTPUT "========================================="
