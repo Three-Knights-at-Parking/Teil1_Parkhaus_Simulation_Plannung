@@ -20,9 +20,15 @@ END FUNCTION
 
 FUNCTION home_menu()
 
-    CALL print_homescreen()
+    CLEAR Terminal
 
-    CALL user_input()
+    CALL print_homescreen()
+    
+    validation_flag ← INVALID
+    WHILE validation_flag != VALID DO
+        choice ← CALL user_input()
+        validation_flag ← CALL validate_user_input(choice, MAX_VALID_NUMBER)
+    END WHILE
 
     IF choice = 1 THEN
         return "SIMULATION"

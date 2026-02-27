@@ -7,6 +7,29 @@ FUNCTION user_input()
 
 END FUNCTION
 
+FUNCTION validate_user_input(user_choice, max_valid_number)
+
+    IF user_choice != type int THEN
+        OUTPUT "Your input is not an integer!"
+        OUTPUT "Please press ENTER and try again... "
+
+        INPUT dummy
+        return INVALID
+
+    ELSE IF user_choice < 0 OR user_choice > max_valid_number THEN
+        OUTPUT "The number you entered is invalid!"
+        OUTPUT "Please only choose between the numbers displayed."
+        OUTPUT "Press ENTER and try again..."
+
+        INPUT dummy
+        return INVALID
+    
+    ELSE 
+        return VALID
+    END IF
+
+END FUNCTION
+
 FUNCTION welcome_message()
 
     OUTPUT "========================================="
