@@ -12,7 +12,7 @@ typedef enum {
 typedef enum {
     INVALID,
     VALID
-} validation_flag
+} validation_flag;
 
 ui_state welcome_message();
 ui_state ui_start();
