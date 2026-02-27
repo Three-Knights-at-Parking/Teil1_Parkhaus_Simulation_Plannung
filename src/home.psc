@@ -41,10 +41,6 @@ FUNCTION home_menu()
 
     ELSE IF choice = 0 THEN
         return "EXIT"
-
-    ELSE
-        OUTPUT "Ungültige Eingabe"
-        return "HOME"
     END IF
 
 END FUNCTION
