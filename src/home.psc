@@ -3,17 +3,23 @@
  *
  * @return Next UI-state.
  */
-
-FUNCTION home_menu()
+FUNCTION print_homescreen()
 
     OUTPUT "=============================="
-    OUTPUT " Parkhaus-Simulation Rauenegg "
+    OUTPUT "         Home-Menu "
     OUTPUT "=============================="
     OUTPUT "1 - Simulation"
     OUTPUT "2 - Konfiguration"
     OUTPUT "3 - Speicheroptionen"
     OUTPUT "0 - Beenden"
+    OUTPUT ""
 
+END FUNCTION
+
+FUNCTION home_menu()
+
+    CALL print_homescreen()
+    
     choice ← INPUT
 
     IF choice = 1 THEN
