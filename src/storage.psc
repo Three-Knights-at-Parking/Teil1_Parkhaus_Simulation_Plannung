@@ -55,6 +55,65 @@ FUNCTION browse_directory(current_path)
 
 END FUNCTION
 
+FUNCTION directory_options(dir_path)
+
+    CLEAR Terminal
+
+    OUTPUT "Directory: ", dir_path
+    OUTPUT ""
+    OUTPUT "1 Enter Directory"
+    OUTPUT "2 Delete Directory"
+    OUTPUT "0 Back"
+    OUTPUT ""
+
+    validation_flag ← INVALID
+
+    WHILE validation_flag != VALID DO
+        choice ← CALL user_input()
+        validation_flag ← CALL validate_user_input(choice, 2)
+    END WHILE
+
+    IF choice = 1 THEN
+        CALL browse_directory(dir_path)
+        return
+
+    ELSE IF choice = 2 THEN
+
+        IF dir_path = runtime_path THEN
+            OUTPUT "Root runtime directory cannot be deleted."
+            OUTPUT "Press ENTER to return to Storage-Menu."
+
+            INPUT dummy
+            return
+        END IF
+
+        OUTPUT "Are you sure you want to delete this directory?"
+        OUTPUT "1 Yes"
+        OUTPUT "0 No"
+        OUTPUT ""
+
+        validation_flag ← INVALID
+
+        WHILE validation_flag != VALID DO
+            confirm ← CALL user_input()
+            validation_flag ← CALL validate_user_input(confirm, 1)
+        END WHILE
+
+        IF confirm = 1 THEN
+            CALL delete_directory(dir_path)
+            OUTPUT "Directory deleted."
+            OUTPUT "Press ENTER to return to Storage-Menu."
+
+            INPUT dummy
+        END IF
+        return
+
+    ELSE IF choice = 0 THEN
+        return
+    END IF
+
+END FUNCTION
+
 FUNCTION file_options(file_path)
 
     CLEAR Terminal
