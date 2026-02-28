@@ -1,3 +1,15 @@
+FUNCTION Sim_init(settings, stats)
+
+    sim.parhouse <- simCreate_Parkhouse(sim.settings);
+    sim.Gate_queues <- simCreate_Gate_Queues(sim.parhouse, sim.settings)
+
+FUNCTION END
+
+FUNCTION simCreate_Gate_Queues(sim.parhouse, sim.settings)
+
+
+FUNCTION END
+
 FUNCTION Sim_Tick(simulation)
     INPUT simulation
 
@@ -31,3 +43,5 @@ FUNCTION Sim_Tick(simulation)
 
     return status
 END FUNCTION
+
+
