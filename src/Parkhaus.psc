@@ -4,19 +4,19 @@
 FUNCTION parkhouse_tick(current_tick, settings, parkhouse, gate_queues, stats)
     IF (settings.number_of_gates = 1) THEN
         parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_list)
-        parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list, gate_queue)
+        parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list, gate_queues)
         RETURN OK
     ELSE
         IF ((settings.number_of_gates > 1) AND (!settings.gate_time_exit_enabled)) THEN
-            parkhouse_tick_empty_general(current_tick, settings, parkhouse, stats)
-            parkhouse_fill_subtick(current_tick, settings, parkhouse, gate_queue, stats)
+            parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_list)
+            parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
             RETURN OK
         ELSE
             // Das Szenario mit gate_time beim Exit wird voruebergehend vernachlaessigt
             //IF ((settings.number_of_gates > 1) AND settings.gate_time_exit_enabled) THEN
             //
             //    parkhouse_tick_empty_subtick(current_tick, settings, parkhouse, stats)
-            //    parkhouse_tick_entry_subtick(current_tick, settings, parkhouse, queue, stats)
+            //    parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
             //    RETURN OK
             ELSE
                 RETURN ERROR
@@ -104,7 +104,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list
 END FUNCTION
 
 
-FUNCTION parkhouse_fill_subtick(current_tick, parkhouse, settings, queue_list)
+FUNCTION parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
 
     number_of_gates <- parkhouse.number_of_gates
     max_entries_per_tick <- settings.max_entries_per_tick
@@ -113,7 +113,7 @@ FUNCTION parkhouse_fill_subtick(current_tick, parkhouse, settings, queue_list)
 
         FOR (int i = 0; i < number_of_gates; i++)
 
-            parkhouse_fill_subtick_routine(queue <- queue_list[i], demand_remaining <- queue_list[i].demand_remaining, current_tick);
+            parkhouse_fill_subtick_routine(queue <- gate_queues.queue[i], demand_remaining <- gate_queues.queue[i].demand_remaining, current_tick);
         END FOR
     END FOR
 END FUNCTION
