@@ -1,5 +1,5 @@
-#ifndef KONFIG_H
-#define KONFIG_
+#ifndef CONFIG_H
+#define CONFIG_
 
 #define CONFIG_MAX_VALID_NUMBER 6
 
