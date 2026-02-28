@@ -77,7 +77,7 @@ FUNCTION simulation_menu(settings)
 
         OUTPUT "Starting simulation..."
 
-        sim_output_path ← CALL start_simulation(settings)
+        sim_output_path ← CALL start_simulation(settings) //Function has to be provided by the data-management layer from @Luca
 
         OUTPUT "Simulation finished."
 
