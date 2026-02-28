@@ -80,7 +80,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list
     END WHILE
 
     IF (demand_remaining > 0) THEN
-        open_Demand(parkhouse, gate_queue, queue_max_len, demand_remaining)
+        open_Demand(parkhouse, gate_queue, settings.queue_max_len, demand_remaining)
     END IF
 
     OUTPUT queue
@@ -98,23 +98,27 @@ FUNCTION parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
     max_entries_per_tick <- settings.max_entries_per_tick
 
     FOR (int m = 0; m < max_entries_per_tick; m++)
+        IF (m == max_entries_per_tick && i == number_of_gates) THEN
+            lastCycle = true;
+        ELSE
+            lastCycle = false;
+        END IF
 
         FOR (int i = 0; i < number_of_gates; i++)
-
-            parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_queue <- gate_queues.queue[i]);
+            parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_queue <- gate_queues.queue[i], lastCycle);
 
         END FOR
     END FOR
 END FUNCTION
 
 
-FUNCTION parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_queue)
+FUNCTION parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_queue, lastCycle)
 
     queue_blocked <- FALSE
     required_space <- 0
-    pending_demand <- gate_queue.getDemand() // QueueLength(gate_queue) ODER gate_queue.getLength() + gate_queue.newDemand
+    demand_remaining <- gate_queue.getDemand() // QueueLength(gate_queue) ODER gate_queue.getLength() + gate_queue.newDemand
 
-    IF ((get_open_space(parkhouse) > 0) AND (pending_demand > 0)) THEN
+    IF ((get_open_space(parkhouse) > 0) AND (demand_remaining > 0)) THEN
 
         // Wenn die Queue leer ist, wird ein neues Front Vehicle erstellt
         IF (QueueIsEmpty(queue)) THEN
@@ -136,8 +140,8 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_
         END IF
     END IF
 
-    IF (demand_remaining > 0) THEN
-        open_Demand(parkhouse, gate_queue, queue_max_len, demand_remaining)
+    IF (demand_remaining > 0 && lastCycle) THEN
+        open_Demand(parkhouse, gate_queue, settings.queue_max_len, demand_remaining)
     END IF
 
     OUTPUT queue
