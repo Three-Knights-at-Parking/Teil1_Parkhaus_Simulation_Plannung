@@ -32,14 +32,16 @@ FUNCTION parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_lis
     INPUT current_tick
 
     currentNode = car_list_head
+    previousNode = NULL
 
     WHILE (currentNode != NULL) DO
         IF ((currentNode -> car.created_at - current_tick) < currentNode -> car.leave_after_ticks) THEN
             currentNode = nextNode
         ELSE
             IF ((currentNode -> car.created_at - current_tick) >= currentNode -> car.leave_after_ticks) THEN
+                previousNode = currentNode
                 currentNode = nextNode
-                car_leaving(currentNode)
+                car_leaving(parkhouse, car_list, previousNode)
             END IF
         END IF
     END WHILE
@@ -183,16 +185,6 @@ FUNCTION queue_add_random_vehicle(queue)
 END FUNCTION
 
 
-/////////////////////
-///help Functions///
-///////////////////
-FUNCTION get_open_space(parkhouse)
-
-    RETURN parkhouse.size - parkhouse.fill_space
-
-END FUNCTION
-
-
 FUNCTION car_leaving(parkhouse, car_list, car)
 
     IF (parkhouse = NULL) THEN
@@ -203,12 +195,20 @@ FUNCTION car_leaving(parkhouse, car_list, car)
         RETURN ERROR
     END IF
 
-    parkhouse.fill_space = parkhouse.fill_space - 1
-    parkhouse.total_left++
-
+    update_parkhouse_on_exit(parkhouse, car.required_space)
     car_list_remove_object(car_list, car)
 
     RETURN OK
+
+END FUNCTION
+
+
+/////////////////////
+///help Functions///
+///////////////////
+FUNCTION get_open_space(parkhouse)
+
+    RETURN parkhouse.size - parkhouse.fill_space
 
 END FUNCTION
 
