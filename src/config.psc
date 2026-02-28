@@ -49,17 +49,8 @@ FUNCTION config_menu(settings)
         return UI_KONFIG
 
     ELSE IF choice = 4 THEN
-        valid ← FALSE
-        WHILE valid = FALSE DO
-            OUTPUT "Enter tick equivalent (min 10 sec):"
-            temp ← INPUT
-            IF temp >= 10 THEN
-                settings.real_equivalent ← temp
-                valid ← TRUE
-            ELSE
-                OUTPUT "Value must be >= 10!"
-            END IF
-        END WHILE
+        OUTPUT "Enter tick equivalent (min 10 sec):"
+        settings.real_equivalent ← INPUT
         return UI_KONFIG
 
     ELSE IF choice = 5 THEN
@@ -74,7 +65,6 @@ FUNCTION config_menu(settings)
 
     ELSE IF choice = 0 THEN
         return UI_HOME
-
     END IF
 
 END FUNCTION
