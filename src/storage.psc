@@ -90,6 +90,19 @@ FUNCTION file_options(file_path)
 
 END FUNCTION
 
+FUNCTION print_file_to_terminal(path)
+
+    OPEN file at path
+
+    WHILE NOT end_of_file DO
+        line ← READ line
+        OUTPUT line
+    END WHILE
+
+    CLOSE file
+
+END FUNCTION
+
 FUNCTION storage_menu()
 
     CALL print_storagescreen()
