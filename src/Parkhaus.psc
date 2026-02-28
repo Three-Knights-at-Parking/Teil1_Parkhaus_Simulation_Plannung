@@ -169,10 +169,10 @@ FUNCTION fill_from_queue(queue, parkhouse_open_space)
 END FUNCTION
 
 
-FUNCTION queue_add_random_vehicle(queue)
+FUNCTION queue_add_random_vehicle(gate_queue)
     vehicle <- CreateRandomVehicle()
-    QueuePushBack(queue, vehicle)
-    RETURN 0
+    status = QueuePushBack(gate_queue, vehicle)
+    RETURN status
 END FUNCTION
 
 
