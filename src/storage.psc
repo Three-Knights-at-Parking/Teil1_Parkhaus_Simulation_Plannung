@@ -22,6 +22,7 @@ FUNCTION browse_directory(current_path)
     OUTPUT "------------------------------------"
 
     index ← 1
+
     FOR each entry IN entries DO
         OUTPUT index, " ", entry.name
         index ← index + 1
@@ -30,7 +31,9 @@ FUNCTION browse_directory(current_path)
     OUTPUT "------------------------------------"
     OUTPUT "0 Back"
 
-    max_valid_number ← index
+    max_valid_number ← index - 1
+
+    validation_flag ← INVALID
 
     WHILE validation_flag != VALID DO
         choice ← CALL user_input()
@@ -39,11 +42,12 @@ FUNCTION browse_directory(current_path)
 
     IF choice = 0 THEN
         return
+    END IF
 
     selected_entry ← entries[choice]
 
     IF selected_entry IS DIRECTORY THEN
-        CALL browse_directory(selected_entry.path)
+        CALL directory_options(selected_entry.path)
 
     ELSE IF selected_entry IS FILE THEN
         CALL file_options(selected_entry.path)
