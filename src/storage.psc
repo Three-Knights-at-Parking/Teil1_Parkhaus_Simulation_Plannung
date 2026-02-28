@@ -12,6 +12,27 @@ FUNCTION print_storagescreen()
 
 END FUNCTION
 
+FUNCTION storage_menu()
+
+    CALL print_storagescreen()
+
+    validation_flag ← INVALID
+
+    WHILE validation_flag != VALID DO
+        choice ← CALL user_input()
+        validation_flag ← CALL validate_user_input(choice, 1)
+    END WHILE
+
+    IF choice = 1 THEN
+        CALL browse_directory(runtime_path)
+        return UI_STORAGE
+
+    ELSE IF choice = 0 THEN
+        return UI_HOME
+    END IF
+
+END FUNCTION
+
 FUNCTION browse_directory(current_path)
 
     CLEAR Terminal
@@ -32,7 +53,6 @@ FUNCTION browse_directory(current_path)
     OUTPUT "0 Back"
 
     max_valid_number ← index - 1
-
     validation_flag ← INVALID
 
     WHILE validation_flag != VALID DO
@@ -55,28 +75,47 @@ FUNCTION browse_directory(current_path)
 
 END FUNCTION
 
-FUNCTION deleting_verification(object_path)
+FUNCTION deleting_verification(object_path, object_type)
 
-    OUTPUT "Are you sure you want to delete it?"
-            OUTPUT "1 Yes"
-            OUTPUT "0 No"
-            OUTPUT ""
+    CLEAR Terminal
 
-            validation_flag ← INVALID
+    OUTPUT object_type, ": ", object_path
+    OUTPUT ""
+    OUTPUT "Are you sure you want to delete this ", object_type, "?"
+    OUTPUT "1 Yes"
+    OUTPUT "0 No"
+    OUTPUT ""
 
-            WHILE validation_flag != VALID DO
-                confirm ← CALL user_input()
-                validation_flag ← CALL validate_user_input(confirm, 1)
-            END WHILE
+    validation_flag ← INVALID
 
-            IF confirm = 1 THEN
-                CALL delete_directory(object_path)
-                OUTPUT "Deleted."
-                OUTPUT "Press ENTER to return to Storage-Menu."
+    WHILE validation_flag != VALID DO
+        confirm ← CALL user_input()
+        validation_flag ← CALL validate_user_input(confirm, 1)
+    END WHILE
 
+    IF confirm = 1 THEN
+
+        IF object_type = "Directory" THEN
+
+            IF object_path = runtime_path THEN
+                OUTPUT "Root runtime directory cannot be deleted."
+                OUTPUT "Press ENTER to continue."
                 INPUT dummy
+                return
             END IF
-            return
+
+            CALL delete_directory(object_path)
+
+        ELSE IF object_type = "File" THEN
+            CALL delete_file(object_path)
+        END IF
+
+        OUTPUT object_type, " deleted."
+        OUTPUT "Press ENTER to continue."
+        INPUT dummy
+    END IF
+
+    return
 
 END FUNCTION
 
@@ -103,16 +142,8 @@ FUNCTION directory_options(dir_path)
         return
 
     ELSE IF choice = 2 THEN
-
-        IF dir_path = runtime_path THEN
-            OUTPUT "Root runtime directory cannot be deleted."
-            OUTPUT "Press ENTER to return to Storage-Menu."
-
-            INPUT dummy
-            return
-        END IF
-
-        CALL deleting_verification(dir_path)
+        CALL deleting_verification(dir_path, "Directory")
+        return
 
     ELSE IF choice = 0 THEN
         return
@@ -143,20 +174,13 @@ FUNCTION file_options(file_path)
         CALL print_file_to_terminal(file_path)
 
         OUTPUT ""
-        OUTPUT "Press ENTER to return to Storage-Menu."
-
+        OUTPUT "Press ENTER to return."
         INPUT dummy
         return
 
-
     ELSE IF choice = 2 THEN
 
-        CALL delete_file(file_path)
-
-        OUTPUT "File deleted."
-        OUTPUT "Press ENTER to return to Storage-Menu."
-
-        INPUT dummy
+        CALL deleting_verification(file_path, "File")
         return
 
     ELSE IF choice = 0 THEN
@@ -200,26 +224,5 @@ END FUNCTION
 FUNCTION delete_file(path)
 
     REMOVE file at path
-
-END FUNCTION
-
-FUNCTION storage_menu()
-
-    CALL print_storagescreen()
-
-    validation_flag ← INVALID
-
-    WHILE validation_flag != VALID DO
-        choice ← CALL user_input()
-        validation_flag ← CALL validate_user_input(choice, 1)
-    END WHILE
-
-    IF choice = 1 THEN
-        CALL browse_directory(runtime_path)
-        return UI_STORAGE
-
-    ELSE IF choice = 0 THEN
-        return UI_HOME
-    END IF
 
 END FUNCTION
