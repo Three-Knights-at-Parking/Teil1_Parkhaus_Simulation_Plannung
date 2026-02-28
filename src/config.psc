@@ -23,6 +23,44 @@ FUNCTION print_configscreen(settings)
 
 END FUNCTION
 
+FUNCTION validate_user_input_config(user_choice, min, max, allow_negative)
+
+    IF user_choice != type int THEN
+        OUTPUT "Your input is not an integer!"
+        OUTPUT "Please press ENTER and try again... "
+
+        INPUT dummy
+        return INVALID
+    END IF
+
+    IF allow_negative = FALSE AND user_choice < 0 THEN
+        OUTPUT "Negative values are not allowed!"
+        OUTPUT "Please press ENTER and try again... "
+
+        INPUT dummy
+        return INVALID
+    END IF
+
+    IF user_choice < min THEN
+        OUTPUT "Your input must be >= ", min
+        OUTPUT "Please press ENTER and try again... "
+
+        INPUT dummy
+        return INVALID
+    END IF
+
+    IF user_choice > max THEN
+        OUTPUT "Value must be <= ", max
+        OUTPUT "Please press ENTER and try again... "
+
+        INPUT dummy
+        return INVALID
+    END IF
+
+    return VALID
+
+END FUNCTION
+
 FUNCTION config_menu(settings)
 
     CALL print_config_screen(settings)
