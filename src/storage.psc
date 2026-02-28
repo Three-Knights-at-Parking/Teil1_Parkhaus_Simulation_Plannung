@@ -51,6 +51,45 @@ FUNCTION browse_directory(current_path)
 
 END FUNCTION
 
+FUNCTION file_options(file_path)
+
+    CLEAR Terminal
+
+    OUTPUT "File: ", file_path
+    OUTPUT ""
+    OUTPUT "1 Open File"
+    OUTPUT "2 Delete File"
+    OUTPUT "0 Back"
+    OUTPUT ""
+
+    validation_flag ← INVALID
+
+    WHILE validation_flag != VALID DO
+        choice ← CALL user_input()
+        validation_flag ← CALL validate_user_input(choice, 2)
+    END WHILE
+
+    IF choice = 1 THEN
+        CALL print_file_to_terminal(file_path)
+        OUTPUT "Press ENTER to return to the Storage-Menu."
+
+        INPUT dummy
+        return
+
+    ELSE IF choice = 2 THEN
+        CALL delete_file(file_path)
+        OUTPUT "File deleted."
+        OUTPUT "Press ENTER to return to the Storage-Menu."
+
+        INPUT dummy
+        return
+
+    ELSE IF choice = 0 THEN
+        return
+    END IF
+
+END FUNCTION
+
 FUNCTION storage_menu()
 
     CALL print_storagescreen()
