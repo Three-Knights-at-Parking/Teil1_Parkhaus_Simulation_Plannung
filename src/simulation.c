@@ -113,7 +113,7 @@ void Car_leaving(Parkhaus p, car c)
 }
 
 //Calculates how many new Cars wanna entry the parkingspace in one Tick
-int simEntrys() : GZ
+int simEntrys(parkhouse, settings, Gate_Number) : GZ
  {
      counter = 0;
      //cycles for every entrance
@@ -122,7 +122,7 @@ int simEntrys() : GZ
          //cycle for all possible entrys in one Tick at one Entrance
          for (i = 0; i < Tick_inSec; i++0)
          {
-             if ( (spawncalc(carspawn_perc) )
+             if ( (spawncalc(settings.spawn_perc) )
                  counter++;
          }
      }
@@ -130,10 +130,10 @@ int simEntrys() : GZ
  }
 
 
-void spawncalc( spawnrate_perc : FKZ )
+void spawncalc(spawncalc perc ) : GZ
 {
     luckyNumber = rand() / RAND_MAX * 100.0; //100% max
-    if (luckyNumber >= spawncalc_perc)
+    if (luckyNumber >= perc)
     {
         return 1;
     }
