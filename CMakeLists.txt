@@ -13,6 +13,9 @@ add_executable(Teil1_Parkhaus_Simulation_Plannung
         include/SimulationObject.h
         include/Settings.h
         include/VehicleList.h
+        include/io/ConfigFileHandler.h
+        include/io/SaveHandler.h
+        include/io/GraphHandler.h
 )
 
 target_include_directories(Teil1_Parkhaus_Simulation_Plannung
