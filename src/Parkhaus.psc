@@ -76,7 +76,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list
                 required_space <- fill_from_queue(queue, get_open_space(parkhouse))
                 update_parkhouse_on_entry(parkhouse, required_space)
                 entries_processed++
-            END IF
+
             // Anstehendes Fahrzeug zu gross um einzufahren
             ELSE
                 queue_blocked <- TRUE
