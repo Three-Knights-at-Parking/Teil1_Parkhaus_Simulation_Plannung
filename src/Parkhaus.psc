@@ -28,17 +28,14 @@ END FUNCTION
 
 FUNCTION parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_list)
 
-    INPUT car_list
-    INPUT current_tick
-
-    currentNode = car_list_head
+    currentNode = car_list.head
     previousNode = NULL
 
     WHILE (currentNode != NULL) DO
-        IF ((currentNode -> car.created_at - current_tick) < currentNode -> car.leave_after_ticks) THEN
+        IF ((currentNode -> car.created_at - current_tick) < (currentNode -> car.leave_after_ticks)) THEN
             currentNode = nextNode
         ELSE
-            IF ((currentNode -> car.created_at - current_tick) >= currentNode -> car.leave_after_ticks) THEN
+            IF ((currentNode -> car.created_at - current_tick) >= (currentNode -> car.leave_after_ticks)) THEN
                 previousNode = currentNode
                 currentNode = nextNode
                 car_leaving(parkhouse, car_list, previousNode)
@@ -49,10 +46,10 @@ FUNCTION parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_lis
 END FUNCTION
 
 
-FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list, queue)
+FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list, gate_queue)
 
     INPUT queue
-    INPUT demand_remaining
+    demand_remaining <- gate_queue.getDemand()
 
     max_entries_per_tick <- settings.max_entries_per_tick
     queue_max_len <- settings.queue_max_len
@@ -221,3 +218,6 @@ FUNCTION update_parkhouse_on_entry(parkhouse, required_space)
     parkhouse.fill_space = parkhouse.fill_space + required_space
     parkhouse.totalEntry++
 END FUNCTION
+
+
+
