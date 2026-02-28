@@ -103,6 +103,12 @@ FUNCTION print_file_to_terminal(path)
 
 END FUNCTION
 
+FUNCTION delete_file(path)
+
+    REMOVE file at path
+
+END FUNCTION
+
 FUNCTION storage_menu()
 
     CALL print_storagescreen()
