@@ -34,6 +34,8 @@ END FUNCTION
 
 FUNCTION welcome_message()
 
+    CLEAR Terminal
+
     OUTPUT "========================================="
     OUTPUT "     Parkhaus-Simulation Rauenegg"
     OUTPUT "========================================="

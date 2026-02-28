@@ -3,6 +3,8 @@ INCLUDE FILE confi.h
 
 FUNCTION print_configscreen(settings)
 
+    CLEAR Terminal
+
     OUTPUT "=============================="
     OUTPUT "         Config-Menu"
     OUTPUT "=============================="
@@ -17,5 +19,62 @@ FUNCTION print_configscreen(settings)
     OUTPUT ""
     OUTPUT "0 Back to Home"
     OUTPUT ""
+
+END FUNCTION
+
+FUNCTION config_menu(settings)
+
+    CALL print_config_screen(settings)
+
+    validation_flag ← INVALID
+
+    WHILE validation_flag != VALID DO
+        choice ← CALL user_input()
+        validation_flag ← CALL validate_user_input(choice, CONFIG_MAX_VALID_NUMBER)
+    END WHILE
+
+    IF choice = 1 THEN
+        OUTPUT "Enter new parking spots per floor:"
+        settings.size ← INPUT
+        return UI_KONFIG
+
+    ELSE IF choice = 2 THEN
+        OUTPUT "Enter number of floors:"
+        settings.floors ← INPUT
+        return UI_KONFIG
+
+    ELSE IF choice = 3 THEN
+        OUTPUT "Enter number of gates:"
+        settings.gates ← INPUT
+        return UI_KONFIG
+
+    ELSE IF choice = 4 THEN
+        valid ← FALSE
+        WHILE valid = FALSE DO
+            OUTPUT "Enter tick equivalent (min 10 sec):"
+            temp ← INPUT
+            IF temp >= 10 THEN
+                settings.real_equivalent ← temp
+                valid ← TRUE
+            ELSE
+                OUTPUT "Value must be >= 10!"
+            END IF
+        END WHILE
+        return UI_KONFIG
+
+    ELSE IF choice = 5 THEN
+        OUTPUT "Enter max ticks (-1 = 1 day, -2 = 2 days, ...):"
+        settings.max_ticks ← INPUT
+        return UI_KONFIG
+
+    ELSE IF choice = 6 THEN
+        OUTPUT "Enter random seed (-1 for current time):"
+        settings.rand_seed ← INPUT
+        return UI_KONFIG
+
+    ELSE IF choice = 0 THEN
+        return UI_HOME
+
+    END IF
 
 END FUNCTION

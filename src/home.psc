@@ -3,6 +3,8 @@ INCLUDE FILE home.h
 
 FUNCTION print_homescreen()
 
+    CLEAR Terminal
+
     OUTPUT "=============================="
     OUTPUT "         Home-Menu "
     OUTPUT "=============================="
@@ -15,8 +17,6 @@ FUNCTION print_homescreen()
 END FUNCTION
 
 FUNCTION home_menu()
-
-    CLEAR Terminal
 
     CALL print_homescreen()
     
