@@ -61,6 +61,21 @@ FUNCTION validate_user_input_config(user_choice, min, max, allow_negative)
 
 END FUNCTION
 
+FUNCTION set_size()
+
+    valid ← FALSE
+    WHILE valid = FALSE DO
+        OUTPUT "Enter spots per floor (min 1/max 'MAX_SIZE'):"
+        temp ← INPUT
+
+        IF validate_range(temp, MIN_SIZE, MAX_SIZE, FALSE) = VALID THEN
+            settings.size ← temp
+            valid ← TRUE
+        END IF
+    END WHILE
+
+END FUNCTION
+
 FUNCTION config_menu(settings)
 
     CALL print_config_screen(settings)
@@ -73,8 +88,8 @@ FUNCTION config_menu(settings)
     END WHILE
 
     IF choice = 1 THEN
-        OUTPUT "Enter new parking spots per floor:"
-        settings.size ← INPUT
+        CALL set_size()
+
         return UI_KONFIG
 
     ELSE IF choice = 2 THEN
