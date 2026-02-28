@@ -109,7 +109,7 @@ FUNCTION parkhouse_fill_subtick(current_tick, parkhouse, settings, queue_list)
     number_of_gates <- parkhouse.number_of_gates
     max_entries_per_tick <- settings.max_entries_per_tick
 
-    FOR (int m = 0; i < max_entries_per_tick; m++)
+    FOR (int m = 0; m < max_entries_per_tick; m++)
 
         FOR (int i = 0; i < number_of_gates; i++)
 
