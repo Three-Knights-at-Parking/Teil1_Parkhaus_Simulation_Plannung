@@ -48,9 +48,8 @@ END FUNCTION
 
 FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list, gate_queue)
 
-    INPUT queue
-    demand_remaining <- gate_queue.getDemand()
 
+    demand_remaining <- gate_queue.getDemand() // QueueLength(gate_queue) ODER gate_queue.getLength() + gate_queue.newDemand
     max_entries_per_tick <- settings.max_entries_per_tick
     queue_max_len <- settings.queue_max_len
 
@@ -61,29 +60,28 @@ FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list
     WHILE ((get_open_space(parkhouse) > 0) AND (entries_processed < max_entries_per_tick) AND (demand_remaining > 0) AND !queue_blocked) DO
 
         // Liegt etwas in der Queue? Wenn nein, erstelle neues Vehicle in Queue
-        IF (QueueIsEmpty(queue)) THEN
-            queue_add_random_vehicle(queue)
+        IF (QueueIsEmpty(gate_queue)) THEN
+            queue_add_random_vehicle(gate_queue)
             demand_remaining--
         END IF
 
-        IF (!QueueIsEmpty(queue)) THEN
-            next_vehicle_size <- GetNextQueueVehicleSize(queue)
+        IF (!QueueIsEmpty(gate_queue)) THEN
+            next_vehicle_size <- GetNextQueueVehicleSize(gate_queue)
 
             IF (next_vehicle_size <= get_open_space(parkhouse)) THEN
                 required_space <- fill_from_queue(queue, get_open_space(parkhouse))
                 update_parkhouse_on_entry(parkhouse, required_space)
                 entries_processed++
 
-            // Anstehendes Fahrzeug zu gross um einzufahren
-            ELSE
+            ELSE    // Anstehendes Fahrzeug zu gross um einzufahren
                 queue_blocked <- TRUE
             END IF
         END IF
     END WHILE
 
     // Uebrige moegliche Einfahrten in die Queue
-    WHILE ((demand_remaining > 0) AND (QueueLength(queue) < queue_max_len)) DO
-        queue_add_random_vehicle(queue)
+    WHILE ((demand_remaining > 0) AND (QueueLength(gate_queue) < queue_max_len)) DO
+        queue_add_random_vehicle(gate_queue)
         demand_remaining--
     END WHILE
 
