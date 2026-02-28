@@ -1,5 +1,19 @@
 INCLUDE FILE ui.h
-INCLUDE FILE confi.h
+INCLUDE FILE config.h
+
+FUNCTION init_settings()
+
+    CREATE FROM STRUCT Settings settings
+    settings.size ← 100
+    settings.floors ← 1
+    settings.gates ← 1
+    settings.tick ← 3600
+    settings.max_ticks ← 24
+    settings.rand_seed ← -1
+
+    return settings
+
+END FUNCTION
 
 FUNCTION print_configscreen(settings)
 
@@ -76,6 +90,11 @@ END FUNCTION
 
 FUNCTION config_menu(settings)
 
+    IF settings_state_flag == NOT_INITIALIZED THEN
+        settings ← CALL init_settings()
+        settings_state_flag ← INITIALIZED 
+    END IF
+
     CALL print_config_screen(settings)
 
     validation_flag ← INVALID
@@ -110,7 +129,7 @@ FUNCTION config_menu(settings)
         return UI_KONFIG
 
     ELSE IF choice = 5 THEN
-        OUTPUT "Enter max ticks (or use -1/-2/... for 1/2/... days; max 'MAX_MAX_TICKS): "
+        OUTPUT "Enter max ticks (or use -1/-2/... for 1/2/... days; max 'MAX_MAX_TICKS'): "
         settings.max_ticks ← CALL edit_setting(MIN_MAX_TICKS, MAX_MAX_TICKS, TRUE)
         
         return UI_KONFIG

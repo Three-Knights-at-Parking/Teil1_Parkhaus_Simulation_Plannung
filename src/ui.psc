@@ -1,4 +1,5 @@
 INCLUDE FILE ui.h 
+INCLUDE FILE config.h
 
 FUNCTION user_input()
 
@@ -35,6 +36,7 @@ END FUNCTION
 FUNCTION welcome_message()
 
     CLEAR Terminal
+    settings_state_flag ← NOT_INITIALIZED
 
     OUTPUT "========================================="
     OUTPUT "     Parkhaus-Simulation Rauenegg"

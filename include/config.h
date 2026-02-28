@@ -1,5 +1,5 @@
 #ifndef CONFIG_H
-#define CONFIG_
+#define CONFIG_H
 
 #define CONFIG_MAX_VALID_NUMBER 6
 
@@ -7,13 +7,13 @@
 #define MIN_FLOORS 1
 #define MIN_GATES 1
 #define MIN_TICK 10
-#define MIN_MIN_TICKS -365
+#define MIN_MAX_TICKS -365
 #define MIN_SEED -1
 
-#define MAX_SIZE 100
+#define MAX_SIZE 200
 #define MAX_FLOORS 10
 #define MAX_GATES 6
-#define MAX_TICK 86400
+#define MAX_TICK 8640
 #define MAX_MAX_TICKS 100
 #define MAX_SEED 2147483647
 
@@ -29,5 +29,10 @@ typedef struct Settings {
     int32_t max_ticks; // Max amount of ticks before the simulation stops. -1 for day equivalent. -2 for 2 day equivalent, ...
     int32_t rand_seed; // Specified random seed, -1 if current time should be used.
 } Settings;
+
+typedef enum {
+    NOT_INITIALIZED,
+    INITIALIZED
+} settings_state_flag;
 
 #endif
