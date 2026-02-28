@@ -113,37 +113,35 @@ FUNCTION parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
 
         FOR (int i = 0; i < number_of_gates; i++)
 
-            parkhouse_fill_subtick_routine(queue <- gate_queues.queue[i], demand_remaining <- gate_queues.queue[i].demand_remaining, current_tick);
+            parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_queue <- gate_queues.queue[i]);
+
         END FOR
     END FOR
 END FUNCTION
 
 
-FUNCTION parkhouse_fill_subtick_routine(queue, demand_remaining, current_tick)
+FUNCTION parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_queue)
 
     queue_blocked <- FALSE
     required_space <- 0
-    pending_demand <- demand_remaining + QueueLength(queue)
+    pending_demand <- gate_queue.demand_remaining + QueueLength(gate_queue)
 
-    IF (get_open_space() > 0 AND pending_demand > 0) THEN
+    IF (get_open_space(parkhouse) > 0 AND pending_demand > 0) THEN
 
         // Wenn die Queue leer ist, wird ein neues Front Vehicle erstellt
         IF (QueueIsEmpty(queue)) THEN
-            IF (demand_remaining > 0) THEN
-                queue_add_random_vehicle(queue, current_tick)
-                demand_remaining <- demand_remaining - 1
-            END IF
+            queue_add_random_vehicle(queue, current_tick)
+            demand_remaining--
         END IF
 
         // Wenn die Queue infolge nicht leer ist, wird das erste Element der Liste in das Parkhaus uebernommen
-        IF NOT QueueIsEmpty(queue) THEN
+        IF !QueueIsEmpty(queue) THEN
             next_vehicle_size <- GetNextQueueVehicleSize(queue)
 
             // Kontrolle ob Vehicle in Parkhaus passt
-            IF (next_vehicle_size <= get_open_space()) THEN
+            IF (next_vehicle_size <= get_open_space(parkhouse)) THEN
                 required_space <- fill_from_queue(queue, get_open_space())
-                UpdateParkhouseData(required_space)
-                get_open_space <- get_open_space() - required_space
+                update_parkhouse_on_entry(parkhouse, required_space)
             ELSE
                 queue_blocked <- TRUE
             END IF
@@ -153,9 +151,7 @@ FUNCTION parkhouse_fill_subtick_routine(queue, demand_remaining, current_tick)
 
     OUTPUT queue
     OUTPUT demand_remaining
-    OUTPUT get_open_space
     OUTPUT queue_blocked
-    OUTPUT required_space
 
 END FUNCTION
 
