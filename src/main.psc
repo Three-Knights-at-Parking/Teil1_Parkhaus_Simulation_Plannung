@@ -1,5 +1,7 @@
+INCLUDE FILE ui.h
+
 FUNCTION main()
-    
-    ui_start()
+
+    CALL ui_start()
 
 END FUNCTION
