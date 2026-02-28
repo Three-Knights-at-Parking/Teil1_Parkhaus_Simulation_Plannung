@@ -1,12 +1,12 @@
 FUNCTION Parkhaus_Tick(current_tick, settings, parkhouse, queue, stats)
     IF settings.number_of_gates = 1 THEN
-        Parkhaus_Tick_Empty_General(current_tick, settings, parkhouse, stats)
+        Parkhaus_Tick_Empty_General(current_tick, CarList)
         Parkhaus_Tick_Fill_General(current_tick, settings, parkhouse, queue, stats)
         return OK
     ELSE
         IF settings.number_of_gates > 1 AND settings.gate_time_exit_enabled = FALSE THEN
             Parkhaus_Tick_Empty_General(current_tick, settings, parkhouse, stats)
-            Parkhaus_Tick_Entry_SubTick(current_tick, settings, parkhouse, queue, stats)
+            Parkhaus_Tick_Fill_SubTick(current_tick, settings, parkhouse, queue, stats)
             return OK
         ELSE
             //IF settings.number_of_gates > 1 AND settings.gate_time_exit_enabled = TRUE THEN
@@ -21,21 +21,43 @@ FUNCTION Parkhaus_Tick(current_tick, settings, parkhouse, queue, stats)
     END IF
 END FUNCTION
 
+FUNCTION Parkhaus_Tick_Empty_General(current_tick, CarList)
 
-FUNCTION Parkhouse_fill_subtick(queue_list, currentTick, anzGates, maxEntrys_perTick)
-{
-    for (int m = 0; i < maxEntrys_perTick; m++)
-    {
-        for (int i = 0; i < Gates; i++)
-        {
+INPUT  CarList
+INPUT  currentTick
+
+currentNode = CarList_head
+
+    while (current != NULL) DO
+        IF ( (car.created_at - currentTick) < car.leavingIn_Ticks ) THEN
+            currentNode = nextNode
+        ELSE
+            IF ( (car.created_at - currentTick) >= car.leavingIn_Ticks ) THEN
+                Car_leaving(currentNode);
+                currentNode = nextNode;
+            END IF
+        END IF
+    END WHILE
+
+END FUNCTION
+
+
+
+
+FUNCTION Parkhouse_Fill_SubTick(currentTick, queue_list, anzGates, maxEntrys_perTick)
+
+    FOR (int m = 0; i < maxEntrys_perTick; m++)
+
+        FOR (int i = 0; i < Gates; i++)
+
             Parkhouse_fill_subtick_sub(queue <- queue_list[i], demand_remaining <- queue_list[i].demand_remaining, currentTick);
-        }
-    }
-}
+        END FOR
+    END FOR
+END FUNCTION
 
 
 
-FUNCTION Parkhouse_fill_subtick_routine(queue, demand_remaining, currentTick)
+FUNCTION Parkhouse_Fill_SubTick_Routine(queue, demand_remaining, currentTick)
 
     queue_blocked ← FALSE
     needed_space ← 0
@@ -101,9 +123,9 @@ FUNCTION QueueAddRandomVehicle(queue)
 END FUNCTION
 
 
-
-//help Functions
-
+/////////////////////
+///help Functions///
+///////////////////
 FUNCTION parkhouse_open_space()
 
     RETURN parkhouse.fill_space - parkhouse.size
