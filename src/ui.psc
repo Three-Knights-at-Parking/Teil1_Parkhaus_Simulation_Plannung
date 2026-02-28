@@ -1,37 +1,41 @@
-INCLUDE FILE ui.h 
+INCLUDE FILE ui.h
+INCLUDE FILE home.h
 INCLUDE FILE config.h
+INCLUDE FILE simulation.h
+INCLUDE FILE storage.h
+
 
 FUNCTION user_input()
 
     OUTPUT "ENTER the number (int) you want navigate to: "
-    user_input ← INPUT
+    value ← INPUT
 
-    return user_input
+    return value
 
 END FUNCTION
 
-FUNCTION validate_user_input(int user_choice, const int max_valid_number)
+
+FUNCTION validate_user_input(user_choice, max_valid_number)
 
     IF user_choice != type int THEN
         OUTPUT "Your input is not an integer!"
         OUTPUT "Please press ENTER and try again... "
-
         INPUT dummy
         return INVALID
+    END IF
 
-    ELSE IF user_choice < 0 OR user_choice > max_valid_number THEN
+    IF user_choice < 0 OR user_choice > max_valid_number THEN
         OUTPUT "The number you entered is invalid!"
         OUTPUT "Please only choose between the numbers displayed."
         OUTPUT "Press ENTER and try again..."
-
         INPUT dummy
         return INVALID
-    
-    ELSE 
-        return VALID
     END IF
 
+    return VALID
+
 END FUNCTION
+
 
 FUNCTION welcome_message()
 
@@ -48,29 +52,33 @@ FUNCTION welcome_message()
 
     INPUT dummy
 
-    return "HOME"
+    return UI_HOME
+
 END FUNCTION
+
 
 FUNCTION ui_start()
 
-    state ← welcome_message()
+    state ← CALL welcome_message()
 
-    WHILE state != "EXIT" DO
+    WHILE state != UI_EXIT DO
 
-        IF state = "HOME" THEN
-            state ← home_menu()
+        IF state = UI_HOME THEN
+            state ← CALL home_menu()
 
-        ELSE IF state = "KONFIG" THEN
-            state ← konfig_menu()
+        ELSE IF state = UI_KONFIG THEN
+            state ← CALL config_menu(settings)
 
-        ELSE IF state = "SIMULATION" THEN
-            state ← simulation_menu()
+        ELSE IF state = UI_SIMULATION THEN
+            state ← CALL simulation_menu(settings)
 
-        ELSE IF state = "STORAGE" THEN
-            state ← storage_menu()
+        ELSE IF state = UI_STORAGE THEN
+            state ← CALL storage_menu()
 
         END IF
 
     END WHILE
+
+    return UI_EXIT
 
 END FUNCTION
