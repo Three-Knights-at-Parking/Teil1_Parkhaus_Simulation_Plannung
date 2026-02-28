@@ -79,15 +79,8 @@ FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list
         END IF
     END WHILE
 
-    // Uebrige moegliche Einfahrten in die Queue
-    WHILE ((demand_remaining > 0) AND (QueueLength(gate_queue) < queue_max_len)) DO
-        queue_add_random_vehicle(gate_queue)
-        demand_remaining--
-    END WHILE
-
-    // Uebrige moegliche Einfahrten, welche nicht in Queue passen -> rejected
     IF (demand_remaining > 0) THEN
-        parkhouse.rejections += demand_remaining
+        open_Demand(parkhouse, gate_queue, queue_max_len, demand_remaining)
     END IF
 
     OUTPUT queue
@@ -119,9 +112,9 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_
 
     queue_blocked <- FALSE
     required_space <- 0
-    pending_demand <- gate_queue.demand_remaining + QueueLength(gate_queue)
+    pending_demand <- gate_queue.getDemand() // QueueLength(gate_queue) ODER gate_queue.getLength() + gate_queue.newDemand
 
-    IF (get_open_space(parkhouse) > 0 AND pending_demand > 0) THEN
+    IF ((get_open_space(parkhouse) > 0) AND (pending_demand > 0)) THEN
 
         // Wenn die Queue leer ist, wird ein neues Front Vehicle erstellt
         IF (QueueIsEmpty(queue)) THEN
@@ -141,11 +134,13 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_
                 queue_blocked <- TRUE
             END IF
         END IF
+    END IF
 
+    IF (demand_remaining > 0) THEN
+        open_Demand(parkhouse, gate_queue, queue_max_len, demand_remaining)
     END IF
 
     OUTPUT queue
-    OUTPUT demand_remaining
     OUTPUT queue_blocked
 
 END FUNCTION
@@ -165,6 +160,22 @@ FUNCTION fill_from_queue(queue, parkhouse_open_space)
         END IF
     END IF
     RETURN required_space
+
+END FUNCTION
+
+FUNCTION open_Demand(parkhouse, gate_queue, queue_max_len, demand_remaining)
+
+    open_demand <- demand_remaining
+    // Uebrige moegliche Einfahrten in die Queue
+    WHILE ((open_demand > 0) AND (QueueLength(gate_queue) < queue_max_len)) DO
+        queue_add_random_vehicle(gate_queue)
+        open_demand--
+    END WHILE
+
+    // Uebrige moegliche Einfahrten, welche nicht in Queue passen -> rejected
+    IF (open_demand > 0) THEN
+        parkhouse.rejections += open_demand
+    END IF
 
 END FUNCTION
 
