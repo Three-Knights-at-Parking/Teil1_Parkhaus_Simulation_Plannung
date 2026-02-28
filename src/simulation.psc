@@ -3,6 +3,7 @@ INCLUDE FILE config.h
 INCLUDE FILE simulation.h
 INCLUDE FILE storage.h
 
+
 FUNCTION print_simulationscreen(settings)
 
     CLEAR Terminal
@@ -27,6 +28,7 @@ FUNCTION print_simulationscreen(settings)
     OUTPUT ""
 
 END FUNCTION
+
 
 FUNCTION post_simulation_prompt(sim_output_path)
 
@@ -53,6 +55,7 @@ FUNCTION post_simulation_prompt(sim_output_path)
 
 END FUNCTION
 
+
 FUNCTION simulation_menu(settings)
 
     CALL print_simulationscreen(settings)
@@ -71,13 +74,12 @@ FUNCTION simulation_menu(settings)
             OUTPUT "Please open the Configuration Menu first."
             OUTPUT "Press ENTER to change to Config-Menu."
             INPUT dummy
-
             return UI_KONFIG
         END IF
 
         OUTPUT "Starting simulation..."
 
-        sim_output_path ← CALL start_simulation(settings) //Function has to be provided by the data-management layer from @Luca
+        sim_output_path ← CALL start_simulation(settings)  // Provided by simulation/data layer
 
         OUTPUT "Simulation finished."
 
