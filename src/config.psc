@@ -67,10 +67,10 @@ FUNCTION edit_setting(min, max, allow_negative)
 
     WHILE valid = FALSE DO
         new_value ← INPUT
-        valid ← CALL validate_range(new_value, min, max, allow_negative)
+        valid ← CALL validate_user_input_config(new_value, min, max, allow_negative)
     END WHILE
 
-    return value
+    return new_value
 
 END FUNCTION
 
@@ -86,34 +86,39 @@ FUNCTION config_menu(settings)
     END WHILE
 
     IF choice = 1 THEN
-        OUTPUT "Enter spots per floor (min 1/max 'MAX_SIZE'):"
+        OUTPUT "Enter spots per floor (min 1/max 'MAX_SIZE'): "
         settings.size ← CALL edit_setting(MIN_SIZE, MAX_SIZE, FALSE)
-
+        
         return UI_KONFIG
 
     ELSE IF choice = 2 THEN
-        OUTPUT "Enter number of floors:"
-        settings.floors ← INPUT
+        OUTPUT "Enter number of floors (min 1/ max 'MAX_FLOORS'): "
+        settings.floors ← CALL edit_setting(MIN_FLOORS, MAX_FLOORS, FALSE)
+        
         return UI_KONFIG
 
     ELSE IF choice = 3 THEN
-        OUTPUT "Enter number of gates:"
-        settings.gates ← INPUT
+        OUTPUT "Enter number of gates (min 1/max 'MAX_GATES'): "
+        settings.gates ← CALL edit_setting(MIN_GATES, MAX_GATES, FALSE)
+        
         return UI_KONFIG
 
     ELSE IF choice = 4 THEN
-        OUTPUT "Enter tick equivalent (min 10 sec):"
-        settings.real_equivalent ← INPUT
+        OUTPUT "Enter tick length (in sec; min 'MIN_TICK'/max 'MAX_TICK'): "
+        settings.real_equivalent ← CALL edit_setting(MIN_TICK, MAX_TICK, FALSE)
+        
         return UI_KONFIG
 
     ELSE IF choice = 5 THEN
-        OUTPUT "Enter max ticks (-1 = 1 day, -2 = 2 days, ...):"
-        settings.max_ticks ← INPUT
+        OUTPUT "Enter max ticks (or use -1/-2/... for 1/2/... days; max 'MAX_MAX_TICKS): "
+        settings.max_ticks ← CALL edit_setting(MIN_MAX_TICKS, MAX_MAX_TICKS, TRUE)
+        
         return UI_KONFIG
 
     ELSE IF choice = 6 THEN
-        OUTPUT "Enter random seed (-1 for current time):"
-        settings.rand_seed ← INPUT
+        OUTPUT "Enter random seed (or use -1 for default): "
+        settings.rand_seed ← CALL edit_setting(MIN_SEED, MAX_SEED, TRUE)
+        
         return UI_KONFIG
 
     ELSE IF choice = 0 THEN
