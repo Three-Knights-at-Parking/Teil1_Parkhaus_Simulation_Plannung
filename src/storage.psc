@@ -12,6 +12,45 @@ FUNCTION print_storagescreen()
 
 END FUNCTION
 
+FUNCTION browse_directory(current_path)
+
+    CLEAR Terminal
+
+    entries ← CALL read_directory(current_path)
+
+    OUTPUT "Current Path: ", current_path
+    OUTPUT "------------------------------------"
+
+    index ← 1
+    FOR each entry IN entries DO
+        OUTPUT index, " ", entry.name
+        index ← index + 1
+    END FOR
+
+    OUTPUT "------------------------------------"
+    OUTPUT "0 Back"
+
+    max_valid_number ← index
+
+    WHILE validation_flag != VALID DO
+        choice ← CALL user_input()
+        validation_flag ← CALL validate_user_input(choice, max_valid_number)
+    END WHILE
+
+    IF choice = 0 THEN
+        return
+
+    selected_entry ← entries[choice]
+
+    IF selected_entry IS DIRECTORY THEN
+        CALL browse_directory(selected_entry.path)
+
+    ELSE IF selected_entry IS FILE THEN
+        CALL file_options(selected_entry.path)
+    END IF
+
+END FUNCTION
+
 FUNCTION storage_menu()
 
     CALL print_storagescreen()
