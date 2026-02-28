@@ -25,3 +25,43 @@ FUNCTION print_simulationscreen(settings)
     OUTPUT "0 Back to Home"
     OUTPUT ""
 END FUNCTION
+
+FUNCTION simulation_menu(settings)
+
+    CALL print_simulation_screen(settings)
+
+    validation_flag ← INVALID
+
+    WHILE validation_flag != VALID DO
+        choice ← CALL user_input()
+        validation_flag ← CALL validate_user_input(choice, SIM_MAX_VALID_NUMBER)
+    END WHILE
+
+
+    IF choice = 1 THEN
+
+        IF settings_state_flag = NOT_INITIALIZED THEN
+            OUTPUT "Settings not initialized!"
+            OUTPUT "Press ENTER to configure first."
+            
+            INPUT dummy
+            return UI_Config
+        END IF
+
+        //CALL start_simulation(settings)
+        
+        //Möglichkeit zu den gespeicherten Daten im Storage
+        INPUT dummy
+        return UI_SIMULATION
+
+
+    ELSE IF choice = 2 THEN
+        return UI_KONFIG
+
+
+    ELSE IF choice = 0 THEN
+        return UI_HOME
+
+    END IF
+
+END FUNCTION
