@@ -31,7 +31,7 @@ END FUNCTION
 FUNCTION Parkhaus_Tick_Empty_General(current_tick, parkhouse, settings, CarList)
 
     INPUT  CarList
-    INPUT  currentTick
+    INPUT  current_Tick
 
     currentNode = CarList_head
 
@@ -104,7 +104,7 @@ FUNCTION Parkhaus_Tick_Fill_General(current_tick, parkhouse, settings, CarList, 
 }
 
 
-FUNCTION Parkhouse_Fill_SubTick(currentTick, parkhouse, settings, queue_list)
+FUNCTION Parkhouse_Fill_SubTick(current_Tick, parkhouse, settings, queue_list)
 
     anzGates <- parkhous.anzGates
     maxEntrys_perTick <- settings.maxEntrys_perTick
@@ -114,14 +114,14 @@ FUNCTION Parkhouse_Fill_SubTick(currentTick, parkhouse, settings, queue_list)
 
         FOR (int i = 0; i < anzGates; i++)
 
-            parkhouse_fill_subtick_sub(queue <- queue_list[i], demand_remaining <- queue_list[i].demand_remaining, currentTick);
+            Parkhouse_Fill_SubTick_Routine(queue <- queue_list[i], demand_remaining <- queue_list[i].demand_remaining, current_Tick);
         END FOR
     END FOR
 END FUNCTION
 
 
 
-FUNCTION Parkhouse_Fill_SubTick_Routine(queue, demand_remaining, currentTick)
+FUNCTION Parkhouse_Fill_SubTick_Routine(queue, demand_remaining, current_Tick)
 
     queue_blocked ← FALSE
     needed_space ← 0
@@ -132,7 +132,7 @@ FUNCTION Parkhouse_Fill_SubTick_Routine(queue, demand_remaining, currentTick)
         // Wenn die Queue leer ist wird ein neues Front Vehicle erstellt
         IF QueueIsEmpty(queue) THEN
             IF demand_remaining > 0 THEN
-                QueueAddRandomVehicle(queue, currentTick)
+                QueueAddRandomVehicle(queue, current_Tick)
                 demand_remaining ← demand_remaining - 1
             END IF
         END IF
@@ -142,10 +142,10 @@ FUNCTION Parkhouse_Fill_SubTick_Routine(queue, demand_remaining, currentTick)
             next_size ← GetNextQueueVehicleSize(queue)
 
             // Kontrolle ob Vehicle in Parkhaus passt
-            IF next_size ≤ parkhouse_open_space THEN
-                needed_space ← FillFromQueue(queue, parkhouse_open_space)
+            IF next_size ≤ parkhouse_open_space() THEN
+                needed_space ← FillFromQueue(queue, parkhouse_open_space())
                 UpdateParkhouseData(needed_space)
-                parkhouse_open_space ← parkhouse_open_space - needed_space
+                parkhouse_open_space ← parkhouse_open_space() - needed_space
             ELSE
                 queue_blocked ← TRUE
             END IF
