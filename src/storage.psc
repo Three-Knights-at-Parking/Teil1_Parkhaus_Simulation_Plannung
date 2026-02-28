@@ -1,3 +1,7 @@
+INCLUDE FILE ui.h
+INCLUDE FILE storage.h
+
+
 FUNCTION print_storagescreen()
 
     CLEAR Terminal
@@ -11,6 +15,7 @@ FUNCTION print_storagescreen()
     OUTPUT ""
 
 END FUNCTION
+
 
 FUNCTION storage_menu()
 
@@ -33,6 +38,7 @@ FUNCTION storage_menu()
 
 END FUNCTION
 
+
 FUNCTION browse_directory(current_path)
 
     CLEAR Terminal
@@ -45,7 +51,7 @@ FUNCTION browse_directory(current_path)
     IF entries IS EMPTY THEN
         OUTPUT "Directory is empty."
     END IF
-    
+
     index ← 1
 
     FOR each entry IN entries DO
@@ -78,6 +84,7 @@ FUNCTION browse_directory(current_path)
     END IF
 
 END FUNCTION
+
 
 FUNCTION deleting_verification(object_path, object_type)
 
@@ -123,6 +130,7 @@ FUNCTION deleting_verification(object_path, object_type)
 
 END FUNCTION
 
+
 FUNCTION directory_options(dir_path)
 
     CLEAR Terminal
@@ -154,6 +162,7 @@ FUNCTION directory_options(dir_path)
     END IF
 
 END FUNCTION
+
 
 FUNCTION file_options(file_path)
 
@@ -193,6 +202,7 @@ FUNCTION file_options(file_path)
 
 END FUNCTION
 
+
 FUNCTION print_file_to_terminal(path)
 
     OPEN file at path
@@ -205,6 +215,7 @@ FUNCTION print_file_to_terminal(path)
     CLOSE file
 
 END FUNCTION
+
 
 FUNCTION delete_directory(path)
 
@@ -224,6 +235,7 @@ FUNCTION delete_directory(path)
     REMOVE directory at path
 
 END FUNCTION
+
 
 FUNCTION delete_file(path)
 
