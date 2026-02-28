@@ -1,7 +1,7 @@
 FUNCTION Parkhaus_Tick(current_tick, settings, parkhouse, queue, stats)
     IF settings.number_of_gates = 1 THEN
-        Parkhaus_Tick_Empty_General(current_tick, CarList)
-        Parkhaus_Tick_Fill_General(current_tick, settings, parkhouse, queue, stats)
+        Parkhaus_Tick_Empty_General(current_tick, parkhouse, CarList)
+        Parkhaus_Tick_Fill_General(current_tick, parkhouse, CarList, queue)
         return OK
     ELSE
         IF settings.number_of_gates > 1 AND settings.gate_time_exit_enabled = FALSE THEN
@@ -9,9 +9,10 @@ FUNCTION Parkhaus_Tick(current_tick, settings, parkhouse, queue, stats)
             Parkhaus_Tick_Fill_SubTick(current_tick, settings, parkhouse, queue, stats)
             return OK
         ELSE
+            // Das szenario das auch beim exit eine gate_time besteht wird vorrübergehend vernachlässigt
             //IF settings.number_of_gates > 1 AND settings.gate_time_exit_enabled = TRUE THEN
-            //    // Exit-subticks are intentionally ignored for now (entry-only subticks)
-            //    Parkhaus_Tick_Empty_General(current_tick, settings, parkhouse, stats)
+            //
+            //    Parkhaus_Tick_Empty_SubTick(current_tick, settings, parkhouse, stats)
             //    Parkhaus_Tick_Entry_SubTick(current_tick, settings, parkhouse, queue, stats)
             //    return OK
             ELSE
@@ -21,7 +22,7 @@ FUNCTION Parkhaus_Tick(current_tick, settings, parkhouse, queue, stats)
     END IF
 END FUNCTION
 
-FUNCTION Parkhaus_Tick_Empty_General(current_tick, CarList)
+FUNCTION Parkhaus_Tick_Empty_General(current_tick, parkhouse, CarList)
 
 INPUT  CarList
 INPUT  currentTick
@@ -41,7 +42,59 @@ currentNode = CarList_head
 
 END FUNCTION
 
+FUNCTION Parkhaus_Tick_Fill_General(current_tick, parkhouse, CarList, queue)
+{
+INPUT queue
+INPUT queue_max_len
+INPUT demand_remaining
+INPUT maxEntrys_perTick
 
+entries_done ← 0
+queue_blocked ← FALSE
+
+//Befüllung des Parkhaus
+WHILE ( (parkhouse_open_space(parkhouse) > 0) AND (entries_done < maxEntrys_perTick) AND (demand_remaining > 0) AND !queue_blocked ) DO
+
+    //liegt etwas in der Queue? -> Wenn nein erstelle neues Vehicle in Queue
+    IF ( QueueIsEmpty(queue) ) THEN
+        QueueAddRandomVehicle(queue)
+        demand_remaining--
+    END IF
+
+    IF ( !QueueIsEmpty(queue) ) THEN
+        next_size ← GetNextQueueVehicleSize(queue)
+
+        IF ( next_size <= parkhouse_open_space(parkhouse) ) THEN
+            needed_space ← FillFromQueue(queue, parkhouse_open_space(parkhouse))
+            UpdateParkhouseData_Entry(needed_space)
+            entries_done++
+        END IF
+        //Anstehendes Fahrzeug zu groß um einzufahren
+        ELSE
+            queue_blocked ← TRUE
+        END IF
+    END IF
+END WHILE
+
+//Übrige mögliche Einfahrten in die Queue
+WHILE (demand_remaining > 0) AND (QueueLength(queue) < queue_max_len) ) DO
+    QueueAddRandomVehicle(queue)
+    demand_remaining--
+END WHILE
+
+//Übrige mögliche Einfahrten welche nicht in Queue passen -> rejected
+IF demand_remaining > 0 THEN
+    Parkhouse.rejections += demand_remaining
+END IF
+
+
+OUTPUT queue
+OUTPUT parkhouse_open_space
+OUTPUT entries_done
+OUTPUT queue_blocked
+OUTPUT rejected_count
+
+}
 
 
 FUNCTION Parkhouse_Fill_SubTick(currentTick, queue_list, anzGates, maxEntrys_perTick)
@@ -126,22 +179,21 @@ END FUNCTION
 /////////////////////
 ///help Functions///
 ///////////////////
-FUNCTION parkhouse_open_space()
+FUNCTION parkhouse_open_space(parkhouse)
 
     RETURN parkhouse.fill_space - parkhouse.size
 
 END FUNCTION
 
 
-FUNCTION parkhouse_spaces_blocked(spaces)
+FUNCTION UpdateParkhouseData_EXIT(parkhouse, needed_space)
 
-    parkhaus.fill_space = parkhaus.fill_space + spaces
+    parkhaus.fill_space = parkhaus.fill_space - spaces
+    parkhaus.totalExit++;
 
 END FUNCTION
 
-
-FUNCTION parkhouse_spaces_freed(spaces)
-
-    parkhaus.fill_space = parkhaus.fill_space - spaces
-
+FUNCTION UpdateParkhouseData_Entry(parkhouse, needed_space)
+    parkhaus.fill_space = parkhaus.fill_space + spaces
+    parkhaus.totalEntry++;
 END FUNCTION
