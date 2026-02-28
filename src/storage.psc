@@ -55,6 +55,31 @@ FUNCTION browse_directory(current_path)
 
 END FUNCTION
 
+FUNCTION deleting_verification(object_path)
+
+    OUTPUT "Are you sure you want to delete it?"
+            OUTPUT "1 Yes"
+            OUTPUT "0 No"
+            OUTPUT ""
+
+            validation_flag ← INVALID
+
+            WHILE validation_flag != VALID DO
+                confirm ← CALL user_input()
+                validation_flag ← CALL validate_user_input(confirm, 1)
+            END WHILE
+
+            IF confirm = 1 THEN
+                CALL delete_directory(object_path)
+                OUTPUT "Deleted."
+                OUTPUT "Press ENTER to return to Storage-Menu."
+
+                INPUT dummy
+            END IF
+            return
+
+END FUNCTION
+
 FUNCTION directory_options(dir_path)
 
     CLEAR Terminal
@@ -87,26 +112,7 @@ FUNCTION directory_options(dir_path)
             return
         END IF
 
-        OUTPUT "Are you sure you want to delete this directory?"
-        OUTPUT "1 Yes"
-        OUTPUT "0 No"
-        OUTPUT ""
-
-        validation_flag ← INVALID
-
-        WHILE validation_flag != VALID DO
-            confirm ← CALL user_input()
-            validation_flag ← CALL validate_user_input(confirm, 1)
-        END WHILE
-
-        IF confirm = 1 THEN
-            CALL delete_directory(dir_path)
-            OUTPUT "Directory deleted."
-            OUTPUT "Press ENTER to return to Storage-Menu."
-
-            INPUT dummy
-        END IF
-        return
+        CALL deleting_verification(dir_path)
 
     ELSE IF choice = 0 THEN
         return
@@ -133,16 +139,22 @@ FUNCTION file_options(file_path)
     END WHILE
 
     IF choice = 1 THEN
+
         CALL print_file_to_terminal(file_path)
-        OUTPUT "Press ENTER to return to the Storage-Menu."
+
+        OUTPUT ""
+        OUTPUT "Press ENTER to return to Storage-Menu."
 
         INPUT dummy
         return
 
+
     ELSE IF choice = 2 THEN
+
         CALL delete_file(file_path)
+
         OUTPUT "File deleted."
-        OUTPUT "Press ENTER to return to the Storage-Menu."
+        OUTPUT "Press ENTER to return to Storage-Menu."
 
         INPUT dummy
         return
@@ -163,6 +175,25 @@ FUNCTION print_file_to_terminal(path)
     END WHILE
 
     CLOSE file
+
+END FUNCTION
+
+FUNCTION delete_directory(path)
+
+    entries ← CALL read_directory(path)
+
+    FOR each entry IN entries DO
+
+        IF entry IS FILE THEN
+            CALL delete_file(entry.path)
+
+        ELSE IF entry IS DIRECTORY THEN
+            CALL delete_directory(entry.path)
+        END IF
+
+    END FOR
+
+    REMOVE directory at path
 
 END FUNCTION
 
