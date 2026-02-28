@@ -1,5 +1,21 @@
 #ifndef KONFIG_H
-#define KONFIG_H
+#define KONFIG_
+
+#define CONFIG_MAX_VALID_NUMBER 6
+
+#define MIN_SIZE 1
+#define MIN_FLOORS 1
+#define MIN_GATES 1
+#define MIN_TICK 10
+#define MIN_MIN_TICKS -365
+#define MIN_SEED -1
+
+#define MAX_SIZE 100
+#define MAX_FLOORS 10
+#define MAX_GATES 6
+#define MAX_TICK 86400
+#define MAX_MAX_TICKS 100
+#define MAX_SEED 2147483647
 
 typedef struct Settings {
     //char* src_path; // Relative path to settings file, if any. Settings takes ownership of the string.
