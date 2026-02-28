@@ -42,6 +42,10 @@ FUNCTION browse_directory(current_path)
     OUTPUT "Current Path: ", current_path
     OUTPUT "------------------------------------"
 
+    IF entries IS EMPTY THEN
+        OUTPUT "Directory is empty."
+    END IF
+    
     index ← 1
 
     FOR each entry IN entries DO
