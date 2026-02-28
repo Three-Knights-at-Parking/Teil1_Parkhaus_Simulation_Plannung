@@ -23,9 +23,9 @@ FUNCTION print_configscreen(settings)
 
 END FUNCTION
 
-FUNCTION validate_user_input_config(user_choice, min, max, allow_negative)
+FUNCTION validate_user_input_config(new_value, min, max, allow_negative)
 
-    IF user_choice != type int THEN
+    IF new_value != type int THEN
         OUTPUT "Your input is not an integer!"
         OUTPUT "Please press ENTER and try again... "
 
@@ -33,7 +33,7 @@ FUNCTION validate_user_input_config(user_choice, min, max, allow_negative)
         return INVALID
     END IF
 
-    IF allow_negative = FALSE AND user_choice < 0 THEN
+    IF allow_negative = FALSE AND new_value < 0 THEN
         OUTPUT "Negative values are not allowed!"
         OUTPUT "Please press ENTER and try again... "
 
@@ -41,7 +41,7 @@ FUNCTION validate_user_input_config(user_choice, min, max, allow_negative)
         return INVALID
     END IF
 
-    IF user_choice < min THEN
+    IF new_value < min THEN
         OUTPUT "Your input must be >= ", min
         OUTPUT "Please press ENTER and try again... "
 
@@ -49,7 +49,7 @@ FUNCTION validate_user_input_config(user_choice, min, max, allow_negative)
         return INVALID
     END IF
 
-    IF user_choice > max THEN
+    IF new_value > max THEN
         OUTPUT "Value must be <= ", max
         OUTPUT "Please press ENTER and try again... "
 
@@ -61,18 +61,16 @@ FUNCTION validate_user_input_config(user_choice, min, max, allow_negative)
 
 END FUNCTION
 
-FUNCTION set_size()
+FUNCTION edit_setting(min, max, allow_negative)
 
     valid ← FALSE
-    WHILE valid = FALSE DO
-        OUTPUT "Enter spots per floor (min 1/max 'MAX_SIZE'):"
-        temp ← INPUT
 
-        IF validate_range(temp, MIN_SIZE, MAX_SIZE, FALSE) = VALID THEN
-            settings.size ← temp
-            valid ← TRUE
-        END IF
+    WHILE valid = FALSE DO
+        new_value ← INPUT
+        valid ← CALL validate_range(new_value, min, max, allow_negative)
     END WHILE
+
+    return value
 
 END FUNCTION
 
@@ -88,7 +86,8 @@ FUNCTION config_menu(settings)
     END WHILE
 
     IF choice = 1 THEN
-        CALL set_size()
+        OUTPUT "Enter spots per floor (min 1/max 'MAX_SIZE'):"
+        settings.size ← CALL edit_setting(MIN_SIZE, MAX_SIZE, FALSE)
 
         return UI_KONFIG
 
