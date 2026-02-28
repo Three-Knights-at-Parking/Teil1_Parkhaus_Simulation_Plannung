@@ -2,7 +2,7 @@
 /////////////////////////////
 //////Primary Function//////
 ///////////////////////////
-FUNCTION Parkhaus_Tick(current_tick, settings, parkhouse, gate_queue, stats)
+FUNCTION Parkhaus_Tick(current_tick, settings, parkhouse, gate_queues, stats)
     IF (settings.number_of_gates = 1) THEN
         Parkhaus_Tick_Empty_General(current_tick, parkhouse, settings, CarList)
         Parkhaus_Tick_Fill_General(current_tick, parkhouse, settings, CarList, gate_queue)
