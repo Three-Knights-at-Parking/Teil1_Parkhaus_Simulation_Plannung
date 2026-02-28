@@ -1,6 +1,7 @@
 INCLUDE FILE ui.h
 INCLUDE FILE config.h
 INCLUDE FILE simulation.h
+INCLUDE FILE storage.h
 
 FUNCTION print_simulationscreen(settings)
 
@@ -27,6 +28,31 @@ FUNCTION print_simulationscreen(settings)
 
 END FUNCTION
 
+FUNCTION post_simulation_prompt(sim_output_path)
+
+    OUTPUT ""
+    OUTPUT "Simulation data saved to:"
+    OUTPUT sim_output_path
+    OUTPUT ""
+    OUTPUT "1 Jump to Storage Folder"
+    OUTPUT "0 Back to Simulation Menu"
+    OUTPUT ""
+
+    validation_flag ← INVALID
+
+    WHILE validation_flag != VALID DO
+        choice ← CALL user_input()
+        validation_flag ← CALL validate_user_input(choice, 1)
+    END WHILE
+
+    IF choice = 1 THEN
+        CALL browse_directory(sim_output_path)
+    END IF
+
+    return
+
+END FUNCTION
+
 FUNCTION simulation_menu(settings)
 
     CALL print_simulationscreen(settings)
@@ -46,15 +72,16 @@ FUNCTION simulation_menu(settings)
             OUTPUT "Press ENTER to change to Config-Menu."
             INPUT dummy
 
-            return UI_CONFIG
+            return UI_KONFIG
         END IF
 
         OUTPUT "Starting simulation..."
-        //CALL start_simulation(settings)
+
+        sim_output_path ← CALL start_simulation(settings)
+
         OUTPUT "Simulation finished."
-        OUTPUT "You can find more data in the storage."
-        OUTPUT "Press ENTER to continue."
-        INPUT dummy
+
+        CALL post_simulation_prompt(sim_output_path)
 
         return UI_SIMULATION
 
