@@ -102,18 +102,18 @@ struct Car {
 
 struct Settings {
     char* src_path; // Relative path to settings file, if any. Settings takes ownership of the string.
-    char* name; // The name of the parking complex. Empty if default ("Rauenegg")
-    uint16_t capacity; // Total parking spots per floor
-    uint8_t floors; // Number of floors. This is currently miscellaneous
-    uint8_t gates; // Number of gates. This will affect queue time.
-    uint16_t gate_entry_inSec; // Time needed for an vehicle to enter der parkhouse
-	uint16_t tick_inSec; //Time in seconds of one Tick
-	uint8_t mode_select; //0 = none / 1 = normal / 2 = verbose / 3 = Error
-	float entry_probability_perSec_prec; //probability of a Car entering per second
+    char* name; // The name of the parking complex. Empty if default ("Rauenegg") ##UI##
+    uint16_t capacity; // Total parking spots per floor ##UI##
+    uint8_t floors; // Number of floors. This is currently miscellaneous ##UI##
+    uint8_t gates; // Number of gates. This will affect queue time. ##UI##
+    uint16_t gate_entry_inSec; // Time needed for an vehicle to enter der parkhouse ##UI##
+	uint16_t tick_inSec; //Time in seconds of one Tick ##UI##
+	uint8_t mode_select; //0 = none / 1 = normal / 2 = verbose / 3 = Error ##UI##
+	float entry_probability_perSec_prec; //probability of a Car entering per second ##UI##
     uint16_t real_equivalent; // Tick equivalent in real time (seconds), min. 10.
     enum OutputMode output_mode; //FIXME Needs specific definition @Dani
     enum QueueLeavable is_leavable; // Determines if vehicles can leave the queue early at any positions.
-    int32_t max_ticks; // Max amount of ticks before the simulation stops. -1 for day equivalent. -2 for 2 day equivalent, ...
+    int32_t max_ticks; // Max amount of ticks before the simulation stops. -1 for day equivalent. -2 for 2 day equivalent, ... ##UI##
     int32_t rand_seed; // Specified random seed, -1 if current time should be used.
 };
 
