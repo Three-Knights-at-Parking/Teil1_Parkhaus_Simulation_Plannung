@@ -8,8 +8,10 @@
 /*
  * Demand-Modul
  * - simuliert den gesamten Demand pro Tick (global)
+ * INPUT: Settings, Current_Tick, Random Number Generator(mit seed)
+ * OUTPUT: RETURN Total Demand als GZ
  */
 
-FUNCTION Demand_GenerateTotalPerTick(settings, current_tick, rng)
+uint16_t Demand_GenerateTotalPerTick(const Settings *p_settings, uint32_t current_tick, const rng* rng)
 
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_DEMAND_H
