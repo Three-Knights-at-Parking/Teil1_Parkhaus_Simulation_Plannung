@@ -1,7 +1,11 @@
 #ifndef TEIL1_PARKHAUS_SIMULATION_PLANNUNG_CAR_H
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_CAR_H
 
-    #include "types.h"
+#include "types.h"
+/**
+ * Normal car (only type right now) that can enter a Queue and Parkhaus. Car is typically
+ * owned by Queue or Parkhaus and inherits GenericVehicle (and in turn SimulationObject).
+ */
 
     /**
      * @brief Create and initialize a new Car object.
