@@ -87,7 +87,6 @@ struct Queue {
 
 struct Car {
     GenericVehicle base; // base vehicle object
-    uint8_t minimum_spaces; // How many spaces this vehicle needs at least.
     uint8_t spaces_needed; // How many spaces this vehicle needs
 };
 
@@ -96,7 +95,6 @@ struct Car {
 //
 // struct ElectricCar {
 //     GenericVehicle base; // base vehicle object
-//     uint8_t minimum_spaces; // How many spaces this vehicle needs at least.
 //     uint8_t spaces_needed; // How many spaces this vehicle needs
 //     uint32_t charging_time; // The amount of time this car needs to charge. Can be randomized
 // };
