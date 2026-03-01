@@ -34,17 +34,17 @@ FUNCTION parkhouse_tick(current_tick, settings, parkhouse, gate_queues, stats)
     END IF
 END FUNCTION
 
-
+@brief Checks if parked cars need to leave
 FUNCTION parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_list)
 
     currentNode = car_list.head
     previousNode = NULL
 
     WHILE (currentNode != NULL) DO
-        IF ((currentNode -> car.created_at_tick - current_tick) < (currentNode -> car.leave_after_ticks)) THEN
+        IF ((current_tick - currentNode -> car.created_at_tick) < (currentNode -> car.leaving_tick)) THEN
             currentNode = nextNode
         ELSE
-            IF ((currentNode -> car.created_at_tick - current_tick) >= (currentNode -> car.leave_after_ticks)) THEN
+            IF ((current_tick - currentNode -> car.created_at_tick) >= (currentNode -> car.leaving_tick)) THEN
                 previousNode = currentNode
                 currentNode = nextNode
                 car_leaving(parkhouse, car_list, previousNode)
@@ -53,7 +53,7 @@ FUNCTION parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_lis
     END WHILE
 END FUNCTION
 
-
+@brief Standard Filling the Parkhouse with new Demand -> new Vehicles Enter
 FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list, gate_queue)
 
     demand_remaining <- gate_queue.getDemand() // QueueLength(gate_queue) ODER gate_queue.getLength() + gate_queue.newDemand
@@ -104,7 +104,7 @@ FUNCTION parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
     max_entries_per_tick <- settings.max_entries_per_tick
 
     FOR (int m = 0; m < max_entries_per_tick; m++)
-        IF (m == max_entries_per_tick && i == number_of_gates) THEN
+        IF (m == max_entries_per_tick) THEN
             lastCycle = true;
         ELSE
             lastCycle = false;
@@ -159,17 +159,16 @@ FUNCTION fill_from_queue(gate_queue, parkhouse_open_space)
     vehicle <- QueuePopFront(gate_queue)
 
     base_space <- GetVehicleBaseSpace(vehicle)
-    required_space <- base_space
 
     // Bad parking only possible if double space is available
     IF (parkhouse_open_space >= 2 * base_space) THEN
         r <- RandomPercent()
         IF (r < GetBadParkingProbability(vehicle)) THEN
-            required_space <- 2 * base_space
+            RETURN 2 * base_space
         END IF
     END IF
 
-    RETURN required_space
+    RETURN base_space
 END FUNCTION
 
 
@@ -263,8 +262,8 @@ END FUNCTION
 /////////////////////
 ///help Functions///
 ///////////////////
-FUNCTION get_open_space(parkhouse)
 
+FUNCTION get_open_space(parkhouse)
     RETURN parkhouse.size - parkhouse.fill_space
 END FUNCTION
 
