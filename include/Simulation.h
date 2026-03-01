@@ -2,6 +2,11 @@
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SIMULATION_H
 
 #include "types.h"
+/**
+ * Base Simulation Object acting as an overarching parent for all other child objects. This represents one
+ * Simulation that carries its own parking complex, queue and statistics. Future usage might be to parallel
+ * / multithread with multiple Simulations.
+ */
 
     /**
      * Initialize a Simulation with Settings.

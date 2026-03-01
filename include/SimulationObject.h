@@ -2,6 +2,11 @@
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SIMULATIONOBJECT_H
 
 #include "types.h"
+/**
+ * Base Simulation Object that is attached to every object that needs to be ticked.
+ * This MUST be the first child of any Object that wants to implement SimulationObject,
+ * as calling the tick function is done via destructive casting! See GenericVehicle.h for reference.
+ */
 
     /**
      * Tick this SimulationObject once.
