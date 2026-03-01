@@ -1,72 +1,144 @@
 #ifndef TEIL1_PARKHAUS_SIMULATION_PLANNUNG_PARKHAUS_H
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_PARKHAUS_H
+ #include "types.h"
 
-#include "types.h"
+    /**
+     * @brief Initialize a Parkhaus object from given Settings.
+     *        This sets all fields, connects the queue pointer, and prepares the parked-vehicle list.
+     * @param p_parkhaus Pointer to the Parkhaus to initialize.
+     * @param p_settings Pointer to the Settings used as configuration source.
+     * @param p_queue Pointer to the Queue that belongs to this Parkhaus (may be NULL if not used).
+     * @return 0 on success, non-zero on invalid parameters.
+     *
+     * @author Luca Perri
+     */
+    int parkhaus_init(Parkhaus *p_parkhaus,
+                      const Settings *p_settings,
+                      Queue *p_queue);
 
-/**
- * @brief Fuehrt einen Simulations-Tick fuer das Parkhaus aus.
- *
- * Entspricht der Hauptfunktion aus `src/Parkhaus.psc`.
- */
-int parkhouse_tick(uint32_t current_tick, Settings *p_settings, Parkhaus *p_parkhouse, Queue *p_gate_queues,
-                   void *p_stats);
+    /**
+     * @brief Tick function for Parkhaus.
+     * @param p_self Pointer to the SimulationObject
+     * @param current_tick Current simulation tick.
+     *
+     * @author Luca Perri
+     */
+    void parkhaus_tick(SimulationObject *p_self, uint32_t current_tick);
 
-/**
- * @brief Verarbeitet ausfahrende Fahrzeuge am Tick-Anfang.
- */
-int parkhouse_tick_empty_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
-                                 GenericVehicle **pp_car_list_head);
+    /**
+     * @brief Try to park a vehicle in this Parkhaus.
+     *        The vehicle node is added to the list of parked vehicles.
+     * @param p_parkhaus Pointer to the Parkhaus.
+     * @param p_vehicle Pointer to the GenericVehicle to park.
+     *                  Ownership of the vehicle is transferred from the queue to the Parkhaus.
+     * @return 0 on success, non-zero if no space is available or parameters are invalid.
+     * @author Luca Perri
+     */
+    int parkhaus_park_vehicle(Parkhaus *p_parkhaus, GenericVehicle *p_vehicle);
 
-/**
- * @brief Verarbeitet Einfahrten fuer ein einzelnes Gate in einem Tick.
- */
-int parkhouse_tick_fill_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
-                                GenericVehicle **pp_car_list_head, Queue *p_gate_queue);
+    /**
+     * @brief Remove a vehicle from the Parkhaus (e.g., when parking time is over).
+     *        The vehicle is removed from the internal list and free the underlying memory.
+     * @param p_vehicle Pointer to the GenericVehicle to remove.
+     * @return 0 on success, non-zero if the vehicle was not found.
+     * @author Luca Perri
+     */
+    int parkhaus_remove_vehicle(Parkhaus *p_parkhaus, GenericVehicle *p_vehicle);
 
-/**
- * @brief Verteilt Einfahrten subtick-basiert ueber mehrere Gates.
- */
-int parkhouse_fill_subtick(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings, Queue *p_gate_queues);
+    /**
+     * @brief Check if the Parkhaus has at least one free parking slot.
+     * @param p_parkhaus Pointer to the Parkhaus.
+     * @return 1 if at least one slot is free, 0 otherwise.
+     * @author Luca Perri
+     */
+    int parkhaus_has_free_slot(const Parkhaus *p_parkhaus);
 
-/**
- * @brief Ein einzelner Subtick-Schritt fuer genau ein Gate.
- */
-int parkhouse_fill_subtick_routine(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
-                                   Queue *p_gate_queue, int last_cycle);
+    /**
+     * @brief Compute the current utilization of the Parkhaus in percent.
+     * @param p_parkhaus Pointer to the Parkhaus.
+     * @return Utilization as float between 0.0 and 100.0.
+     * @author Luca Perri
+     */
+    float parkhaus_get_utilization(const Parkhaus *p_parkhaus);
 
-/**
- * @brief Uebernimmt ein Fahrzeug aus der Queue und berechnet den benoetigten Platz.
- */
-uint16_t fill_from_queue(Queue *p_gate_queue, uint16_t parkhouse_open_space);
+    /**
+     * @brief Free all dynamic memory that belongs to the Parkhaus.
+     *        This includes:
+     *        - all parked GenericVehicle nodes,
+     *        - any other dynamic resources owned by Parkhaus.
+     *        - call the queues free() function.
+     * Parkhaus is the owner of its Queue so it will call it's free function!
+     * @param p_parkhaus Pointer to the Parkhaus.
+     * @author Luca Perri
+     */
+    void parkhaus_free(Parkhaus *p_parkhaus);
 
-/**
- * @brief Schreibt verbleibenden Demand in die Queue und zaehlt ggf. Rejections hoch.
- */
-int open_demand(Parkhaus *p_parkhouse, Queue *p_gate_queue, uint16_t queue_max_len, uint16_t demand_remaining);
+    /**
+     * @brief Verarbeitet ausfahrende Fahrzeuge am Tick-Anfang.
+     * @author Simon Ibach
+     */
+    int parkhouse_tick_empty_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
+                                     GenericVehicle **pp_car_list_head);
 
-/**
- * @brief Entfernt ein Fahrzeug aus dem Parkhaus und gibt den Platz frei.
- */
-int car_leaving(Parkhaus *p_parkhouse, GenericVehicle **pp_car_list_head, GenericVehicle *p_car);
+    /**
+     * @brief Verarbeitet Einfahrten fuer ein einzelnes Gate in einem Tick.
+     * * @author Simon Ibach
+     */
+    int parkhouse_tick_fill_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
+                                    GenericVehicle **pp_car_list_head, Queue *p_gate_queue);
 
-/**
- * @brief Erstellt eine Queue-Struktur fuer mehrere Gates.
- */
-Queue *parkhaus_create_gate_queues(uint32_t number_of_gates);
+    /**
+     * @brief Verteilt Einfahrten subtick-basiert ueber mehrere Gates.
+     * * @author Simon Ibach
+     */
+    int parkhouse_fill_subtick(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings, Queue *p_gate_queues);
 
-/**
- * @brief Fuegt ein Fahrzeug an einem Gate in die Queue ein.
- */
-int parkhaus_enqueue_at_gate(Queue *p_gate_queues, uint32_t gate_index, GenericVehicle *p_vehicle);
+    /**
+     * @brief Ein einzelner Subtick-Schritt fuer genau ein Gate.
+     * @author Simon Ibach
+     */
+    int parkhouse_fill_subtick_routine(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
+                                       Queue *p_gate_queue, int last_cycle);
 
-/**
- * @brief Setzt den Demand-Wert eines Gates.
- */
-int parkhaus_set_gate_demand(Queue *p_gate_queues, uint32_t gate_index, uint16_t demand_value);
+    /**
+     * @brief Uebernimmt ein Fahrzeug aus der Queue und berechnet den benoetigten Platz.
+     * @author Simon Ibach
+     */
+    uint16_t fill_from_queue(Queue *p_gate_queue, uint16_t parkhouse_open_space);
 
-/**
- * @brief Erzeugt ein zufaelliges Fahrzeug und fuegt es in eine Gate-Queue ein.
- */
-int queue_add_random_vehicle(Queue *p_gate_queue);
+    /**
+     * @brief Schreibt verbleibenden Demand in die Queue und zaehlt ggf. Rejections hoch.
+     * @author Simon Ibach
+     */
+    int open_demand(Parkhaus *p_parkhouse, Queue *p_gate_queue, uint16_t queue_max_len, uint16_t demand_remaining);
 
-#endif // TEIL1_PARKHAUS_SIMULATION_PLANNUNG_PARKHAUS_H
+    /**
+     * @brief Entfernt ein Fahrzeug aus dem Parkhaus und gibt den Platz frei.
+     * @author Simon Ibach
+     */
+    int car_leaving(Parkhaus *p_parkhouse, GenericVehicle **pp_car_list_head, GenericVehicle *p_car);
+
+    /**
+     * @brief Erstellt eine Queue-Struktur fuer mehrere Gates.
+     * @author Simon Ibach
+     */
+    Queue *parkhaus_create_gate_queues(uint32_t number_of_gates);
+
+    /**
+     * @brief Fuegt ein Fahrzeug an einem Gate in die Queue ein.
+     * @author Simon Ibach
+     */
+    int parkhaus_enqueue_at_gate(Queue *p_gate_queues, uint32_t gate_index, GenericVehicle *p_vehicle);
+
+    /**
+     * @brief Setzt den Demand-Wert eines Gates.
+     * @author Simon Ibach
+     */
+    int parkhaus_set_gate_demand(Queue *p_gate_queues, uint32_t gate_index, uint16_t demand_value);
+
+    /**
+     * @brief Erzeugt ein zufaelliges Fahrzeug und fuegt es in eine Gate-Queue ein.
+     * @author Simon Ibach
+     */
+    int queue_add_random_vehicle(Queue *p_gate_queue);
+#endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_PARKHAUS_H
