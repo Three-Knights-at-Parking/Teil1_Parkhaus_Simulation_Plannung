@@ -3,7 +3,7 @@
 //// Abhaengigkeiten: parkhaus, stats, rng, demand, gate_routing
 //////////////////////////////////////////////////////////
 
-FUNCTION Sim_init(settings_provider, stats)
+FUNCTION simulation_init(simulation, settings_provider, stats)
 
     sim <- Simulation_CreateObject()
 
@@ -21,7 +21,7 @@ FUNCTION Sim_init(settings_provider, stats)
 END FUNCTION
 
 
-FUNCTION Sim_Tick(simulation)
+FUNCTION simulation_tick(simulation)
 
     status <- OK
 
