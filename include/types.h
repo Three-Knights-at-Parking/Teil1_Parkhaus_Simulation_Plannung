@@ -87,7 +87,6 @@ struct Queue {
 
 struct Car {
     GenericVehicle base; // base vehicle object
-    uint8_t minimum_spaces; // How many spaces this vehicle needs at least.
     uint8_t spaces_needed; // How many spaces this vehicle needs
 };
 
@@ -96,7 +95,6 @@ struct Car {
 //
 // struct ElectricCar {
 //     GenericVehicle base; // base vehicle object
-//     uint8_t minimum_spaces; // How many spaces this vehicle needs at least.
 //     uint8_t spaces_needed; // How many spaces this vehicle needs
 //     uint32_t charging_time; // The amount of time this car needs to charge. Can be randomized
 // };
@@ -114,31 +112,4 @@ struct Settings {
     int32_t rand_seed; // Specified random seed, -1 if current time should be used.
 };
 
-
-/* ******************************************************
- 						ADD
-
- CAR:
-		- leavingIn_ticks -> Cars
-      	- Benefit : kein hochzählen in car nötig
-      	- further funcionality Auto kann mehr als ein Parkplatz benötigen -> neededSpaces + simulationsvariable in Settings
- 		- Queue_Entry / Exit
-
-PARKHAUS:
-		- add total_left
-		- add total_entry
-		- add anz_entrance --> important for Simulation
-
- SETTINGS:
-	 	- maxParking_Ticks
-			setting files benötig eine einstellung für den ParkingTime generator was die max Parkzeit (in Ticks) beträgt
- 		- parking_time unnötig --> can be calculated durch created_at--> safe memory
-			parking_time müsste auch hochgezählt werden
-		- BadParking -> warscheinlichkeit
-		- CarSpawn-perc -> Warscheinlichkeit
-			Berrechnung ob car entry für jede Sekunde eines Ticks? Abzüglich einfahrtzeit?
-			Max mögliche einfahrten 1Car pro 4 Sekunden -> Pro schranke
-		- CarEntry_timeNeeded
-		- Tick_inSec -> for simulation
-*/
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_TYPES_H
