@@ -23,7 +23,7 @@ END FUNCTION
 
 FUNCTION simulation_tick(simulation)
 
-    status <- OK
+    status <- OK //Status Global als Start/Stop ?
 
     IF ((simulation.current_tick + 1) > simulation.settings.max_tick) THEN
         status <- Simulation_End(simulation, simulation.current_tick)
@@ -41,13 +41,16 @@ FUNCTION simulation_tick(simulation)
                     )
 
     //Verteilung des globalen Demands auf Gates (gate_routing.h)
-    GateRouting_DistributeTotalDemand(
-        total_demand,
-        simulation.gate_queues,
-        simulation.settings,
-        simulation.rng,
-        simulation.current_tick
+    status <- GateRouting_DistributeTotalDemand(
+            total_demand,
+            simulation.gate_queues,
+            simulation.settings,
+            simulation.rng,
+            simulation.current_tick
     )
+    IF (status == Error) THEN
+        RETURN status
+    END IF
 
     status <- Parkhaus_Tick(
                 simulation.current_tick,
@@ -56,8 +59,14 @@ FUNCTION simulation_tick(simulation)
                 simulation.gate_queues,
                 simulation.stats
              )
+    IF (status == Error) THEN
+        RETURN status
+    END IF
 
-    Stats_RecordTick(simulation.stats, simulation.current_tick, status)
+    status <- Stats_RecordTick(simulation.stats, simulation.current_tick)
+    IF (status == Error) THEN
+        RETURN status
+    END IF
 
     IF (simulation.current_tick == simulation.settings.max_tick) THEN
         status <- Simulation_End(simulation, simulation.current_tick)
