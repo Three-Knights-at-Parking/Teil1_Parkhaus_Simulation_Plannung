@@ -49,9 +49,8 @@ struct SimulationObject {
 struct GenericVehicle {
     SimulationObject base; // base object
     GenericVehicle *p_next;  // Chain with other Vehicles
-    uint32_t created_at; // Tick of creation
+    uint32_t created_at_tick; // Tick of creation
     uint32_t park_house_entered; // Entry tick, when the car started parking
-    uint32_t parking_time; // Max_tick it will park for (or wait in queue)
     uint16_t current_slot; // Currently occupied parking spot, 0 if none.
     uint16_t current_floor; // Currently occupied floor, 0 if none or don't care
 };
@@ -141,8 +140,5 @@ PARKHAUS:
 			Max mögliche einfahrten 1Car pro 4 Sekunden -> Pro schranke
 		- CarEntry_timeNeeded
 		- Tick_inSec -> for simulation
-
-
- Allgemein bitte alle zeiten in Ticks bennenen -> verhindert verwirrung
 */
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_TYPES_H
