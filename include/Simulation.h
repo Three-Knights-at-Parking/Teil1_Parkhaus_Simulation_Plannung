@@ -9,7 +9,7 @@
      * @param p_settings Pointer to the Settings used to configure the Simulation.
      * @return 0 on success, non-zero on error.
      */
-    int simulation_init(Simulation *p_sim, const Settings *p_settings);
+    int simulation_init(Simulation *p_sim, const Settings *p_settings); //statistik Hinzufügen zu initialisierung?
 
     /**
      * Progress the Simulation by one tick.

@@ -49,9 +49,8 @@ struct SimulationObject {
 struct GenericVehicle {
     SimulationObject base; // base object
     GenericVehicle *p_next;  // Chain with other Vehicles
-    uint32_t created_at; // Tick of creation
+    uint32_t created_at_tick; // Tick of creation
     uint32_t park_house_entered; // Entry tick, when the car started parking
-    uint32_t parking_time; // Max_tick it will park for (or wait in queue)
     uint16_t current_slot; // Currently occupied parking spot, 0 if none.
     uint16_t current_floor; // Currently occupied floor, 0 if none or don't care
 };
@@ -83,7 +82,8 @@ struct Queue {
     GenericVehicle *p_tail; // last vehicle in queue
     uint8_t max_size; // maximum size of Queue before no cars should be created anymore.
 };
-
+//typedef tick_t unit32_t;
+//typedef places_p unit16_t
 
 struct Car {
     GenericVehicle base; // base vehicle object
@@ -113,4 +113,30 @@ struct Settings {
 };
 
 
+/* ******************************************************
+ 						ADD
+
+ CAR:
+		- leavingIn_ticks -> Cars
+      	- Benefit : kein hochzählen in car nötig
+      	- further funcionality Auto kann mehr als ein Parkplatz benötigen -> neededSpaces + simulationsvariable in Settings
+ 		- Queue_Entry / Exit
+
+PARKHAUS:
+		- add total_left
+		- add total_entry
+		- add anz_entrance --> important for Simulation
+
+ SETTINGS:
+	 	- maxParking_Ticks
+			setting files benötig eine einstellung für den ParkingTime generator was die max Parkzeit (in Ticks) beträgt
+ 		- parking_time unnötig --> can be calculated durch created_at--> safe memory
+			parking_time müsste auch hochgezählt werden
+		- BadParking -> warscheinlichkeit
+		- CarSpawn-perc -> Warscheinlichkeit
+			Berrechnung ob car entry für jede Sekunde eines Ticks? Abzüglich einfahrtzeit?
+			Max mögliche einfahrten 1Car pro 4 Sekunden -> Pro schranke
+		- CarEntry_timeNeeded
+		- Tick_inSec -> for simulation
+*/
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_TYPES_H
