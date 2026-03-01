@@ -141,4 +141,23 @@
      * @author Simon Ibach
      */
     int queue_add_random_vehicle(Queue *p_gate_queue);
+
+/**
+     * @brief Berechnet den aktuell verfuegbaren Platz im Parkhaus.
+     * @author Simon Ibach
+     */
+    uint16_t get_open_space(const Parkhaus *p_parkhouse);
+
+    /**
+     * @brief Aktualisiert Belegung und Ausfahrtszaehler beim Verlassen eines Fahrzeugs.
+     * @author Simon Ibach
+     */
+    void update_parkhouse_on_exit(Parkhaus *p_parkhouse, uint16_t required_space);
+
+    /**
+     * @brief Aktualisiert Belegung und Einfahrtszaehler beim Einfahren eines Fahrzeugs.
+     * @author Simon Ibach
+     */
+    void update_parkhouse_on_entry(Parkhaus *p_parkhouse, uint16_t required_space);
+
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_PARKHAUS_H
