@@ -51,6 +51,7 @@ struct GenericVehicle {
     GenericVehicle *p_next;  // Chain with other Vehicles
     uint32_t created_at_tick; // Tick of creation
     uint32_t park_house_entered; // Entry tick, when the car started parking
+    uint32_t park_house_left; // Exit tick, when the car left the parking slot
     uint16_t current_slot; // Currently occupied parking spot, 0 if none.
     uint16_t current_floor; // Currently occupied floor, 0 if none or don't care
 };

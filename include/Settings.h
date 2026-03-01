@@ -2,6 +2,10 @@
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SETTINGS_H
 
 #include "types.h"
+/**
+ * Base Settings Object that carries all settings for the Simulation. Can be modified via
+ * the CLI or loaded from a file.
+ */
 
     /**
      * Load Settings straight from a config file into an existing Settings object.
