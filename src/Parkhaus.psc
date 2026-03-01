@@ -41,10 +41,10 @@ FUNCTION parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_lis
     previousNode = NULL
 
     WHILE (currentNode != NULL) DO
-        IF ((currentNode -> car.created_at - current_tick) < (currentNode -> car.leave_after_ticks)) THEN
+        IF ((currentNode -> car.created_at_tick - current_tick) < (currentNode -> car.leave_after_ticks)) THEN
             currentNode = nextNode
         ELSE
-            IF ((currentNode -> car.created_at - current_tick) >= (currentNode -> car.leave_after_ticks)) THEN
+            IF ((currentNode -> car.created_at_tick - current_tick) >= (currentNode -> car.leave_after_ticks)) THEN
                 previousNode = currentNode
                 currentNode = nextNode
                 car_leaving(parkhouse, car_list, previousNode)
