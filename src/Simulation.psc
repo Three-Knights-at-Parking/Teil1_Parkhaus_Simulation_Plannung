@@ -1,47 +1,67 @@
-FUNCTION Sim_init(settings, stats)
+//////////////////////////////////////////////////////////
+//// Modul: simulation
+//// Abhaengigkeiten: parkhaus, stats, rng, demand, gate_routing
+//////////////////////////////////////////////////////////
 
-    sim.parhouse <- simCreate_Parkhouse(sim.settings);
-    sim.Gate_queues <- simCreate_Gate_Queues(sim.parhouse, sim.settings)
+FUNCTION Sim_init(settings_provider, stats)
 
-FUNCTION END
+    sim <- Simulation_CreateObject()
 
-FUNCTION simCreate_Gate_Queues(sim.parhouse, sim.settings)
+    //Simulation Setup
+    sim.settings <- SettingsProvider_Load(settings_provider)
+    sim.stats <- stats
+    sim.current_tick <- 0
+    sim.rng <- RNG_Create(sim.settings.seed)
 
+    // simulation -> parkhaus
+    sim.parkhouse <- Parkhaus_Create(sim.settings)
+    sim.gate_queues <- Parkhaus_CreateGateQueues(sim.settings.number_of_gates)
 
-FUNCTION END
-
-FUNCTION Sim_Tick(simulation)
-    INPUT simulation
-
-    status ← OK
-
-    IF ( (current_tick + 1) == max_tick ) THEN
-
-        current_tick ← current_tick + 1
-        status ← Simulation_End(simulation, current_tick)
-
-    ELSE
-        IF ( (current_tick + 1) < max_tick ) THEN
-            current_tick ← current_tick + 1
-
-            status ← Parkhaus_Tick(
-                        current_tick,
-                        Simulation_GetSettings(simulation),
-                        Simulation_GetParkhouse(simulation),
-                        Simulation_GetQueuesList(simulation),
-                        Simulation_GetStats(simulation)
-                     )
-
-        ELSE
-            // current_tick ≥ max_tick
-            status ← Simulation_End(simulation, current_tick)
-            status ← ERROR
-        END IF
-    END IF
-
-    OUTPUT status
-
-    return status
+    RETURN sim
 END FUNCTION
 
 
+FUNCTION Sim_Tick(simulation)
+
+    status <- OK
+
+    IF ((simulation.current_tick + 1) > simulation.settings.max_tick) THEN
+        status <- Simulation_End(simulation, simulation.current_tick)
+
+        RETURN status
+    END IF
+
+    simulation.current_tick <- simulation.current_tick + 1
+
+    //Berrechngun gesamter Demand fuer diesen Tick (demand.h)
+    total_demand <- Demand_GenerateTotalPerTick(
+                       simulation.settings,
+                       simulation.current_tick,
+                       simulation.rng
+                    )
+
+    //Verteilung des globalen Demands auf Gates (gate_routing.h)
+    GateRouting_DistributeTotalDemand(
+        total_demand,
+        simulation.gate_queues,
+        simulation.settings,
+        simulation.rng,
+        simulation.current_tick
+    )
+
+    status <- Parkhaus_Tick(
+                simulation.current_tick,
+                simulation.settings,
+                simulation.parkhouse,
+                simulation.gate_queues,
+                simulation.stats
+             )
+
+    Stats_RecordTick(simulation.stats, simulation.current_tick, status)
+
+    IF (simulation.current_tick == simulation.settings.max_tick) THEN
+        status <- Simulation_End(simulation, simulation.current_tick)
+    END IF
+
+    RETURN status
+END FUNCTION
