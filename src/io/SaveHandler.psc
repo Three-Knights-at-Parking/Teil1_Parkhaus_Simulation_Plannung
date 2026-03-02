@@ -27,6 +27,8 @@ FUNCTION savehandler_save_tick(p_sim, p_tickstats, dest_path)
         return ERROR
     END IF
 
+    savehandler_write_header_if_new(file, p_sim, mode)
+
     IF mode = NORMAL THEN
         line <- TO_STRING(p_tickstats.tick) + ";" +
                 TO_STRING(p_tickstats.capacity_taken_percent) + ";" +
@@ -235,4 +237,33 @@ FUNCTION savehandler_resolve_stats_path(dest_path)
 
     return base_folder + file_name
 END FUNCTION
+
+
+
+FUNCTION savehandler_write_header_if_new(file, p_sim, mode)
+    IF FILE_SIZE(file) = 0 THEN
+        FILE_WRITE_LINE(file, "# SETTINGS")
+        FILE_WRITE_LINE(file, "# name=" + p_sim.settings.name)
+        FILE_WRITE_LINE(file, "# capacity=" + TO_STRING(p_sim.settings.capacity))
+        FILE_WRITE_LINE(file, "# floors=" + TO_STRING(p_sim.settings.floors))
+        FILE_WRITE_LINE(file, "# gates=" + TO_STRING(p_sim.settings.gates))
+        FILE_WRITE_LINE(file, "# tick_inSec=" + TO_STRING(p_sim.settings.tick_inSec))
+        FILE_WRITE_LINE(file, "# max_ticks=" + TO_STRING(p_sim.settings.max_ticks))
+        FILE_WRITE_LINE(file, "# rand_seed=" + TO_STRING(p_sim.settings.rand_seed))
+        FILE_WRITE_LINE(file, "# output_mode=" + TO_STRING(p_sim.settings.output_mode))
+        FILE_WRITE_LINE(file, "# is_leavable=" + TO_STRING(p_sim.settings.is_leavable))
+        IF mode = NORMAL THEN
+            header <- "tick;capacity_taken_percent;queue_length_end;entered;departed"
+        ELSE
+            header <- "tick;capacity_total;capacity_taken;capacity_free;" +
+                      "capacity_taken_percent;arrivals_generated;enqueued;" +
+                      "entered;departed;queue_length_end;queue_rejections;bad_parking_cases" //...etc some fields are missing
+        END IF
+
+        FILE_WRITE_LINE(file, header)
+    END IF
+
+    return
+END FUNCTION
+
 

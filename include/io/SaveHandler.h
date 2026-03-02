@@ -99,5 +99,23 @@
      */
     const char *savehandler_resolve_stats_path(const char *dest_path);
 
+    /**
+     * @brief Write settings metadata and CSV header line if the stats file is new/empty.
+     *
+     * If the file is empty, write metadata and column titles into the stats file. This function
+     * also takes the output mode into account.
+     *
+     * @note This function is intended for internal use by the SaveHandler and assumes that
+     * @p file is already opened in append or write mode. Use this function on your own risk!
+     *
+     * @param file Opened file handle for the stats file.
+     * @param p_sim Pointer to the Simulation whose Settings are written as metadata.
+     * @param mode  OutputMode that determines which header columns are used.
+     */
+    void savehandler_write_header_if_new(FileHandle *file,
+                                         const Simulation *p_sim,
+                                         enum OutputMode mode);
+
+
 
 #endif // TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SAVEHANDLER_H
