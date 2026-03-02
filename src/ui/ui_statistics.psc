@@ -21,7 +21,17 @@ FUNCTION ui_statistics_print_header(settings)
 END FUNCTION
 
 
+FUNCTION ui_statistics_print_footer(settings)
 
+    IF settings.output_mode = NONE THEN
+        return
+    END IF
+
+    IF settings.output_mode = NORMAL OR settings.output_mode = DEBUG THEN
+        OUTPUT "└───────┴────────┴─────────────┴────────┴────────┴───────┴───────┴──────┴──────┴───────┘"
+    END IF
+
+END FUNCTION
 
 
 FUNCTION ui_statistics_print_tick(stats_tick, settings)
