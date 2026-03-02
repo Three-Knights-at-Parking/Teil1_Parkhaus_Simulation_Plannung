@@ -9,11 +9,11 @@
 //////////////////////////////////////////////////////////
 FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
     IF p_parkhaus = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     IF p_settings = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     // basic fields from Settings
@@ -33,7 +33,7 @@ FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
     p_parkhaus.gate_queues    <- p_gate_queues
     p_parkhaus.p_parked_head  <- NULL
 
-    return 0
+    return OK
 END FUNCTION
 
 //Moving this to Stats -> Data Analyse 
@@ -125,7 +125,7 @@ FUNCTION parkhouse_tick_empty_general(current_tick, p_parkhaus, p_settings, p_ca
         currentNode <- nextNode
     END WHILE
 
-    return 0
+    return OK
 END FUNCTION
 
 
@@ -172,7 +172,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_car
         open_demand(p_parkhaus, p_gate_queue, queue_max_len, demand_remaining)
     END IF
 
-    return 0
+    return OK
 END FUNCTION
 
 
@@ -213,7 +213,7 @@ FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_gate_que
         m <- m + 1
     END WHILE
 
-    return 0
+    return OK
 END FUNCTION
 
 @brief: In this function the single subtick will be run -> parallel checking of all Entrys for an euqal entry possibility
@@ -251,7 +251,7 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_
         open_demand(p_parkhaus, p_gate_queue, p_settings.queue_max_len, demand_remaining)
     END IF
 
-    return 0
+    return OK
 END FUNCTION
 
 
@@ -262,7 +262,7 @@ END FUNCTION
 FUNCTION parkhaus_enqueue_at_gate(p_parkhaus, gate_index, p_vehicle)
     p_gate_queue <- p_parkhaus.gate_queues[gate_index]
     IF p_gate_queue = NULL THEN
-        return -1
+        return ERROR
     END IF
     status <- queue_push_back(p_gate_queue, p_vehicle)
     return status
@@ -272,10 +272,10 @@ END FUNCTION
 FUNCTION parkhaus_set_gate_demand(p_parkhaus, gate_index, demand_value)
     p_gate_queue <- p_parkhaus.gate_queues[gate_index]
     IF p_gate_queue = NULL THEN
-        return -1
+        return ERROR
     END IF
     p_gate_queue.demand <- demand_value
-    return 0
+    return OK
 END FUNCTION
 
 
@@ -323,18 +323,18 @@ FUNCTION open_demand(p_parkhaus, p_gate_queue, queue_max_len, demand_remaining)
         p_parkhaus.missed_car_entries <- p_parkhaus.missed_car_entries + open_demand
     END IF
 
-    return 0
+    return OK
 END FUNCTION
 
 
 FUNCTION car_leaving(p_parkhaus, p_car_list_head, p_car)
 
     IF p_parkhaus = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     IF p_car = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     required_space <- GetVehicleRequiredSpace(p_car)
@@ -349,7 +349,7 @@ FUNCTION car_leaving(p_parkhaus, p_car_list_head, p_car)
     // yet.
     FREE(p_car)
 
-    return 0
+    return OK
 END FUNCTION
 
 

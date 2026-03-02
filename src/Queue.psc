@@ -1,7 +1,7 @@
 
 FUNCTION queue_init(p_queue, max_size)
     IF p_queue = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     IF max_size = 0 THEN
@@ -29,33 +29,33 @@ END FUNCTION
 
 FUNCTION queue_is_full(p_queue)
     IF p_queue = NULL THEN
-        return 0
+        return UNKNOWN
     END IF
 
     IF p_queue.size >= p_queue.max_size THEN
-        return 1
+        return ERROR
     ELSE
-        return 0
+        return OK
     END IF
 END FUNCTION
 
 
 FUNCTION queue_is_empty(p_queue)
     IF p_queue = NULL THEN
-        return 1
+        return UNKNOWN
     END IF
 
     IF p_queue.size = 0 THEN
-        return 1
+        return UNKNOWN
     ELSE
-        return 0
+        return OK
     END IF
 END FUNCTION
 
 
 FUNCTION queue_length(p_queue)
     IF p_queue = NULL THEN
-        return 0
+        return OK
     END IF
 
     return p_queue.size
@@ -63,22 +63,22 @@ END FUNCTION
 
 FUNCTION queue_enqueue(p_queue, p_vehicle)
     IF p_queue = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     IF p_vehicle = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     IF queue_is_full(p_queue) = 1 THEN
-        return -1
+        return ERROR
     END IF
 
     // append vehicle to internal list of waiting_cars
     vehicle_list_append(&p_queue.waiting_head, &p_queue.waiting_tail, p_vehicle)
     p_queue.size <- p_queue.size + 1
 
-    return 0
+    return OK
 END FUNCTION
 
 
@@ -102,18 +102,18 @@ END FUNCTION
 
 FUNCTION queue_remove(p_queue, p_target)
     IF p_queue = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     IF p_target = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     // try to remove p_target from waiting_cars list
     removed <- vehicle_list_remove(&p_queue.waiting_head, &p_queue.waiting_tail, p_target)
 
     IF removed = 0 THEN
-        return -1
+        return ERROR
     END IF
 
     p_queue.size <- p_queue.size - 1
@@ -124,7 +124,7 @@ FUNCTION queue_remove(p_queue, p_target)
     // need to do this BEFORE calling FREE.
     FREE(p_target)
 
-    return 0
+    return OK
 END FUNCTION
 
 FUNCTION queue_set_demand(p_queue, demand_value)
@@ -138,7 +138,7 @@ END FUNCTION
 
 FUNCTION queue_get_demand(p_queue)
     IF p_queue = NULL THEN
-        return 0
+        return OK
     END IF
 
     return p_queue.demand

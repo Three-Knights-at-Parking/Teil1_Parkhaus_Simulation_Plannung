@@ -36,6 +36,11 @@ enum OutputMode {NONE, NORMAL, VERBOSE, DEBUG};
 enum QueueLeavable {LEAVABLE, NON_LEAVABLE};
 
 /**
+ * Return values for functions/validation.
+ */
+enum SuccessState{ ERROR = -1, OK = 0, UNKNOWN = 1};
+
+/**
  * Polymorphic base for anything that has a tick.
  */
 struct SimulationObject {
