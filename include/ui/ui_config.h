@@ -8,9 +8,21 @@
 
 #include <stdint.h>
 #include "ui.h"
+#include <../types.h>
 
 /* Maximum valid menu number in Config menu (0..CONFIG_MAX_VALID_NUMBER). */
-#define CONFIG_MAX_VALID_NUMBER 9
+#define CONFIG_MAX_VALID_NUMBER 10
+
+/* Name input constraints */
+#define NAME_MAX_LEN 64
+
+/* Mode select constraints */
+#define MIN_MODE_SELECT 0
+#define MAX_MODE_SELECT 3
+
+/* Probability is configured in percent. */
+#define MIN_PROB_PERCENT 0.0f
+#define MAX_PROB_PERCENT 100.0f
 
 /* Allowed ranges for settings (min/max). */
 #define MIN_CAPACITY          1
@@ -30,10 +42,6 @@
 #define MAX_REAL_EQUIV_SEC    86400
 #define MAX_MAX_TICKS         100
 #define MAX_SEED              2147483647
-
-/* Probability is configured in percent. */
-#define MIN_PROB_PERCENT      0.0f
-#define MAX_PROB_PERCENT      100.0f
 
 /**
  * @brief Indicates whether settings are initialized with default values.
