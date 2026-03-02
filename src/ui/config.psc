@@ -100,6 +100,34 @@ FUNCTION validate_float_input_percent(value)
 END FUNCTION
 
 
+FUNCTION validate_string_input(text, max_len)
+
+    IF text != type string THEN
+        OUTPUT "Your input is not a string!"
+        OUTPUT "Press ENTER and try again..."
+        INPUT dummy
+        return INVALID
+    END IF
+
+    IF LENGTH(text) = 0 THEN
+        OUTPUT "Text cannot be empty!"
+        OUTPUT "Press ENTER and try again..."
+        INPUT dummy
+        return INVALID
+    END IF
+
+    IF LENGTH(text) > max_len THEN
+        OUTPUT "Text is too long! Max length: ", max_len
+        OUTPUT "Press ENTER and try again..."
+        INPUT dummy
+        return INVALID
+    END IF
+
+    return VALID
+
+END FUNCTION
+
+
 FUNCTION edit_int_setting(min, max, allow_negative)
 
     valid ← FALSE
