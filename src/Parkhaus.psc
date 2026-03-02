@@ -53,7 +53,7 @@ FUNCTION parkhaus_has_free_slot(p_parkhaus)
     END IF
 END FUNCTION
 
-
+//Moving this to Stats -> Data Analyse 
 FUNCTION parkhaus_get_utilization(p_parkhaus)
     IF p_parkhaus = NULL THEN
         return 0.0
@@ -98,7 +98,7 @@ FUNCTION parkhaus_tick(p_self, current_tick)
                       p_parkhaus.p_parked_head,
                       p_parkhaus.queue
                   )
-        return
+        return status
     ELSE
         // subtick based filling according to
         // https://github.com/Three-Knights-at-Parking/Teil1_Documentation/issues/16
@@ -115,7 +115,7 @@ FUNCTION parkhaus_tick(p_self, current_tick)
          //    parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
          //    RETURN OK
          //END IF
-        return
+        return status
     END IF
 END FUNCTION
 
