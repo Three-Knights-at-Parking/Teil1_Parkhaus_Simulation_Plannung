@@ -192,7 +192,7 @@ typedef struct StatsTick {
  * ueber alle bereits commiteten Ticks.
  * @author: ibach
  */
-typedef struct StatsSummary {
+struct StatsSummary {
     SimulationObject base;
     uint32_t total_ticks; /**< Anzahl ausgewerteter Ticks. */
 
@@ -234,19 +234,6 @@ typedef struct StatsSummary {
 
     /* 5) ADD-ON Betrachtung der einzelnen Gates & Fahrzeugtypen */
 
-} StatsSummary;
-
-/**
- * Statistikcontainer fuer Tick-Verlauf und kumulierte Gesamtwerte.
- * @author: ibach
- */
-typedef struct StatList {
-    StatsTick *p_tick_head; /**< Erster Tick in der Verlaufsliste. */
-    StatsTick *p_tick_tail; /**< Letzter Tick in der Verlaufsliste. */
-    uint32_t tick_count; /**< Anzahl in der Liste gespeicherter Ticks. */
-    StatsTick *p_current_tick; /**< Tick-Builder fuer den aktuell laufenden Tick. */
-    StatsSummary StatsSummary; /**< Kumulierte Gesamtstatistik. */
-
     /* Laufende Summen fuer Mittelwert-Berechnung */
     double sum_capacity_taken_percent;
     uint64_t sum_queue_length_end;
@@ -258,6 +245,21 @@ typedef struct StatList {
     uint64_t sum_parking_duration_departed_count;
     uint64_t queue_active_ticks;
     uint64_t blocker_full_ticks;
+
+} StatsSummary;
+
+/**
+ * Statistikcontainer fuer Tick-Verlauf und kumulierte Gesamtwerte.
+ * @author: ibach
+ */
+struct StatList {
+    StatsTick *p_tick_head; /**< Erster Tick in der Verlaufsliste. */
+    StatsTick *p_tick_tail; /**< Letzter Tick in der Verlaufsliste. */
+    uint32_t tick_count; /**< Anzahl in der Liste gespeicherter Ticks. */
+    StatsTick *p_current_tick; /**< Tick-Builder fuer den aktuell laufenden Tick. */
+    StatsSummary StatsSummary; /**< Kumulierte Gesamtstatistik. */
+
+
 };
 
 
