@@ -3,6 +3,7 @@
 // Abhaengigkeiten: parkhaus, queue, stats, rng, demand, gate_routing, savehandler
 //////////////////////////////////////////////////////////
 
+//@brief: simulation initialisation and configuration
 FUNCTION simulation_init(p_sim, p_settings, p_stats)
     IF p_sim = NULL THEN
         return -1
