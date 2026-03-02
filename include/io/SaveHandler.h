@@ -4,61 +4,100 @@
 #include "../types.h"
 
     /**
-     * @brief Append statistics for a single simulation tick to a file and forward to UI.
-     *
-     * This function takes a StatsTick (typically the one just created
-     * at the end of the current tick and linked into Simulation.stats_head/tail)
-     * and appends one line to a statistics file. The amount of detail depends on
-     * the OutputMode in the Settings referenced by p_sim:
-     *
-     *  - NONE:    no output generated (the function may return immediately).
-     *  - NORMAL:  only essential statistics per tick.
-     *  - VERBOSE: all available statistics per tick.
-     *  - DEBUG:   like VERBOSE plus debug information if available.
-     *
-     * @note This function also forwards the statistics to the UI so it can be printed.
-     * @param p_sim       Pointer to the Simulation containing Settings and Parkhaus.
-     * @param p_tickstats Pointer to the StatsTick snapshot to write.
-     * @param dest_path   Relative path to the output file; must not be NULL.
-     *
-     * @return 0 on success, non-zero on error (e.g. file I/O failure or invalid pointers).
-     */
+    * @brief Append statistics for a single simulation tick to a file and forward to UI.
+    *
+    * This function takes a StatsTick snapshot (typically the one just created
+    * at the end of the current tick) and appends one line to a CSV
+    * statistics file located inside the ../stats/ folder.
+    *
+    * The effective file path is resolved as follows:
+    *  - The base folder ../stats/ is created if it does not exist.
+    *  - If dest_path is NULL or empty, the default file ../stats/stats.csv is used.
+    *  - If dest_path contains "..", a safe fallback ../stats/stats.csv is used.
+    *  - Otherwise, dest_path is treated as a file name under ../stats/.
+    *
+    * The amount of detail depends on the OutputMode in the Settings referenced
+    * by p_sim:
+    *  - NONE:    no file output generated (the function returns immediately).
+    *  - NORMAL:  only a minimal set of core statistics per tick is written.
+    *  - VERBOSE: an extended set of Tick statistics is written.
+    *
+    * In addition, the given StatsTick is forwarded to the UI so it can be printed.
+    *
+    * @param p_sim       Pointer to the Simulation containing Settings and Parkhaus.
+    * @param p_tickstats Pointer to the StatsTick snapshot to write.
+    * @param dest_path   Optional file name under ../stats/ (may be NULL or empty).
+    *
+    * @return OK (0) on success, ERROR (-1) on error.
+    */
     int savehandler_save_tick(const Simulation *p_sim,
                               const StatsTick *p_tickstats,
                               const char *dest_path);
 
     /**
-     * @brief Save final aggregated statistics of a simulation run to a file.
-     *
-     * This function writes the aggregated statistics (StatsSummary) that were
-     * computed from all StatsTick entries at the end of the simulation. It can be
-     * used in addition to per-tick logging. The level of detail again depends on
-     * the OutputMode in the Settings referenced by p_sim.
-     *
-     * @param p_sim     Pointer to the Simulation containing Settings and Parkhaus.
-     * @param p_summary Pointer to the aggregated statistics (StatsSummary).
-     * @param dest_path Relative path to the output file; must not be NULL.
-     *
-     * @note This function also forwards the statistics to the UI so it can be printed.
-     * @return 0 on success, non-zero on error.
-     */
+    * @brief Save final aggregated statistics of a simulation run to a file and forward to UI.
+    *
+    * This function writes the aggregated statistics (StatsSummary) that were
+    * computed from all StatsTick entries at the end of the simulation to a
+    * csv file inside the ../stats/ folder.
+    *
+    * Path resolution follows the same rules as savehandler_save_tick:
+    *  - Base folder ../stats/ is created if needed.
+    *  - dest_path NULL/empty -> ../stats/stats.csv.
+    *  - dest_path with ".."  -> ../stats/stats.csv.
+    *  - otherwise            -> ../stats/<dest_path>.
+    *
+    * The level of detail again depends on the OutputMode in the Settings
+    * referenced by p_sim. The summary is also forwarded to the UI for display.
+    *
+    * @param p_sim     Pointer to the Simulation containing Settings and Parkhaus.
+    * @param p_summary Pointer to the aggregated statistics (StatsSummary).
+    * @param dest_path Optional file name under ../stats/ (may be NULL or empty).
+    *
+    * @return OK (0) on success, ERROR (-1) on error.
+    */
     int savehandler_save_summary(const Simulation *p_sim,
                                  const StatsSummary *p_summary,
                                  const char *dest_path);
 
     /**
+     * @brief Load previously saved statistics from a file in ../stats/ and print or display them.
      *
-     * @brief Load previously saved statistics from a file and print or display them.
+     * This function loads a statistics file and forwards all lines to the UI
+     * for printing. It does not modify the current
+     * Simulation state.
      *
-     * TODO implementation will change as soon as UI implementation of print has been submitted.
+     * Path handling:
+     *  - Base folder is ../stats/.
+     *  - If src_path is NULL, empty, or contains "..", the default file
+     *    ../stats/stats.csv is used.
+     *  - Otherwise src_path is treated as a file name under ../stats/.
      *
-     * Load data from previously saved files and give them to the UI for printing. Will
-     * default to the root location of the EXE if src_path is NULL or invalid.
+     * @param src_path Optional file name under ../stats/ to load (may be NULL or empty).
      *
-     * @param src_path Relative path to the statistics file to load; must not be NULL.
-     *
-     * @return 0 on success, non-zero on error.
+     * @return OK (0) on success, ERROR (-1) on error.
      */
     int savehandler_load_and_print(const char *src_path);
+
+    /**
+     * @brief Resolve and validate a statistics file path under the ../stats/ folder.
+     *
+     * Ensures that the base folder ../stats/ exists and
+     * returns a full path for the statistics file:
+     *  - If dest_path is NULL or empty, "../stats/stats.csv" is used.
+     *  - If dest_path contains "..", a safe fallback "../stats/stats.csv" is used.
+     *  - Otherwise dest_path is treated as a file name under "../stats/".
+     *
+     *
+     * @note This function will create the necessary folder(s) under ../stats/ !
+     * On error, an empty string may be returned as an error indicator to the caller.
+     * @param dest_path Optional file name under ../stats/ (may be NULL or empty).
+     *
+     * @return Pointer to a resolved path string, or an empty string on error.
+     *         Ownership and lifetime of the returned string must be defined by
+     *         the implementation (e.g. static buffer or caller-allocated).
+     */
+    const char *savehandler_resolve_stats_path(const char *dest_path);
+
 
 #endif // TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SAVEHANDLER_H
