@@ -9,7 +9,7 @@
 
 typedef struct SimulationObject SimulationObject; // No touchy
 typedef void (*SimulationTickFunction)(SimulationObject *p_self, uint32_t current_time); // No touchy
-typedef struct Car Car; //
+typedef struct Car Car;
 typedef struct Parkhaus Parkhaus;
 typedef struct Settings Settings;
 typedef struct Queue Queue;
@@ -50,6 +50,7 @@ struct SimulationObject {
 
 /**
  * Vehicle Base for everything that can enter a queue and parking slot.
+ * @author Luca Perri
  */
 struct GenericVehicle {
     SimulationObject base; // base object
@@ -61,6 +62,10 @@ struct GenericVehicle {
     uint16_t current_floor; // Currently occupied floor, 0 if none or don't care
 };
 
+/**
+ * Parkhaus parent representing a parkhaus.
+ * @author Luca Perri
+ */
 struct Parkhaus {
     SimulationObject base; // base object.
     char name[20]; // FIXME size is currently arbitrary, we should probably move this to a defined constant in the future && Update in Documentation of Settings and Parkhaus!!
@@ -73,6 +78,11 @@ struct Parkhaus {
     GenericVehicle *p_parked_tail;
     uint16_t missed_car_entries; // How many car spawns where missed because of full queue.
 };
+
+/**
+ * Parent Simulation Object that owns all other child objects.
+ * @author Luca Perri
+ */
 struct Simulation {
     Settings* settings; // The underlying
     uint32_t current_tick; // Current tick time.
@@ -80,6 +90,10 @@ struct Simulation {
     Parkhaus* parkhaus; // The Parkhaus for this Simulation
 };
 
+/**
+ * Child object in Parkhaus representing the Queue at a gate.
+ * @author Luca Perri
+ */
 struct Queue {
     SimulationObject base; // base object.
     uint16_t capacity; // Number of waiting cars.
@@ -116,9 +130,10 @@ struct Settings {
     uint16_t gate_entry_inSec; // Time needed for an vehicle to enter der parkhouse ##UI##
 	uint16_t tick_inSec; //Time in seconds of one Tick ##UI##
 	uint8_t mode_select; //0 = none / 1 = normal / 2 = verbose / 3 = Error ##UI##
+	float entry_probability_car_spawn_prec; // Probability of car entering queue in the first place
 	float entry_probability_perSec_prec; //probability of a Car entering per second ##UI##
     uint16_t real_equivalent; // Tick equivalent in real time (seconds), min. 10.
-    enum OutputMode output_mode; //FIXME Needs specific definition @Dani
+    enum OutputMode output_mode;
     enum QueueLeavable is_leavable; // Determines if vehicles can leave the queue early at any positions.
     int32_t max_ticks; // Max amount of ticks before the simulation stops. -1 for day equivalent. -2 for 2 day equivalent, ... ##UI##
     int32_t rand_seed; // Specified random seed, -1 if current time should be used.
@@ -126,6 +141,8 @@ struct Settings {
 
 /**
  * Momentaufnahme aller Kennzahlen am Ende eines Ticks.
+ *
+ * FIXME List in Simulation speichern? Oder durchschnitte direkt abspeichern?
  * @author: ibach
  */
 typedef struct StatsTick {

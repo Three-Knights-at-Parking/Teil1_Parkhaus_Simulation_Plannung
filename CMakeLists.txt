@@ -16,6 +16,7 @@ add_executable(Teil1_Parkhaus_Simulation_Plannung
         include/io/ConfigFileHandler.h
         include/io/SaveHandler.h
         include/io/GraphHandler.h
+        include/utils/RNG.h
 )
 
 target_include_directories(Teil1_Parkhaus_Simulation_Plannung
