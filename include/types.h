@@ -143,68 +143,50 @@ struct Settings {
 };
 
 /**
- * Momentaufnahme aller Kennzahlen am Ende eines Ticks.
+ * Momentaufnahme der Rohwerte eines einzelnen Simulationsticks.
  *
- * FIXME List in Simulation speichern? Oder durchschnitte direkt abspeichern?
+ * Enthält nur Tick-lokale Messwerte sowie die Listenverkettung
+ * fuer die Historie im Statistikcontainer.
  * @author: ibach
  */
 typedef struct StatsTick {
     SimulationObject base;
     uint32_t tick; /**< Aktueller Tick dieser Momentaufnahme. */
+    struct StatsTick *p_prev; /**< Vorheriger Tick in der Statistikliste. */
+    struct StatsTick *p_next; /**< Naechster Tick in der Statistikliste. */
 
-    /* 1) Auslastung & Kapazität */
-    uint16_t capacity_total; /**< Gesamtkapazität des Parkhauses (auch fractional möglich). */
-    uint16_t capacity_taken; /**< Belegte Plätze am Tick-Ende. */
-    uint16_t capacity_free; /**< Freie Plätze am Tick-Ende. */
-    float capacity_taken_percent; /**< Auslastung in % (belegt/gesamt). */
-    float peak_capacity_taken_percent_so_far; /**< Bisherige Peak-Auslastung in %. */
-    uint32_t first_full_tick; /**< Erster Tick ohne freie Plätze, -1 wenn nie voll. */
-    uint32_t full_ticks_so_far; /**< Anzahl Ticks, in denen das Parkhaus vollständig voll war. */
+    /* Rohwerte Tick-Ende */
+    uint16_t capacity_total; /**< Gesamtkapazitaet Parkhaus. */
+    uint16_t capacity_taken; /**< Belegte Plaetze am Tick-Ende. */
+    uint16_t capacity_free; /**< Freie Plaetze am Tick-Ende. */
 
-    /* 2) Durchsatz / Flow */
-    uint16_t arrivals_generated; /**< Demand/Ankünfte in diesem Tick. */
+    /* Rohwerte Flow */
+    uint16_t arrivals_generated; /**< Demand/Ankuenfte in diesem Tick. */
     uint16_t enqueued; /**< In Queue aufgenommen in diesem Tick. */
     uint16_t entered; /**< In Parkhaus eingefahren in diesem Tick. */
     uint16_t departed; /**< Aus Parkhaus ausgefahren in diesem Tick. */
-    uint32_t net_occupancy_change; /**< Nettoänderung Belegung (entered - departed). */
-    // ?? uint64_t total_entered_so_far; /**< Kumulierte Einfahrten bis inkl. Tick. */
-    // ?? uint64_t total_departed_so_far; /**< Kumulierte Ausfahrten bis inkl. Tick. */
 
-    /* 3) Queue / Warteschlange (global) */
-    uint8_t queue_length_end; /**< Queue-Länge am Tick-Ende (global). */
-    uint8_t queue_length_max_so_far; /**< Maximale Queue-Länge seit Simulationsstart (global). */
+    /* Rohwerte Queue */
+    uint8_t queue_length_end; /**< Queue-Laenge am Tick-Ende (global). */
     uint32_t queue_rejections; /**< Fahrzeuge, die nicht anstehen konnten (Tick). */
-    float avg_queue_wait_ticks_entered; /**< Ø-Wartezeit der Fahrzeuge, die in diesem Tick einfuhren. */
-    uint32_t max_queue_wait_ticks_so_far; /**< Maximale Queue-Wartezeit seit Simulationsstart. */
-    float queue_active_ratio_percent_so_far; /**< Anteil Ticks mit Queue>0 in %. */
+    uint64_t queue_wait_entered_sum_ticks; /**< Summe Wartezeit aller in diesem Tick eingetretenen Fahrzeuge. */
+    uint32_t queue_wait_entered_count; /**< Anzahl in diesem Tick eingetretener Fahrzeuge fuer Wait-Auswertung. */
 
-    /* 4) Parkdauer */
-    uint32_t avg_parking_duration_ticks_departed; /**< Ø-Parkdauer der in diesem Tick ausgefahrenen Fahrzeuge. */
+    /* Rohwerte Parkdauer */
+    uint64_t parking_duration_departed_sum_ticks; /**< Summe Parkdauer aller in diesem Tick ausgefahrenen Fahrzeuge. */
+    uint32_t parking_duration_departed_count; /**< Anzahl in diesem Tick ausgefahrener Fahrzeuge fuer Dauer-Auswertung. */
 
-    /* 6) Blocker / Ursachenanalyse */
-    uint8_t blocker_full_active; /**< 1, wenn Tick wegen voller Kapazität blockiert war, sonst 0. */
-    float blocker_full_ratio_percent_so_far; /**< Anteil Ticks mit Blocker "voll" in %. */
-
-    /* 8) Qualitäts-/Regel-Statistiken */
+    /* Rohwerte Qualitaet/Blocker */
+    uint8_t blocker_full_active; /**< 1, wenn Tick wegen voller Kapazitaet blockiert war, sonst 0. */
     uint16_t bad_parking_cases; /**< Anzahl "schlecht geparkt" in diesem Tick. */
-    float bad_parking_tick_percent; /**< Anteil "schlecht geparkt" in % im Tick. */
-
-    /* 9) Zeitreihen-Zusammenfassungen (laufend) */
-    float avg_capacity_percent_so_far; /**< Laufender Mittelwert der Auslastung in %. */
-    float avg_queue_length_so_far; /**< Laufender Mittelwert der Queue-Länge. */
-    uint16_t avg_entered_per_tick_so_far; /**< Laufender Ø-Durchsatz entered/Tick. */
-    uint16_t avg_departed_per_tick_so_far; /**< Laufender Ø-Durchsatz departed/Tick. */
-    uint8_t peak_queue_value_so_far; /**< Peak Queue-Wert seit Start. */
-    uint32_t peak_queue_tick; /**< Tick-Zeitpunkt des Queue-Peaks. */
-    float peak_capacity_value_percent_so_far; /**< Peak Belegung in %. */
-    uint32_t peak_capacity_tick; /**< Tick-Zeitpunkt des Belegungs-Peaks. */
-
-    /* 5) ADD-ON Betrachtung der einzelnen Gates & Fahrzeugtypen */
 
 } StatsTick;
 
 /**
- * Aggregierte Endauswertung über die vollständige Simulation.
+ * Aggregierte Endauswertung ueber die vollstaendige Simulation.
+ *
+ * Beinhaltet kumulierte Summen, Mittelwerte und Peak-Werte
+ * ueber alle bereits commiteten Ticks.
  * @author: ibach
  */
 typedef struct StatsGesamte {
@@ -212,7 +194,7 @@ typedef struct StatsGesamte {
     uint32_t total_ticks; /**< Anzahl ausgewerteter Ticks. */
 
     /* 1) Auslastung & Kapazität */
-    float capacity_total; /**< Gesamtkapazität des Parkhauses. */
+    uint16_t capacity_total; /**< Gesamtkapazitaet des Parkhauses. */
     float capacity_taken_percent_avg; /**< Durchschnittliche Auslastung über alle Ticks in %. */
     float capacity_taken_percent_peak; /**< Maximale Auslastung in %. */
     uint32_t capacity_taken_peak_tick; /**< Tick der maximalen Auslastung. */
@@ -229,13 +211,13 @@ typedef struct StatsGesamte {
     float departed_per_tick_avg; /**< Durchschnittlich departed pro Tick. */
 
     /* 3) Queue / Warteschlange (global) */
-    uint8_t queue_length_avg; /**< Durchschnittliche Queue-Länge über alle Ticks. */
+    float queue_length_avg; /**< Durchschnittliche Queue-Laenge ueber alle Ticks. */
     uint8_t queue_length_peak; /**< Maximale Queue-Länge global. */
     uint32_t queue_length_peak_tick; /**< Tick des globalen Queue-Peaks. */
     uint64_t queue_rejections_total; /**< Summe aller Queue-Rejections. */
     uint32_t queue_wait_avg_ticks; /**< Ø-Wartezeit über alle erfolgreich eingetretenen Fahrzeuge. */
     uint32_t queue_wait_max_ticks; /**< Maximale Wartezeit in der gesamten Simulation. */
-    uint32_t queue_active_ratio_percent; /**< Anteil Ticks mit Queue>0 in %. */
+    float queue_active_ratio_percent; /**< Anteil Ticks mit Queue>0 in %. */
 
     /* 4) Parkdauer */
     uint16_t parking_duration_avg_ticks; /**< Ø-Parkdauer aller ausgefahrenen Fahrzeuge. */
@@ -250,6 +232,29 @@ typedef struct StatsGesamte {
     /* 5) ADD-ON Betrachtung der einzelnen Gates & Fahrzeugtypen */
 
 } StatsGesamte;
+
+/**
+ * Statistikcontainer fuer Tick-Verlauf und kumulierte Gesamtwerte.
+ */
+struct Stats {
+    StatsTick *p_tick_head; /**< Erster Tick in der Verlaufsliste. */
+    StatsTick *p_tick_tail; /**< Letzter Tick in der Verlaufsliste. */
+    uint32_t tick_count; /**< Anzahl in der Liste gespeicherter Ticks. */
+    StatsTick *p_current_tick; /**< Tick-Builder fuer den aktuell laufenden Tick. */
+    StatsGesamte gesamt; /**< Kumulierte Gesamtstatistik. */
+
+    /* Laufende Summen fuer Mittelwert-Berechnung */
+    double sum_capacity_taken_percent;
+    uint64_t sum_queue_length_end;
+    uint64_t sum_entered;
+    uint64_t sum_departed;
+    uint64_t sum_queue_wait_entered_ticks;
+    uint64_t sum_queue_wait_entered_count;
+    uint64_t sum_parking_duration_departed_ticks;
+    uint64_t sum_parking_duration_departed_count;
+    uint64_t queue_active_ticks;
+    uint64_t blocker_full_ticks;
+};
 
 /* ******************************************************
  						ADD
