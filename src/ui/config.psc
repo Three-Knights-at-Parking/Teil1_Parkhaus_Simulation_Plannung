@@ -184,6 +184,24 @@ FUNCTION edit_mode_select()
 END FUNCTION
 
 
+FUNCTION apply_mode_select(settings)
+
+    IF settings.mode_select = 0 THEN
+        settings.output_mode ← NONE
+
+    ELSE IF settings.mode_select = 1 THEN
+        settings.output_mode ← NORMAL
+
+    ELSE IF settings.mode_select = 2 THEN
+        settings.output_mode ← VERBOSE
+
+    ELSE IF settings.mode_select = 3 THEN
+        settings.output_mode ← DEBUG
+    END IF
+
+END FUNCTION
+
+
 FUNCTION config_menu(settings)
 
     IF settings_state_flag = NOT_INITIALIZED THEN
