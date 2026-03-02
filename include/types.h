@@ -235,6 +235,7 @@ typedef struct StatsGesamte {
 
 /**
  * Statistikcontainer fuer Tick-Verlauf und kumulierte Gesamtwerte.
+ * @author: ibach
  */
 struct Stats {
     StatsTick *p_tick_head; /**< Erster Tick in der Verlaufsliste. */
