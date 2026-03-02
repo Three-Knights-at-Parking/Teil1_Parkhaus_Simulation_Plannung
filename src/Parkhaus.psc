@@ -158,7 +158,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_car
             next_vehicle_size <- GetNextQueueVehicleSize(p_gate_queue)
 
             IF next_vehicle_size <= get_open_space(p_parkhaus) THEN
-                required_space <- fill_from_queue(p_gate_queue, get_open_space(p_parkhaus))
+                required_space <- fill_from_queue(p_parkhouse, p_gate_queue)
                 update_parkhouse_on_entry(p_parkhaus, required_space)
                 entries_processed <- entries_processed + 1
             ELSE // Anstehendes Fahrzeug zu gross um einzufahren
@@ -307,7 +307,7 @@ FUNCTION fill_from_queue(p_parkhaus, p_gate_queue)
     RETURN required_space
 END FUNCTION
 
-
+//STATS - rejections & queued
 FUNCTION open_demand(p_parkhaus, p_gate_queue, queue_max_len, demand_remaining)
 
     open_demand <- demand_remaining
@@ -326,7 +326,7 @@ FUNCTION open_demand(p_parkhaus, p_gate_queue, queue_max_len, demand_remaining)
     return OK
 END FUNCTION
 
-
+//STATS
 FUNCTION car_leaving(p_parkhaus, p_car_list_head, p_car)
 
     IF p_parkhaus = NULL THEN
@@ -367,14 +367,14 @@ FUNCTION get_open_space(p_parkhous)
 
 END FUNCTION
 
-
+//STATS - parkingTime, queueTime, ...
 FUNCTION update_parkhaus_on_exit(p_parkhaus, required_space)
     p_parkhaus.fill_size <- p_parkhaus.fill_size - required_space
     p_parkhaus.totalExit <- p_parkhaus.totalExit + 1
     return
 END FUNCTION
 
-
+//STATS -
 FUNCTION update_parkhaus_on_entry(p_parkhaus, required_space)
     p_parkhaus.fill_size <- p_parkhaus.fill_size + required_space
     p_parkhaus.totalEntry <- p_parkhaus.totalEntry + 1
