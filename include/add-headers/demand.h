@@ -5,7 +5,7 @@
 #ifndef TEIL1_PARKHAUS_SIMULATION_PLANNUNG_DEMAND_H
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_DEMAND_H
 
-#include "types.h"
+#include "../types.h"
 
 /*
  * Demand-Modul

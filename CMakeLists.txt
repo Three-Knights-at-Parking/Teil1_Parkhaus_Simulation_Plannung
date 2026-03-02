@@ -18,6 +18,7 @@ add_executable(Teil1_Parkhaus_Simulation_Plannung
         include/io/GraphHandler.h
         include/utils/RNG.h
         include/Simulation.h
+        include/GenericVehicle.h
         include/utils/StatList.h
 )
 

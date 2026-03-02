@@ -108,7 +108,7 @@ FUNCTION simulation_tick(p_sim)
 
     /**
     * Order of ticks is important and needs to be preserved! First tick
-    * tick the parkhaus and then tick the queue!
+    * the parkhaus and then tick the queue!
     * /
     tick(p_sim.parkhaus.base, current_tick)
     tick(p_sim.parkhaus.queue.base, current_tick)

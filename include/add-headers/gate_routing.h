@@ -5,7 +5,7 @@
 #ifndef TEIL1_PARKHAUS_SIMULATION_PLANNUNG_GATE_ROUTING_H
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_GATE_ROUTING_H
 
-#include "types.h"
+#include "../types.h"
 
 /*
  * Gate-Routing-Modul
