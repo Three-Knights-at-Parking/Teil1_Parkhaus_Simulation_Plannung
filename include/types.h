@@ -59,6 +59,7 @@ struct GenericVehicle {
     uint32_t created_at_tick; // Tick of creation
     uint32_t park_house_entered; // Entry tick, when the car started parking
     uint32_t park_house_left; // Exit tick, when the car left the parking slot
+	uint32_t leaving_in_ticks;
     uint16_t current_slot; // Currently occupied parking spot, 0 if none.
     uint16_t current_floor; // Currently occupied floor, 0 if none or don't care
 };
@@ -132,7 +133,7 @@ struct Settings {
     uint16_t gate_entry_inSec; // Time needed for an vehicle to enter der parkhouse ##UI##
 	uint16_t tick_inSec; //Time in seconds of one Tick ##UI##
 	uint8_t mode_select; //0 = none / 1 = normal / 2 = verbose / 3 = Error ##UI##
-	float entry_probability_car_spawn_prec; // Probability of car entering queue in the first place
+	// float entry_probability_car_spawn_prec; // Probability of car entering queue in the first place
 	float entry_probability_perSec_prec; //probability of a Car entering per second ##UI##
     uint16_t real_equivalent; // Tick equivalent in real time (seconds), min. 10.
     enum OutputMode output_mode;
