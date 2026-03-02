@@ -6,7 +6,7 @@
     /**
      * @brief Append statistics for a single simulation tick to a file and forward to UI.
      *
-     * This function takes a StatsTick snapshot (typically the one just created
+     * This function takes a StatsTick (typically the one just created
      * at the end of the current tick and linked into Simulation.stats_head/tail)
      * and appends one line to a statistics file. The amount of detail depends on
      * the OutputMode in the Settings referenced by p_sim:
@@ -39,7 +39,7 @@
      * @param p_summary Pointer to the aggregated statistics (StatsSummary).
      * @param dest_path Relative path to the output file; must not be NULL.
      *
-     *@note This function also forwards the statistics to the UI so it can be printed.
+     * @note This function also forwards the statistics to the UI so it can be printed.
      * @return 0 on success, non-zero on error.
      */
     int savehandler_save_summary(const Simulation *p_sim,
