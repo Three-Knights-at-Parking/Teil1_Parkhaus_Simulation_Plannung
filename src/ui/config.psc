@@ -29,13 +29,16 @@ FUNCTION print_configscreen(settings)
     OUTPUT ""
     OUTPUT "Current Settings"
     OUTPUT "------------------------------------"
-    OUTPUT "1 Capacity per Floor   : ", settings.capacity
-    OUTPUT "2 Floors               : ", settings.floors
-    OUTPUT "3 Gates                : ", settings.gates
-    OUTPUT "4 Entry Prob (in %)    : ", settings.entry_probability_perSec_prec
-    OUTPUT "5 Tick Length (sec)    : ", settings.real_equivalent
-    OUTPUT "6 Max Ticks            : ", settings.max_ticks
-    OUTPUT "7 Random Seed          : ", settings.rand_seed
+    OUTPUT "1 Name                 : ", settings.name
+    OUTPUT "2 Capacity / Floor     : ", settings.capacity
+    OUTPUT "3 Floors               : ", settings.floors
+    OUTPUT "4 Gates                : ", settings.gates
+    OUTPUT "5 Gate Entry Time (sec): ", settings.gate_entry_inSec
+    OUTPUT "6 Tick Length (sec)    : ", settings.tick_inSec
+    OUTPUT "7 Mode Select          : ", settings.mode_select
+    OUTPUT "8 Entry Prob / Sec (%) : ", settings.entry_probability_perSec_prec
+    OUTPUT "9 Max Ticks            : ", settings.max_ticks
+    OUTPUT "10 Random Seed         : ", settings.rand_seed
     OUTPUT "------------------------------------"
     OUTPUT "0 Back to Home"
     OUTPUT ""
