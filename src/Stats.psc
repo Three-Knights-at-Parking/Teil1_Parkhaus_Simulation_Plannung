@@ -1,7 +1,6 @@
 //////////////////////////////////////////////////////////
 // Modul: Stats
 // Abhaengigkeiten: types, parkhaus, queue
-// @author: ibach
 //////////////////////////////////////////////////////////
 // Beschreibung:
 // Dieses Modul verwaltet die komplette Statistik-Pipeline der Simulation.
@@ -17,7 +16,7 @@
 //      (doppelt verkettete Liste) und aktualisiert die Aggregation.
 //
 // 3) Gesamtstatistik
-//    - `StatsGesamte` speichert Summen, Mittelwerte und Peak-Werte.
+//    - `StatsSummary` speichert Summen, Mittelwerte und Peak-Werte.
 //    - Laufende Summen im Container vermeiden teure Re-Iteration
 //      ueber alle bereits gespeicherten Ticks.
 //////////////////////////////////////////////////////////
@@ -185,7 +184,6 @@ FUNCTION stats_tick_set_queue_length_end(p_stats, queue_length_end)
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl effektiv eingefahrener Fahrzeuge.
 // Brief: Addiert Wartezeit + Zaehler fuer eingetretene Fahrzeuge.
 FUNCTION stats_tick_add_entered_queue_wait(p_stats, wait_ticks)
     p_tick <- p_stats.p_current_tick
@@ -198,7 +196,6 @@ FUNCTION stats_tick_add_entered_queue_wait(p_stats, wait_ticks)
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl ausgefahrener Fahrzeuge.
 // Brief: Addiert Parkdauer + Zaehler fuer ausgefahrene Fahrzeuge.
 FUNCTION stats_tick_add_departed_parking_duration(p_stats, duration_ticks)
     p_tick <- p_stats.p_current_tick
@@ -250,7 +247,7 @@ FUNCTION stats_tick_finalize(p_stats)
 END FUNCTION
 
 // Brief: Haengt den Tick in die Historie ein und aktualisiert alle
-// laufenden Summen, Mittelwerte und Peak-Kennzahlen in `StatsGesamte`.
+// laufenden Summen, Mittelwerte und Peak-Kennzahlen in `StatsSummary`.
 FUNCTION stats_tick_commit(p_stats)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
