@@ -15,7 +15,9 @@ typedef struct Settings Settings;
 typedef struct Queue Queue;
 typedef struct Simulation Simulation;
 typedef struct GenericVehicle GenericVehicle;
-typedef struct Stats Stats;
+typedef struct StatsTick StatsTick;
+typedef struct StatsSummary StatsSummary;
+
 
 /**
  * Can be expanded in the future to simulate EVs or Motorcycles etc.
@@ -89,7 +91,8 @@ struct Simulation {
     uint32_t current_tick; // Current tick time.
     uint16_t real_equivalent; // Tick equivalent in real time (seconds)
     Parkhaus* parkhaus; // The Parkhaus for this Simulation
-    Stats* stats; // Statistikcontainer fuer Tick- und Gesamtwerte
+	StatsTick *stats_head;        // first tick snapshot
+	StatsTick *stats_tail;        // last tick snapshot
 };
 
 /**
@@ -149,6 +152,7 @@ struct Settings {
  */
 typedef struct StatsTick {
     SimulationObject base;
+	StatsTick* p_next; /**< Pointer to next tick stats, or NULL. */
     uint32_t tick; /**< Aktueller Tick dieser Momentaufnahme. */
 
     /* 1) Auslastung & Kapazität */
@@ -206,7 +210,7 @@ typedef struct StatsTick {
  * Aggregierte Endauswertung über die vollständige Simulation.
  * @author: ibach
  */
-typedef struct StatsGesamte {
+typedef struct StatsSummary {
     SimulationObject base;
     uint32_t total_ticks; /**< Anzahl ausgewerteter Ticks. */
 
@@ -248,7 +252,7 @@ typedef struct StatsGesamte {
 
     /* 5) ADD-ON Betrachtung der einzelnen Gates & Fahrzeugtypen */
 
-} StatsGesamte;
+} StatsSummary;
 
 /* ******************************************************
  						ADD
