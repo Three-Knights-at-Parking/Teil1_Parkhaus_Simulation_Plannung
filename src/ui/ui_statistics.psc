@@ -129,3 +129,12 @@ FUNCTION format_float_1(value)
     return TO_STRING(rounded)
 
 END FUNCTION
+
+
+FUNCTION format_float_2(value)
+
+    //Used in VERBOSE mode - rounds floating numbers to two decimals.
+    rounded ← ROUND(value * 100) / 100
+    return TO_STRING(rounded)
+
+END FUNCTION
