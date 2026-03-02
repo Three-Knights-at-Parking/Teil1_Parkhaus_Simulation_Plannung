@@ -105,8 +105,8 @@ FUNCTION validate_float_input_percent(value)
         return INVALID
     END IF
 
-    IF value < 0.0 OR value > 100.0 THEN
-        OUTPUT "Probability must be between 0.0 and 100.0 percent."
+    IF value < MIN_PROB_PERCENT OR value > MAX_PROB_PERCENT THEN
+        OUTPUT "Probability must be between ", MIN_PROB_PERCENT, " and ", MAX_PROB_PERCENT, " percent."
         OUTPUT "Press ENTER and try again..."
         INPUT dummy
         return INVALID
@@ -198,19 +198,12 @@ FUNCTION edit_mode_select()
 END FUNCTION
 
 
-FUNCTION apply_mode_select(settings)
+FUNCTION apply_mode_select(mode_select)
 
-    IF settings.mode_select = 0 THEN
-        settings.output_mode ← NONE
-
-    ELSE IF settings.mode_select = 1 THEN
-        settings.output_mode ← NORMAL
-
-    ELSE IF settings.mode_select = 2 THEN
-        settings.output_mode ← VERBOSE
-
-    ELSE IF settings.mode_select = 3 THEN
-        settings.output_mode ← DEBUG
+    IF mode_select = 0 THEN return NONE
+    ELSE IF mode_select = 1 THEN return NORMAL
+    ELSE IF mode_select = 2 THEN return VERBOSE
+    ELSE IF mode_select = 3 THEN return DEBUG
     END IF
 
 END FUNCTION
@@ -286,7 +279,7 @@ FUNCTION config_menu(settings)
 
     ELSE IF choice = 7 THEN
         settings.mode_select ← CALL edit_mode_select()
-        CALL apply_mode_select(settings)
+        settings.output_mode ← CALL apply_mode_select(settings.mode_select)
         return UI_KONFIG
 
 
