@@ -17,6 +17,8 @@ typedef struct Simulation Simulation;
 typedef struct GenericVehicle GenericVehicle;
 typedef struct StatsTick StatsTick;
 typedef struct StatsSummary StatsSummary;
+typedef struct StatList StatList;
+
 
 
 /**
@@ -49,6 +51,14 @@ struct SimulationObject {
     int id;
     SimulationTickFunction tick;
     enum ObjectType type;
+};
+
+/**
+ * Simple wrapper for a list of statistics
+ */
+struct StatList {
+	StatsTick *head;
+	StatsTick *tail;
 };
 
 /**
@@ -91,8 +101,7 @@ struct Simulation {
     uint32_t current_tick; // Current tick time.
     uint16_t real_equivalent; // Tick equivalent in real time (seconds)
     Parkhaus* parkhaus; // The Parkhaus for this Simulation
-	StatsTick *stats_head;        // first tick snapshot
-	StatsTick *stats_tail;        // last tick snapshot
+	StatList stats;      // list of all StatsTick snapshots
 };
 
 /**
@@ -146,8 +155,6 @@ struct Settings {
 
 /**
  * Momentaufnahme aller Kennzahlen am Ende eines Ticks.
- *
- * FIXME List in Simulation speichern? Oder durchschnitte direkt abspeichern?
  * @author: ibach
  */
 typedef struct StatsTick {
