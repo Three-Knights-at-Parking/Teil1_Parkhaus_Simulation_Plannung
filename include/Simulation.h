@@ -44,4 +44,4 @@
      */
     int free_simulation(Simulation *p_sim);
 
-    #endif // TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SIMULATION_H
+#endif // TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SIMULATION_H

@@ -70,7 +70,7 @@ FUNCTION queue_enqueue(p_queue, p_vehicle)
         return ERROR
     END IF
 
-    IF queue_is_full(p_queue) = 1 THEN
+    IF queue_is_full(p_queue) = ERROR THEN
         return ERROR
     END IF
 
@@ -112,7 +112,7 @@ FUNCTION queue_remove(p_queue, p_target)
     // try to remove p_target from waiting_cars list
     removed <- vehicle_list_remove(&p_queue.waiting_head, &p_queue.waiting_tail, p_target)
 
-    IF removed = 0 THEN
+    IF removed = ERROR THEN
         return ERROR
     END IF
 
