@@ -9,6 +9,7 @@ FUNCTION init_settings()
     settings.size ← 100
     settings.floors ← 1
     settings.gates ← 1
+    settings.entry_probability_perSec_prec ← 75.0
     settings.real_equivalent ← 3600
     settings.max_ticks ← 24
     settings.rand_seed ← -1
@@ -31,9 +32,10 @@ FUNCTION print_configscreen(settings)
     OUTPUT "1 Spots per Floor      : ", settings.size
     OUTPUT "2 Floors               : ", settings.floors
     OUTPUT "3 Gates                : ", settings.gates
-    OUTPUT "4 Tick Length (sec)    : ", settings.real_equivalent
-    OUTPUT "5 Max Ticks            : ", settings.max_ticks
-    OUTPUT "6 Random Seed          : ", settings.rand_seed
+    OUTPUT "4 Entry Prob (in %)    : ", settings.entry_probability_perSec_prec
+    OUTPUT "5 Tick Length (sec)    : ", settings.real_equivalent
+    OUTPUT "6 Max Ticks            : ", settings.max_ticks
+    OUTPUT "7 Random Seed          : ", settings.rand_seed
     OUTPUT "------------------------------------"
     OUTPUT "0 Back to Home"
     OUTPUT ""
@@ -112,6 +114,20 @@ FUNCTION edit_int_setting(min, max, allow_negative)
 END FUNCTION
 
 
+FUNCTION edit_float_setting_percent()
+
+    valid ← FALSE
+
+    WHILE valid = FALSE DO
+        new_value ← INPUT
+        valid ← CALL validate_float_input_percent(new_value)
+    END WHILE
+
+    return new_value
+
+END FUNCTION
+
+
 FUNCTION config_menu(settings)
 
     IF settings_state_flag = NOT_INITIALIZED THEN
@@ -144,16 +160,21 @@ FUNCTION config_menu(settings)
         return UI_KONFIG
 
     ELSE IF choice = 4 THEN
+        OUTPUT "Enter entry probability per second (0.0 - 100.0 %): "
+        settings.entry_probability_perSec_prec ← CALL edit_float_setting_percent()
+        return UI_KONFIG
+
+    ELSE IF choice = 5 THEN
         OUTPUT "Enter tick length in seconds (min MIN_TICK / max MAX_TICK): "
         settings.real_equivalent ← CALL edit_setting(MIN_TICK, MAX_TICK, FALSE)
         return UI_KONFIG
 
-    ELSE IF choice = 5 THEN
+    ELSE IF choice = 6 THEN
         OUTPUT "Enter max ticks (or use -1/-2/... for 1/2/... days; max MAX_MAX_TICKS): "
         settings.max_ticks ← CALL edit_setting(MIN_MAX_TICKS, MAX_MAX_TICKS, TRUE)
         return UI_KONFIG
 
-    ELSE IF choice = 6 THEN
+    ELSE IF choice = 7 THEN
         OUTPUT "Enter random seed (or use -1 for default): "
         settings.rand_seed ← CALL edit_setting(MIN_SEED, MAX_SEED, TRUE)
         return UI_KONFIG
