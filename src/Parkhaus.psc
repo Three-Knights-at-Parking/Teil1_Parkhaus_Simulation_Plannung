@@ -7,8 +7,7 @@
 //////////////////////////////////////////////////////////
 // Initialization and basic helpers
 //////////////////////////////////////////////////////////
-
-FUNCTION parkhaus_init(p_parkhaus, p_settings, p_queue)
+FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
     IF p_parkhaus = NULL THEN
         return -1
     END IF
@@ -18,25 +17,25 @@ FUNCTION parkhaus_init(p_parkhaus, p_settings, p_queue)
     END IF
 
     // basic fields from Settings
-    p_parkhaus.base.id    <- 0                  // or some id generator
-    p_parkhaus.base.type  <- PARKHAUS
-    p_parkhaus.base.tick  <- parkhaus_tick
+    p_parkhaus.base.id   <- 0
+    p_parkhaus.base.type <- PARKHAUS
+    p_parkhaus.base.tick <- parkhaus_tick
 
-    p_parkhaus.size       <- p_settings.size
-    p_parkhaus.floors     <- p_settings.floors
-    p_parkhaus.fill_size  <- 0
-    p_parkhaus.num_gates  <- p_settings.gates
+    p_parkhaus.size      <- p_settings.size
+    p_parkhaus.floors    <- p_settings.floors
+    p_parkhaus.fill_size <- 0
+    p_parkhaus.num_gates <- p_settings.gates
     p_parkhaus.missed_car_entries <- 0
 
-    // name: copy and truncate if necessary (details in C)
     // p_parkhaus.name <- "Rauenegg" or p_settings.name
 
-    // connect queue and parked-vehicle list
-    p_parkhaus.queue        <- p_queue
-    p_parkhaus.p_parked_head <- NULL
+    // init gate queues and parked-vehicle list
+    p_parkhaus.gate_queues    <- p_gate_queues
+    p_parkhaus.p_parked_head  <- NULL
 
     return 0
 END FUNCTION
+
 
 
 FUNCTION parkhaus_has_free_slot(p_parkhaus)
@@ -273,6 +272,32 @@ END FUNCTION
 // Queue / vehicle helper functions
 //////////////////////////////////////////////////////////
 
+FUNCTION parkhaus_enqueue_at_gate(p_parkhaus, gate_index, p_vehicle)
+    p_gate_queue <- p_parkhaus.gate_queues[gate_index]
+    IF p_gate_queue = NULL THEN
+        return -1
+    END IF
+    status <- queue_push_back(p_gate_queue, p_vehicle)
+    return status
+END FUNCTION
+
+FUNCTION parkhaus_set_gate_demand(p_parkhaus, gate_index, demand_value)
+    p_gate_queue <- p_parkhaus.gate_queues[gate_index]
+    IF p_gate_queue = NULL THEN
+        return -1
+    END IF
+    p_gate_queue.demand <- demand_value
+    return 0
+END FUNCTION
+
+FUNCTION queue_add_random_vehicle(p_gate_queue)
+
+    p_vehicle <- create_random_vehicle()
+    status <- queue_enqueue(p_gate_queue, p_vehicle)
+
+    return status
+END FUNCTION
+
 FUNCTION fill_from_queue(p_gate_queue, parkhouse_open_space)
 
     vehicle <- Queue_PopFront(p_gate_queue)
@@ -370,19 +395,29 @@ FUNCTION parkhaus_free(p_parkhaus)
         return
     END IF
 
-    // free all parked vehicles.
-    // Same as before, when do we collect statistics?
-    // Might make this also INVALID if we don't collect before this.
+    // free all parked vehicles. Same as before,
+    // freeing is only valid if we collect statistics
+    // before this. Otherwise data is lost!
     vehicle_list_remove_all(
         &p_parkhaus.p_parked_head,
         NULL
     )
 
-    // free associated queue as Parkhaus is owner!
-    IF p_parkhaus.queue != NULL THEN
-        queue_free(p_parkhaus.queue)
-        FREE(p_parkhaus.queue)
-        p_parkhaus.queue <- NULL
+    // free all associated gate queues (Parkhaus is owner)
+    IF p_parkhaus.gate_queues != NULL THEN
+        i <- 0
+        WHILE i < p_parkhaus.num_gates DO
+            p_gate_queue <- p_parkhaus.gate_queues[i]
+            IF p_gate_queue != NULL THEN
+                queue_free(p_gate_queue)
+                FREE(p_gate_queue)
+                p_parkhaus.gate_queues[i] <- NULL
+            END IF
+            i <- i + 1
+        END WHILE
+
+        FREE(p_parkhaus.gate_queues)
+        p_parkhaus.gate_queues <- NULL
     END IF
 
     return

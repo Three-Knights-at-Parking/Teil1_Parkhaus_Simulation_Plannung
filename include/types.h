@@ -63,7 +63,7 @@ struct Parkhaus {
     uint8_t floors; // Number of floors. This is currently miscellaneous.
     float_t fill_size; // Number of slots filled.
     uint32_t num_gates; // Number of gates.
-    Queue* queue; // Queue for waiting cars.
+    Queue **gate_queues; // array of Queue* with size = num_gates
     GenericVehicle *p_parked_head; // linked list of parked vehicles.
     uint16_t missed_car_entries; // How many car spawns where missed because of full queue.
 };
@@ -81,6 +81,7 @@ struct Queue {
     uint16_t size; // Number of waiting cars.
     GenericVehicle *p_head; // first vehicle in queue
     GenericVehicle *p_tail; // last vehicle in queue
+    uint16_t demand;   // demand assigned to this gate in the current tick
     uint8_t max_size; // maximum size of Queue before no cars should be created anymore.
 };
 //typedef tick_t unit32_t;
