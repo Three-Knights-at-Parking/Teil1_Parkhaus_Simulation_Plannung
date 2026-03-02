@@ -17,7 +17,7 @@ typedef struct Simulation Simulation;
 typedef struct GenericVehicle GenericVehicle;
 typedef struct StatsTick StatsTick;
 typedef struct StatsSummary StatsSummary;
-typedef struct StatList;
+typedef struct StatList StatList;
 
 
 /**
@@ -93,7 +93,7 @@ struct Simulation {
     uint32_t current_tick; // Current tick time.
     uint16_t real_equivalent; // Tick equivalent in real time (seconds)
     Parkhaus* parkhaus; // The Parkhaus for this Simulation
-    Stats* stats; // Statistikcontainer fuer Tick- und Gesamtwerte
+    StatList* StatList; // Statistikcontainer fuer Tick- und Gesamtwerte
 };
 
 /**
@@ -240,12 +240,12 @@ typedef struct StatsSummary {
  * Statistikcontainer fuer Tick-Verlauf und kumulierte Gesamtwerte.
  * @author: ibach
  */
-struct StatList {
+typedef struct StatList {
     StatsTick *p_tick_head; /**< Erster Tick in der Verlaufsliste. */
     StatsTick *p_tick_tail; /**< Letzter Tick in der Verlaufsliste. */
     uint32_t tick_count; /**< Anzahl in der Liste gespeicherter Ticks. */
     StatsTick *p_current_tick; /**< Tick-Builder fuer den aktuell laufenden Tick. */
-    StatsGesamte gesamt; /**< Kumulierte Gesamtstatistik. */
+    StatsSummary StatsSummary; /**< Kumulierte Gesamtstatistik. */
 
     /* Laufende Summen fuer Mittelwert-Berechnung */
     double sum_capacity_taken_percent;
