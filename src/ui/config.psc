@@ -189,40 +189,66 @@ FUNCTION config_menu(settings)
         validation_flag ← CALL validate_user_input(choice, CONFIG_MAX_VALID_NUMBER)
     END WHILE
 
+
     IF choice = 1 THEN
-        OUTPUT "Enter capacity per floor (min 1 / max MAX_CAPACITY): "
+        OUTPUT "Enter name (max ", NAME_MAX_LEN, " chars): "
+        settings.name ← CALL edit_string_setting(NAME_MAX_LEN)
+        return UI_KONFIG
+
+
+    ELSE IF choice = 2 THEN
+        OUTPUT "Enter capacity per floor (min ", MIN_CAPACITY, " / max ", MAX_CAPACITY, "): "
         settings.capacity ← CALL edit_int_setting(MIN_CAPACITY, MAX_CAPACITY, FALSE)
         return UI_KONFIG
 
-    ELSE IF choice = 2 THEN
-        OUTPUT "Enter number of floors (min 1 / max MAX_FLOORS): "
+
+    ELSE IF choice = 3 THEN
+        OUTPUT "Enter number of floors (min ", MIN_FLOORS, " / max ", MAX_FLOORS, "): "
         settings.floors ← CALL edit_int_setting(MIN_FLOORS, MAX_FLOORS, FALSE)
         return UI_KONFIG
 
-    ELSE IF choice = 3 THEN
-        OUTPUT "Enter number of gates (min 1 / max MAX_GATES): "
+
+    ELSE IF choice = 4 THEN
+        OUTPUT "Enter number of gates (min ", MIN_GATES, " / max ", MAX_GATES, "): "
         settings.gates ← CALL edit_int_setting(MIN_GATES, MAX_GATES, FALSE)
         return UI_KONFIG
 
-    ELSE IF choice = 4 THEN
-        OUTPUT "Enter entry probability per second (0.0 - 100.0 %): "
+
+    ELSE IF choice = 5 THEN
+        OUTPUT "Enter gate entry time in seconds: "
+        settings.gate_entry_inSec ← CALL edit_int_setting(MIN_GATE_ENTRY_SEC, MAX_GATE_ENTRY_SEC, FALSE)
+        return UI_KONFIG
+
+
+    ELSE IF choice = 6 THEN
+        OUTPUT "Enter tick length in seconds: "
+        settings.tick_inSec ← CALL edit_int_setting(MIN_TICK_SEC, MAX_TICK_SEC, FALSE)
+        return UI_KONFIG
+
+
+    ELSE IF choice = 7 THEN
+        OUTPUT "Select mode (0 = NONE, 1 = NORMAL, 2 = VERBOSE, 3 = DEBUG): "
+        settings.mode_select ← CALL edit_int_setting(MIN_MODE_SELECT, MAX_MODE_SELECT, FALSE)
+        return UI_KONFIG
+
+
+    ELSE IF choice = 8 THEN
+        OUTPUT "Enter entry probability per second (", MIN_PROB_PERCENT, " - ", MAX_PROB_PERCENT, " %): "
         settings.entry_probability_perSec_prec ← CALL edit_float_setting_percent()
         return UI_KONFIG
 
-    ELSE IF choice = 5 THEN
-        OUTPUT "Enter tick length in seconds (min MIN_TICK / max MAX_TICK): "
-        settings.real_equivalent ← CALL edit_int_setting(MIN_TICK, MAX_TICK, FALSE)
-        return UI_KONFIG
 
-    ELSE IF choice = 6 THEN
-        OUTPUT "Enter max ticks (or use -1/-2/... for 1/2/... days; max MAX_MAX_TICKS): "
+    ELSE IF choice = 9 THEN
+        OUTPUT "Enter max ticks (-1/-2/... for day equivalents): "
         settings.max_ticks ← CALL edit_int_setting(MIN_MAX_TICKS, MAX_MAX_TICKS, TRUE)
         return UI_KONFIG
 
-    ELSE IF choice = 7 THEN
+
+    ELSE IF choice = 10 THEN
         OUTPUT "Enter random seed (or use -1 for default): "
         settings.rand_seed ← CALL edit_int_setting(MIN_SEED, MAX_SEED, TRUE)
         return UI_KONFIG
+
 
     ELSE IF choice = 0 THEN
         return UI_HOME
