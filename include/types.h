@@ -15,7 +15,10 @@ typedef struct Settings Settings;
 typedef struct Queue Queue;
 typedef struct Simulation Simulation;
 typedef struct GenericVehicle GenericVehicle;
-typedef struct Stats Stats;
+typedef struct StatsTick StatsTick;
+typedef struct StatsSummary StatsSummary;
+typedef struct StatList;
+
 
 /**
  * Can be expanded in the future to simulate EVs or Motorcycles etc.
