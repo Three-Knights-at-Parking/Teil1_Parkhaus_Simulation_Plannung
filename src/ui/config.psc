@@ -23,6 +23,7 @@ FUNCTION init_settings()
     settings.entry_probability_car_spawn_prec ← 100.0
     settings.entry_probability_perSec_prec ← 75.0
 
+    // Non-UI default (not editable in Config-Menu, but required for Simulation)
     settings.real_equivalent ← 10
 
     settings.max_ticks ← 24
@@ -119,7 +120,7 @@ END FUNCTION
 
 FUNCTION validate_string_input(text, max_len)
 
-    IF text != type string THEN
+    IF text != type string THEN                 //This verification is probably unnecessary
         OUTPUT "Your input is not a string!"
         OUTPUT "Press ENTER and try again..."
         INPUT dummy
@@ -188,12 +189,36 @@ END FUNCTION
 
 
 FUNCTION edit_mode_select()
+    
+    CLEAR Terminal
 
-    OUTPUT "Select mode:"
-    OUTPUT "0 = NONE | 1 = NORMAL | 2 = VERBOSE | 3 = DEBUG"
-    OUTPUT ""
+    OUTPUT "Select Output Mode:"
+    OUTPUT "------------------------------------"
+    OUTPUT "0 = NONE"
+    OUTPUT "1 = NORMAL"
+    OUTPUT "2 = VERBOSE"
+    OUTPUT "3 = DEBUG"
+    OUTPUT "------------------------------------"
+    OUTPUT "Enter your choice (0 - 3): "
+    
+    valid ← FALSE
+    WHILE valid = FALSE DO
 
-    return CALL edit_int_setting(0, 3, FALSE)
+        choice ← INPUT
+
+        valid_flag ← CALL validate_int_input(choice, 0, 3, FALSE)
+
+        IF valid_flag = VALID THEN
+            valid ← TRUE
+        ELSE
+            OUTPUT "Invalid mode selection."
+            OUTPUT "Press ENTER and try again..."
+            INPUT dummy
+        END IF
+
+    END WHILE
+
+    return choice
 
 END FUNCTION
 
