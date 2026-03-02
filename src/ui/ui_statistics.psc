@@ -34,6 +34,28 @@ FUNCTION ui_statistics_print_footer(settings)
 END FUNCTION
 
 
+FUNCTION ui_statistics_print_tick_normal(stats_tick)
+
+    status_text ← "OK"
+    IF stats_tick.capacity_free = 0 THEN
+        status_text ← "FULL"
+    END IF
+
+    OUTPUT "│ ",
+           CALL pad_left(stats_tick.tick, 5), " │ ",
+           CALL pad_right(status_text, 6), " │ ",
+           CALL pad_left(stats_tick.capacity_taken, 11), " │ ",
+           CALL pad_left(stats_tick.capacity_total, 6), " │ ",
+           CALL pad_left(CALL format_float_1(stats_tick.capacity_taken_percent), 6), " │ ",
+           CALL pad_left(stats_tick.queue_length_end, 5), " │ ",
+           CALL pad_left(stats_tick.arrivals_generated, 5), " │ ",
+           CALL pad_left(stats_tick.entered, 4), " │ ",
+           CALL pad_left(stats_tick.departed, 4), " │ ",
+           CALL pad_left(stats_tick.queue_rejections, 5), " │"
+
+END FUNCTION
+
+
 FUNCTION ui_statistics_print_tick(stats_tick, settings)
 
     IF settings.output_mode = NONE THEN
