@@ -357,8 +357,14 @@ END FUNCTION
 // Small helpers for Parkhaus capacity & stats
 //////////////////////////////////////////////////////////
 
-FUNCTION get_open_space(p_parkhaus)
-    RETURN p_parkhaus.size - p_parkhaus.fill_size
+FUNCTION get_open_space(p_parkhous)
+
+    IF p_parkhouse != NULL THEN
+        RETURN p_parkhaus.size - p_parkhaus.fill_size
+    ELSE
+        RETURN ERROR
+    END IF
+
 END FUNCTION
 
 
