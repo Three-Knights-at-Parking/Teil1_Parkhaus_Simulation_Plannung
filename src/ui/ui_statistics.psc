@@ -106,3 +106,16 @@ FUNCTION pad_right(text, width)
     return s + CALL repeat_char(" ", width - LENGTH(s))
 
 END FUNCTION
+
+
+FUNCTION pad_left(text, width)
+
+    s ← TO_STRING(text)
+
+    IF LENGTH(s) >= width THEN
+        return SUBSTRING(s, 0, width)
+    END IF
+
+    return CALL repeat_char(" ", width - LENGTH(s)) + s
+
+END FUNCTION
