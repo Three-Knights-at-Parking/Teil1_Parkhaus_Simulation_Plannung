@@ -10,34 +10,46 @@
 #include "ui.h"
 
 /* Maximum valid menu number in Config menu (0..CONFIG_MAX_VALID_NUMBER). */
-#define CONFIG_MAX_VALID_NUMBER 7
+#define CONFIG_MAX_VALID_NUMBER 9
 
 /* Allowed ranges for settings (min/max). */
-#define MIN_CAPACITY   1
-#define MIN_FLOORS     1
-#define MIN_GATES      1
-#define MIN_TICK       10
-#define MIN_MAX_TICKS  -365
-#define MIN_SEED       -1
+#define MIN_CAPACITY          1
+#define MIN_FLOORS            1
+#define MIN_GATES             1
+#define MIN_GATE_ENTRY_SEC    1
+#define MIN_TICK_SEC          1
+#define MIN_REAL_EQUIV_SEC    10
+#define MIN_MAX_TICKS         -365
+#define MIN_SEED              -1
 
-#define MAX_CAPACITY   200
-#define MAX_FLOORS     10
-#define MAX_GATES      6
-#define MAX_TICK       8640
-#define MAX_MAX_TICKS  100
-#define MAX_SEED       2147483647
+#define MAX_CAPACITY          200
+#define MAX_FLOORS            10
+#define MAX_GATES             6
+#define MAX_GATE_ENTRY_SEC    120
+#define MAX_TICK_SEC          86400
+#define MAX_REAL_EQUIV_SEC    86400
+#define MAX_MAX_TICKS         100
+#define MAX_SEED              2147483647
+
+/* Probability is configured in percent. */
+#define MIN_PROB_PERCENT      0.0f
+#define MAX_PROB_PERCENT      100.0f
 
 /**
  * @brief Simulation settings configurable by the user.
  */
 typedef struct
 {
-    uint16_t size;            /* Total parking spots per floor */
-    uint8_t  floors;          /* Number of floors */
-    uint8_t  gates;           /* Number of gates */
-    uint16_t real_equivalent; /* Tick equivalent in real time (seconds), min. 10 */
-    int32_t  max_ticks;       /* Max ticks before stop; -1/-2/... for day equivalents */
-    int32_t  rand_seed;       /* Random seed; -1 means use current time */
+    uint16_t capacity;                     /* Total parking spots per floor */
+    uint8_t  floors;                       /* Number of floors */
+    uint8_t  gates;                        /* Number of gates */
+    uint16_t gate_entry_inSec;             /* Time needed for a vehicle to enter the parkhouse (sec) */
+    uint16_t tick_inSec;                   /* Time in seconds of one tick */
+    float    entry_probability_car_spawn_prec; /* Probability of car entering queue (percent) */
+    float    entry_probability_perSec_prec;    /* Probability of a car entering per second (percent) */
+    uint16_t real_equivalent;              /* Tick equivalent in real time (seconds), min. 10 */
+    int32_t  max_ticks;                    /* Max ticks before stop; -1/-2/... for day equivalents */
+    int32_t  rand_seed;                    /* Random seed; -1 means use current time */
 } Settings;
 
 /**
@@ -64,25 +76,40 @@ Settings init_settings(void);
 void print_configscreen(Settings settings);
 
 /**
- * @brief Validates a numeric config value based on range and negativity rule.
+ * @brief Validates an integer config value based on range and negativity rule.
  *
- * @param[in] new_value       Value entered by the user.
+ * @param[in] value           Value entered by the user.
  * @param[in] min             Minimum allowed value.
  * @param[in] max             Maximum allowed value.
  * @param[in] allow_negative  If FALSE, negative values are rejected.
  * @return VALID if value is acceptable, otherwise INVALID.
  */
-validation_flag validate_user_input_config(int new_value, int min, int max, int allow_negative);
+validation_flag validate_int_input(int value, int min, int max, int allow_negative);
 
 /**
- * @brief Reads and validates a config value until it is valid.
+ * @brief Validates a float percentage input in the range [0.0 .. 100.0].
+ *
+ * @param[in] value Value entered by the user.
+ * @return VALID if value is within [0.0 .. 100.0], otherwise INVALID.
+ */
+validation_flag validate_float_input_percent(float value);
+
+/**
+ * @brief Reads and validates an integer value until it is valid.
  *
  * @param[in] min             Minimum allowed value.
  * @param[in] max             Maximum allowed value.
  * @param[in] allow_negative  If FALSE, negative values are rejected.
  * @return A validated integer value within the configured constraints.
  */
-int edit_setting(int min, int max, int allow_negative);
+int edit_int_setting(int min, int max, int allow_negative);
+
+/**
+ * @brief Reads and validates a float percentage value until it is valid.
+ *
+ * @return A validated percentage value within [0.0 .. 100.0].
+ */
+float edit_float_setting_percent(void);
 
 /**
  * @brief Handles the configuration menu interaction.
