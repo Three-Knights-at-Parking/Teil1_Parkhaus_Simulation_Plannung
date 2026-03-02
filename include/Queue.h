@@ -1,7 +1,12 @@
 #ifndef TEIL1_PARKHAUS_SIMULATION_PLANNUNG_QUEUE_H
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_QUEUE_H
 
-    #include "types.h"
+#include "types.h"
+/**
+ * Represents a Queue owned by a Parkhaus. Handles (and owns!) all waiting cars and "inherits"
+ * SimulationObject for easy use of the tick() function. Parkhaus calls this object's free
+ * function to free the Queue and the underlying cars.
+ */
 
     /**
      * @brief Initialize the Queue.

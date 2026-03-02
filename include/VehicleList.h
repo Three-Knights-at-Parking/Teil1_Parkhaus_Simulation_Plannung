@@ -2,6 +2,10 @@
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_VEHICLELIST_H
 
 #include "types.h"
+/**
+ * Helper class for traversing and handling dynamic linked lists for Queue and Parkhaus and future
+ * expansions that might need this.
+ */
 
     /**
      * @brief Append a vehicle to the end of a singly linked list.
@@ -27,6 +31,17 @@
      * @return 0 on success, non-zero if not found.
      */
     int vehicle_list_remove(GenericVehicle **pp_head, GenericVehicle **pp_tail, GenericVehicle *p_target);
+
+    /**
+     * @brief Remove all vehicles from this list.
+     *        This function takes ownership of the cars and will clean up every
+     *        node itself. This function is usefull for cleanup after simulation
+     *        end.
+     * @param pp_head Pointer to head pointer of the list.
+     * @param pp_tail Pointer to tail pointer of the list.
+     */
+    void vehicle_list_remove_all(GenericVehicle **pp_head, GenericVehicle **pp_tail);
+
 
     /**
      * @brief Count nodes in the list.

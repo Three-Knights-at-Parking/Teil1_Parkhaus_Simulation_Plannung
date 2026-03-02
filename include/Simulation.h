@@ -2,6 +2,11 @@
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_SIMULATION_H
 
 #include "types.h"
+/**
+ * Base Simulation Object acting as an overarching parent for all other child objects. This represents one
+ * Simulation that carries its own parking complex, queue and statistics. Future usage might be to parallel
+ * / multithread with multiple Simulations.
+ */
 
     /**
      * Initialize a Simulation with Settings.
@@ -9,7 +14,7 @@
      * @param p_settings Pointer to the Settings used to configure the Simulation.
      * @return 0 on success, non-zero on error.
      */
-    int simulation_init(Simulation *p_sim, const Settings *p_settings);
+    int simulation_init(Simulation *p_sim, const Settings *p_settings, const Stats* stats); //statistik Hinzufügen zu initialisierung?
 
     /**
      * Progress the Simulation by one tick.
