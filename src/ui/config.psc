@@ -41,32 +41,32 @@ FUNCTION print_configscreen(settings)
 END FUNCTION
 
 
-FUNCTION validate_user_input_config(new_value, min, max, allow_negative)
+FUNCTION validate_int_input(value, min, max, allow_negative)
 
-    IF new_value != type int THEN
+    IF value != type int THEN
         OUTPUT "Your input is not an integer!"
-        OUTPUT "Please press ENTER and try again... "
+        OUTPUT "Please press ENTER and try again..."
         INPUT dummy
         return INVALID
     END IF
 
-    IF allow_negative = FALSE AND new_value < 0 THEN
+    IF allow_negative = FALSE AND value < 0 THEN
         OUTPUT "Negative values are not allowed!"
-        OUTPUT "Please press ENTER and try again... "
+        OUTPUT "Please press ENTER and try again..."
         INPUT dummy
         return INVALID
     END IF
 
-    IF new_value < min THEN
-        OUTPUT "Your input must be >= ", min
-        OUTPUT "Please press ENTER and try again... "
+    IF value < min THEN
+        OUTPUT "Value must be >= ", min
+        OUTPUT "Please press ENTER and try again..."
         INPUT dummy
         return INVALID
     END IF
 
-    IF new_value > max THEN
+    IF value > max THEN
         OUTPUT "Value must be <= ", max
-        OUTPUT "Please press ENTER and try again... "
+        OUTPUT "Please press ENTER and try again..."
         INPUT dummy
         return INVALID
     END IF
