@@ -36,23 +36,6 @@
 #define MAX_PROB_PERCENT      100.0f
 
 /**
- * @brief Simulation settings configurable by the user.
- */
-typedef struct
-{
-    uint16_t capacity;                     /* Total parking spots per floor */
-    uint8_t  floors;                       /* Number of floors */
-    uint8_t  gates;                        /* Number of gates */
-    uint16_t gate_entry_inSec;             /* Time needed for a vehicle to enter the parkhouse (sec) */
-    uint16_t tick_inSec;                   /* Time in seconds of one tick */
-    float    entry_probability_car_spawn_prec; /* Probability of car entering queue (percent) */
-    float    entry_probability_perSec_prec;    /* Probability of a car entering per second (percent) */
-    uint16_t real_equivalent;              /* Tick equivalent in real time (seconds), min. 10 */
-    int32_t  max_ticks;                    /* Max ticks before stop; -1/-2/... for day equivalents */
-    int32_t  rand_seed;                    /* Random seed; -1 means use current time */
-} Settings;
-
-/**
  * @brief Indicates whether settings are initialized with default values.
  */
 typedef enum
