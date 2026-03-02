@@ -51,3 +51,45 @@ FUNCTION graphhandler_generate_from_file(src_path, dest_path)
 
     return OK
 END FUNCTION
+
+FUNCTION graphhandler_generate_from_simulation(p_sim, dest_path)
+    IF p_sim = NULL THEN
+        return ERROR
+    END IF
+
+    IF (dest_path = NULL) OR (dest_path = "") THEN
+        graph_path <- "../graphs/parkhaus_stats.png"
+    ELSE
+        graph_path <- dest_path
+    END IF
+
+    p_parkhaus <- p_sim.parkhaus
+
+    // For now we use the array in p_sim.stats_... (TODO not yet implemented)
+    ticks          <- p_sim.stats_ticks
+    fill_sizes     <- p_sim.stats_fill_sizes
+    queue_lengths  <- p_sim.stats_queue_lengths
+    missed_entries <- p_sim.stats_missed_entries
+
+    plot_data <- PLOT_DATA_CREATE()
+    PLOT_DATA_ADD_SERIES(plot_data, "Fill Size", ticks, fill_sizes)
+    PLOT_DATA_ADD_SERIES(plot_data, "Queue Length", ticks, queue_lengths)
+    PLOT_DATA_ADD_SERIES(plot_data, "Missed Entries", ticks, missed_entries)
+    //Library specific
+    status <- PLOT_RENDER_TO_FILE(
+                  plot_data,
+                  graph_path,
+                  "Parkhaus Simulation",
+                  "Tick",
+                  "Werte"
+              )
+
+    PLOT_DATA_FREE(plot_data)
+
+    IF status != 0 THEN
+        return ERROR
+    END IF
+
+    return OK
+END FUNCTION
+
