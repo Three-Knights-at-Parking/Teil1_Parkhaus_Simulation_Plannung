@@ -202,6 +202,21 @@ FUNCTION apply_mode_select(settings)
 END FUNCTION
 
 
+FUNCTION output_mode_to_string(mode)
+
+    IF mode = NONE THEN
+        return "NONE"
+    ELSE IF mode = NORMAL THEN
+        return "NORMAL"
+    ELSE IF mode = VERBOSE THEN
+        return "VERBOSE"
+    ELSE IF mode = DEBUG THEN
+        return "DEBUG"
+    END IF
+
+END FUNCTION
+
+
 FUNCTION config_menu(settings)
 
     IF settings_state_flag = NOT_INITIALIZED THEN
