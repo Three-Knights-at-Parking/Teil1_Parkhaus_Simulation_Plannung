@@ -173,6 +173,17 @@ FUNCTION edit_string_setting(max_len)
 END FUNCTION
 
 
+FUNCTION edit_mode_select()
+
+    OUTPUT "Select mode:"
+    OUTPUT "0 = NONE | 1 = NORMAL | 2 = VERBOSE | 3 = DEBUG"
+    OUTPUT ""
+
+    return CALL edit_int_setting(0, 3, FALSE)
+
+END FUNCTION
+
+
 FUNCTION config_menu(settings)
 
     IF settings_state_flag = NOT_INITIALIZED THEN
