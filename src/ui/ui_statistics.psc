@@ -92,3 +92,17 @@ FUNCTION repeat_char(ch, count)
     return result
 
 END FUNCTION
+
+
+FUNCTION pad_right(text, width)
+
+    // Convert to string if needed
+    s ← TO_STRING(text)
+
+    IF LENGTH(s) >= width THEN
+        return SUBSTRING(s, 0, width)
+    END IF
+
+    return s + CALL repeat_char(" ", width - LENGTH(s))
+
+END FUNCTION
