@@ -102,6 +102,33 @@ FUNCTION ui_statistics_print_tick_verbose(stats_tick)
 END FUNCTION
 
 
+FUNCTION ui_statistics_print_summary(stats_total, settings)
+
+    IF settings.output_mode = NONE THEN
+        return
+    END IF
+
+    OUTPUT ""
+    OUTPUT "╔══════════════════════════════════════════════════════════════════════════════╗"
+    OUTPUT "║                               SIMULATION SUMMARY                             ║"
+    OUTPUT "╠══════════════════════════════════════════════════════════════════════════════╣"
+
+    OUTPUT "║ Total Ticks           : ", stats_total.total_ticks
+    OUTPUT "║ Avg Utilization (%)   : ", CALL format_float_1(stats_total.capacity_taken_percent_avg)
+    OUTPUT "║ Peak Utilization (%)  : ", CALL format_float_1(stats_total.capacity_taken_percent_peak),
+           "  @ Tick ", stats_total.capacity_taken_peak_tick
+    OUTPUT "║ First FULL Tick       : ", stats_total.first_full_tick
+    OUTPUT "║ FULL Ticks            : ", stats_total.full_ticks
+    OUTPUT "║ Queue Peak            : ", stats_total.queue_length_peak,
+           "  @ Tick ", stats_total.queue_length_peak_tick
+    OUTPUT "║ Total Rejections      : ", stats_total.queue_rejections_total
+
+    OUTPUT "╚══════════════════════════════════════════════════════════════════════════════╝"
+    OUTPUT ""
+
+END FUNCTION
+
+
 FUNCTION ui_statistics_print_tick(stats_tick, settings)
 
     IF settings.output_mode = NONE THEN
