@@ -6,11 +6,25 @@ FUNCTION init_settings()
 
     CREATE FROM STRUCT Settings settings
 
+    settings.src_path ← NULL
+
+    settings.name ← "Rauenegg"
+
     settings.capacity ← 100
     settings.floors ← 1
     settings.gates ← 1
+
+    settings.gate_entry_inSec ← 5
+    settings.tick_inSec ← 10
+
+    settings.mode_select ← 1
+    settings.output_mode ← NORMAL
+
+    settings.entry_probability_car_spawn_prec ← 100.0
     settings.entry_probability_perSec_prec ← 75.0
-    settings.real_equivalent ← 3600
+
+    settings.real_equivalent ← 10
+
     settings.max_ticks ← 24
     settings.rand_seed ← -1
 
@@ -35,7 +49,7 @@ FUNCTION print_configscreen(settings)
     OUTPUT "4 Gates                : ", settings.gates
     OUTPUT "5 Gate Entry Time (sec): ", settings.gate_entry_inSec
     OUTPUT "6 Tick Length (sec)    : ", settings.tick_inSec
-    OUTPUT "7 Mode Select          : ", settings.mode_select
+    OUTPUT "7 Output Mode          : ", CALL output_mode_to_string(settings.output_mode)
     OUTPUT "8 Entry Prob / Sec (%) : ", settings.entry_probability_perSec_prec
     OUTPUT "9 Max Ticks            : ", settings.max_ticks
     OUTPUT "10 Random Seed         : ", settings.rand_seed
@@ -271,8 +285,8 @@ FUNCTION config_menu(settings)
 
 
     ELSE IF choice = 7 THEN
-        OUTPUT "Select mode (0 = NONE, 1 = NORMAL, 2 = VERBOSE, 3 = DEBUG): "
-        settings.mode_select ← CALL edit_int_setting(MIN_MODE_SELECT, MAX_MODE_SELECT, FALSE)
+        settings.mode_select ← CALL edit_mode_select()
+        CALL apply_mode_select(settings)
         return UI_KONFIG
 
 
