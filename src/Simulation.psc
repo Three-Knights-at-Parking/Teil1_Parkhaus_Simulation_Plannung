@@ -107,11 +107,14 @@ FUNCTION simulation_tick(p_sim)
     END IF
 
     /**
-    * Order of ticks is important and needs to be preserved! First tick
-    * the parkhaus and then tick the queue!
+    * Order of execution for the ticks is important and needs to be preserved.
+    * Contrary to earlier implementations, Queue needs to tick first to prevent cars that
+    * are waiting in the queue and have reached their max tick get pulled into a slot. Parkhaus
+    * then pulls the cars from the queue and doesn't need to tick them again.
     * /
-    tick(p_sim.parkhaus.base, current_tick)
     tick(p_sim.parkhaus.queue.base, current_tick)
+    tick(p_sim.parkhaus.base, current_tick)
+
 
     status <- Stats_RecordTick(p_sim.stats, current_tick)
     IF status != 0 THEN

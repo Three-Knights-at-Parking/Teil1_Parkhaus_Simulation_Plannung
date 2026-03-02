@@ -3,7 +3,7 @@
  #include "types.h"
 /**
  * Represents a Parkhaus owned by a Simulation. Handles (and owns!) all parking cars, its Queue and "inherits"
- * SimulationObject for easy use of the tick() function. Simulation calls this object's free
+ * SimulationObject.psc for easy use of the tick() function. Simulation calls this object's free
  * function to free the Parkhaus which in turn frees the Queue and the underlying cars. Parkaus also owns
  * the Settings of a Simulation and frees it at the end.
  */
@@ -24,7 +24,7 @@
 
     /**
      * @brief Tick function for Parkhaus.
-     * @param p_self Pointer to the SimulationObject
+     * @param p_self Pointer to the SimulationObject.psc
      * @param current_tick Current simulation tick.
      *
      * @author Luca Perri

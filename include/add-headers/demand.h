@@ -14,6 +14,6 @@
  * OUTPUT: RETURN Total Demand als GZ
  */
 
-uint16_t Demand_GenerateTotalPerTick(const Settings *p_settings, uint32_t current_tick, const rng* rng)
+uint16_t Demand_GenerateTotalPerTick(const Settings *p_settings, uint32_t current_tick, const rng* rng);
 
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_DEMAND_H

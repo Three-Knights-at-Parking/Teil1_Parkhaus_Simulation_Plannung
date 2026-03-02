@@ -1,6 +1,6 @@
 /**
  * Define all types in here. If you wish for an object to be manipulated via the Simulation tick,
- * refer to the structure docs on how to implement your type with SimulationObject.
+ * refer to the structure docs on how to implement your type with SimulationObject.psc.
  */
 #ifndef TEIL1_PARKHAUS_SIMULATION_PLANNUNG_TYPES_H
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_TYPES_H
@@ -90,6 +90,8 @@ struct Parkhaus {
     GenericVehicle *p_parked_head; // linked list of parked vehicles.
     GenericVehicle *p_parked_tail;
     uint16_t missed_car_entries; // How many car spawns where missed because of full queue.
+	uint16_t total_entered;
+	uint16_t total_exited;
 };
 
 /**
