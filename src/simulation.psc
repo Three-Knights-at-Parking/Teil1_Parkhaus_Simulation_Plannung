@@ -95,3 +95,17 @@ FUNCTION simulation_menu(settings)
     END IF
 
 END FUNCTION
+
+
+FUNCTION hand_over_simulationdata()
+
+    current ← pStatsTick //head of the StatsTick-list
+    index ← 0
+
+    WHILE current != tail DO                            //Storaging the StatsTick-Data tick per tick in a StatsTick-Array
+        StatsTick simulation_data[index] ← current  
+        index++
+        current ← current->pNext
+    END WHILE
+
+END FUNCTION
