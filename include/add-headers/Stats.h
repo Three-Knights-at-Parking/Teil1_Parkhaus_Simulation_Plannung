@@ -19,7 +19,7 @@
  * 4) stats_tick_commit(...)
  *
  * Jeder commitete Tick wird in einer doppelt verketteten Liste gespeichert
- * (p_tick_head ... p_tick_tail) und gleichzeitig in `StatsGesamte` aggregiert.
+ * (p_tick_head ... p_tick_tail) und gleichzeitig in `StatsSummary` aggregiert.
  */
 
 /**
@@ -96,6 +96,6 @@ int stats_tick_set_blocker_full_active(Stats *p_stats, uint8_t active);
 const StatsTick *stats_get_latest_tick(const Stats *p_stats);
 
 /** Liefert die aggregierte Gesamtstatistik oder NULL. */
-const StatsGesamte *stats_get_summary(const Stats *p_stats);
+const StatsSummary *stats_get_summary(const Stats *p_stats);
 
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_STATS_H
