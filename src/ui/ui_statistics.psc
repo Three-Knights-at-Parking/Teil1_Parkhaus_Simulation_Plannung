@@ -78,3 +78,17 @@ FUNCTION ui_statistics_print_tick(stats_tick, settings)
     END IF
 
 END FUNCTION
+
+
+FUNCTION repeat_char(ch, count)
+
+    result ← ""
+    i ← 0
+    WHILE i < count DO
+        result ← result + ch
+        i ← i + 1
+    END WHILE
+
+    return result
+
+END FUNCTION
