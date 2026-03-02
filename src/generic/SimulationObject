@@ -37,7 +37,7 @@ END FUNCTION
 FUNCTION free_simulation_object(p_obj)
 
     IF p_obj = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     // SimulationObject does not own the tick-function or any parent object.
@@ -45,5 +45,5 @@ FUNCTION free_simulation_object(p_obj)
     // dynamically allocated as a plain SimulationObject. See SimulationObject.h.
     FREE(p_obj)
 
-    return 0
+    return OK
 END FUNCTION

@@ -40,18 +40,18 @@ END FUNCTION
 FUNCTION vehicle_list_remove(pp_head, pp_tail, p_target)
 
     IF p_target = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     IF *pp_head = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     // if target is at head
     IF *pp_head = p_target THEN
         // reuse pop_front logic
         p_removed <- vehicle_list_pop_front(pp_head, pp_tail)
-        return 0
+        return OK
     END IF
 
     // otherwise search for node before target
@@ -67,14 +67,14 @@ FUNCTION vehicle_list_remove(pp_head, pp_tail, p_target)
                 *pp_tail <- p_prev
             END IF
             p_curr.p_next <- NULL
-            return 0
+            return OK
         END IF
         p_prev <- p_curr
         p_curr <- p_curr.p_next
     END WHILE
 
     // target not found
-    return -1
+    return ERROR
 END FUNCTION
 
 FUNCTION vehicle_list_remove_all(pp_head, pp_tail)

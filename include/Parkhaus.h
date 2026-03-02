@@ -52,14 +52,6 @@
     int parkhaus_remove_vehicle(Parkhaus *p_parkhaus, GenericVehicle *p_vehicle);
 
     /**
-     * @brief Check if the Parkhaus has at least one free parking slot.
-     * @param p_parkhaus Pointer to the Parkhaus.
-     * @return 1 if at least one slot is free, 0 otherwise.
-     * @author Luca Perri
-     */
-    int parkhaus_has_free_slot(const Parkhaus *p_parkhaus);
-
-    /**
      * @brief Compute the current utilization of the Parkhaus in percent.
      * @param p_parkhaus Pointer to the Parkhaus.
      * @return Utilization as float between 0.0 and 100.0.
@@ -110,7 +102,7 @@
      * @brief Uebernimmt ein Fahrzeug aus der Queue und berechnet den benoetigten Platz.
      * @author Simon Ibach
      */
-    uint16_t fill_from_queue(Queue *p_gate_queue, uint16_t parkhouse_open_space);
+    uint16_t fill_from_queue(Parkhaus* p_parkhaus, Queue *p_gate_queue);
 
     /**
      * @brief Schreibt verbleibenden Demand in die Queue und zaehlt ggf. Rejections hoch.
