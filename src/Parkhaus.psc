@@ -1,288 +1,389 @@
 //////////////////////////////////////////////////////////
-//// Modul: parkhaus
-//// Abhaengigkeiten: queue (Queue.h), vehicle, stats_model
+// Modul: parkhaus
+// Abhaengigkeiten: queue, vehicle_list, stats_model, rng
 //////////////////////////////////////////////////////////
 
 
-/////////////////////////////
-//////Primary Function//////
-///////////////////////////
-FUNCTION parkhouse_tick(current_tick, settings, parkhouse, gate_queues, stats)
+//////////////////////////////////////////////////////////
+// Initialization and basic helpers
+//////////////////////////////////////////////////////////
 
-    IF (settings.number_of_gates = 1) THEN
-        parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_list)
-        parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list, List_Get(gate_queues, 0))
+FUNCTION parkhaus_init(p_parkhaus, p_settings, p_queue)
+    IF p_parkhaus = NULL THEN
+        return -1
+    END IF
 
-        RETURN OK
+    IF p_settings = NULL THEN
+        return -1
+    END IF
+
+    // basic fields from Settings
+    p_parkhaus.base.id    <- 0                  // or some id generator
+    p_parkhaus.base.type  <- PARKHAUS
+    p_parkhaus.base.tick  <- parkhaus_tick
+
+    p_parkhaus.size       <- p_settings.size
+    p_parkhaus.floors     <- p_settings.floors
+    p_parkhaus.fill_size  <- 0
+    p_parkhaus.num_gates  <- p_settings.gates
+    p_parkhaus.missed_car_entries <- 0
+
+    // name: copy and truncate if necessary (details in C)
+    // p_parkhaus.name <- "Rauenegg" or p_settings.name
+
+    // connect queue and parked-vehicle list
+    p_parkhaus.queue        <- p_queue
+    p_parkhaus.p_parked_head <- NULL
+
+    return 0
+END FUNCTION
+
+
+FUNCTION parkhaus_has_free_slot(p_parkhaus)
+    IF p_parkhaus = NULL THEN
+        return 0
+    END IF
+
+    // free slots = total size - currently filled
+    free_slots <- p_parkhaus.size - p_parkhaus.fill_size
+
+    IF free_slots > 0 THEN
+        return 1
     ELSE
-        IF ((settings.number_of_gates > 1) AND (!settings.gate_time_exit_enabled)) THEN
-            parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_list)
-            parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
-            RETURN OK
-        ELSE
-            // Das Szenario mit gate_time beim Exit wird voruebergehend vernachlaessigt
-            //IF ((settings.number_of_gates > 1) AND settings.gate_time_exit_enabled) THEN
-            //
-            //    parkhouse_tick_empty_subtick(current_tick, settings, parkhouse, stats)
-            //    parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
-
-            //    RETURN OK
-            ELSE
-                RETURN ERROR
-            END IF
-        END IF
+        return 0
     END IF
 END FUNCTION
 
 
-FUNCTION parkhouse_tick_empty_general(current_tick, parkhouse, settings, car_list)
+FUNCTION parkhaus_get_utilization(p_parkhaus)
+    IF p_parkhaus = NULL THEN
+        return 0.0
+    END IF
 
-    currentNode = car_list.head
-    previousNode = NULL
+    IF p_parkhaus.size = 0 THEN
+        return 0.0
+    END IF
 
-    WHILE (currentNode != NULL) DO
-        IF ((currentNode -> car.created_at_tick - current_tick) < (currentNode -> car.leave_after_ticks)) THEN
-            currentNode = nextNode
-        ELSE
-            IF ((currentNode -> car.created_at_tick - current_tick) >= (currentNode -> car.leave_after_ticks)) THEN
-                previousNode = currentNode
-                currentNode = nextNode
-                car_leaving(parkhouse, car_list, previousNode)
-            END IF
-        END IF
-    END WHILE
+    utilization <- (p_parkhaus.fill_size * 100.0) / p_parkhaus.size
+    return utilization
 END FUNCTION
 
 
-FUNCTION parkhouse_tick_fill_general(current_tick, parkhouse, settings, car_list, gate_queue)
+//////////////////////////////////////////////////////////
+// Tick logic for Parkhaus (outer tick) / Primary Function
+//////////////////////////////////////////////////////////
 
-    demand_remaining <- gate_queue.getDemand() // QueueLength(gate_queue) ODER gate_queue.getLength() + gate_queue.newDemand
-    max_entries_per_tick <- settings.max_entries_per_tick
-    queue_max_len <- settings.queue_max_len
+FUNCTION parkhaus_tick(p_self, current_tick)
+    // cast SimulationObject* to Parkhaus*
+    p_parkhaus <- (Parkhaus) p_self
 
-    entries_processed <- 0
-    queue_blocked <- FALSE
+    /**
+    * Free up spaces first to make space for the next cars.
+    * Cars that have reached max_tick will leave here.
+    */
+    status <- parkhouse_tick_empty_general(
+                  current_tick,
+                  p_parkhaus,
+                  p_parkhaus.settings,       // or p_sim.settings
+                  p_parkhaus.p_parked_head
+              )
+    IF status != 0 THEN
+        return
+    END IF
+    IF p_parkhaus.num_gates = 1 THEN
 
-    // Befuellung des Parkhaus
-    WHILE ((get_open_space(parkhouse) > 0) AND (entries_processed < max_entries_per_tick) AND (demand_remaining > 0) AND !queue_blocked) DO
+        status <- parkhouse_tick_fill_general(
+                      current_tick,
+                      p_parkhaus,
+                      p_parkhaus.settings,
+                      p_parkhaus.p_parked_head,
+                      p_parkhaus.queue
+                  )
+        return
+    ELSE
+        // subtick based filling according to
+        // https://github.com/Three-Knights-at-Parking/Teil1_Documentation/issues/16
+        status <- parkhouse_fill_subtick(
+                      current_tick,
+                      p_parkhaus,
+                      p_parkhaus.settings,
+                      p_parkhaus.queue
+                  )
+         // Das Szenario mit gate_time beim Exit wird voruebergehend vernachlaessigt
+         //IF ((settings.number_of_gates > 1) AND settings.gate_time_exit_enabled) THEN
+         //
+         //    parkhouse_tick_empty_subtick(current_tick, settings, parkhouse, stats)
+         //    parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
+         //    RETURN OK
+         //END IF
+        return
+    END IF
+END FUNCTION
 
-        // Liegt etwas in der Queue? Wenn nein, erstelle neues Vehicle in Queue
-        IF (QueueIsEmpty(gate_queue)) THEN
-            queue_add_random_vehicle(gate_queue)
-            demand_remaining--
+
+//////////////////////////////////////////////////////////
+// Emptying vehicles from Parkhaus
+//////////////////////////////////////////////////////////
+@brief Checks if parked cars need to leave
+FUNCTION parkhouse_tick_empty_general(current_tick, p_parkhaus, p_settings, p_car_list_head)
+    currentNode  <- p_car_list_head
+    previousNode <- NULL
+
+    WHILE currentNode != NULL DO
+        nextNode <- currentNode.p_next
+
+        created_at   <- currentNode.created_at
+        parking_time <- currentNode.parking_time
+        leave_tick   <- created_at + parking_time
+        IF current_tick >= leave_tick THEN
+            // remove this car from Parkhaus and free its space
+            car_leaving(p_parkhaus, p_car_list_head, currentNode)
         END IF
 
-        IF (!QueueIsEmpty(gate_queue)) THEN
-            next_vehicle_size <- GetNextQueueVehicleSize(gate_queue)
+        currentNode <- nextNode
+    END WHILE
 
-            IF (next_vehicle_size <= get_open_space(parkhouse)) THEN
-                required_space <- fill_from_queue(gate_queue, get_open_space(parkhouse))
-                update_parkhouse_on_entry(parkhouse, required_space)
-                entries_processed++
+    return 0
+END FUNCTION
 
-            ELSE    // Anstehendes Fahrzeug zu gross um einzufahren
+
+//////////////////////////////////////////////////////////
+// Single-gate filling per tick
+//////////////////////////////////////////////////////////
+
+FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_car_list_head, p_gate_queue)
+
+    // demand is number of vehicles that want to enter at this gate
+    demand_remaining <- Queue_GetDemand(p_gate_queue)
+
+    max_entries_per_tick <- p_settings.max_entries_per_tick
+    queue_max_len        <- p_settings.queue_max_len
+
+    entries_processed <- 0
+    queue_blocked     <- FALSE
+    WHILE (get_open_space(p_parkhaus) > 0) AND
+          (entries_processed < max_entries_per_tick) AND
+          (demand_remaining > 0) AND
+          (queue_blocked = FALSE) DO
+
+        // Liegt etwas in der Queue? Wenn nein, erstelle neues Vehicle in Queue
+        IF Queue_IsEmpty(p_gate_queue) THEN
+            queue_add_random_vehicle(p_gate_queue)
+            demand_remaining <- demand_remaining - 1
+        END IF
+
+        IF NOT Queue_IsEmpty(p_gate_queue) THEN
+            next_vehicle_size <- GetNextQueueVehicleSize(p_gate_queue)
+
+            IF next_vehicle_size <= get_open_space(p_parkhaus) THEN
+                required_space <- fill_from_queue(p_gate_queue, get_open_space(p_parkhaus))
+                update_parkhouse_on_entry(p_parkhaus, required_space)
+                entries_processed <- entries_processed + 1
+            ELSE // Anstehendes Fahrzeug zu gross um einzufahren
                 queue_blocked <- TRUE
             END IF
         END IF
     END WHILE
 
-    IF (demand_remaining > 0) THEN
-        open_Demand(parkhouse, gate_queue, settings.queue_max_len, demand_remaining)
+    // remaining demand goes into queue or gets rejected
+    IF demand_remaining > 0 THEN
+        open_demand(p_parkhaus, p_gate_queue, queue_max_len, demand_remaining)
     END IF
 
-    OUTPUT queue
-    OUTPUT get_open_space
-    OUTPUT entries_processed
-    OUTPUT queue_blocked
-    OUTPUT rejected_count
+    return 0
 END FUNCTION
 
 
-FUNCTION parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
+//////////////////////////////////////////////////////////
+// Multi-gate subtick filling
+//////////////////////////////////////////////////////////
 
-    number_of_gates <- parkhouse.number_of_gates
-    max_entries_per_tick <- settings.max_entries_per_tick
+FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_gate_queues)
 
-    FOR (int m = 0; m < max_entries_per_tick; m++)
-        IF (m == max_entries_per_tick && i == number_of_gates) THEN
-            lastCycle = true;
+    number_of_gates      <- p_parkhaus.num_gates
+    max_entries_per_tick <- p_settings.max_entries_per_tick
+
+    m <- 0
+    WHILE m < max_entries_per_tick DO
+
+        // last cycle if this is the last subtick
+        IF m = (max_entries_per_tick - 1) THEN
+            lastCycle <- TRUE
         ELSE
-            lastCycle = false;
+            lastCycle <- FALSE
         END IF
 
-        FOR (int i = 0; i < number_of_gates; i++)
-            parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_queue <- gate_queues.queue[i], lastCycle);
+        i <- 0
+        WHILE i < number_of_gates DO
+            p_gate_queue <- Queue_GetGateQueue(p_gate_queues, i)
 
-        END FOR
-    END FOR
+            parkhouse_fill_subtick_routine(
+                current_tick,
+                p_parkhaus,
+                p_settings,
+                p_gate_queue,
+                lastCycle
+            )
+
+            i <- i + 1
+        END WHILE
+
+        m <- m + 1
+    END WHILE
+
+    return 0
 END FUNCTION
 
 
-FUNCTION parkhouse_fill_subtick_routine(current_tick, parkhouse, settings, gate_queue, lastCycle)
+FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_gate_queue, lastCycle)
 
-    queue_blocked <- FALSE
-    required_space <- 0
-    demand_remaining <- gate_queue.getDemand() // QueueLength(gate_queue) ODER gate_queue.getLength() + gate_queue.newDemand
+    queue_blocked    <- FALSE
+    required_space   <- 0
+    demand_remaining <- Queue_GetDemand(p_gate_queue)
 
-    IF ((get_open_space(parkhouse) > 0) AND (demand_remaining > 0)) THEN
+    IF (get_open_space(p_parkhaus) > 0) AND (demand_remaining > 0) THEN
 
         // Wenn die Queue leer ist, wird ein neues Front Vehicle erstellt
-        IF (QueueIsEmpty(gate_queue)) THEN
-            queue_add_random_vehicle(gate_queue, current_tick)
-            demand_remaining--
+        IF Queue_IsEmpty(p_gate_queue) THEN
+            queue_add_random_vehicle(p_gate_queue)
+            demand_remaining <- demand_remaining - 1
         END IF
 
         // Wenn die Queue infolge nicht leer ist, wird das erste Element der Liste in das Parkhaus uebernommen
-        IF !QueueIsEmpty(gate_queue) THEN
-            next_vehicle_size <- GetNextQueueVehicleSize(gate_queue)
+        IF NOT Queue_IsEmpty(p_gate_queue) THEN
+            next_vehicle_size <- GetNextQueueVehicleSize(p_gate_queue)
 
             // Kontrolle ob Vehicle in Parkhaus passt
-            IF (next_vehicle_size <= get_open_space(parkhouse)) THEN
-                required_space <- fill_from_queue(gate_queue, get_open_space())
-                update_parkhouse_on_entry(parkhouse, required_space)
+            IF next_vehicle_size <= get_open_space(p_parkhaus) THEN
+                required_space <- fill_from_queue(p_gate_queue, get_open_space(p_parkhaus))
+                update_parkhaus_on_entry(p_parkhaus, required_space)
             END IF
         END IF
     END IF
 
-    IF (demand_remaining > 0 && lastCycle) THEN
-        open_Demand(parkhouse, gate_queue, settings.queue_max_len, demand_remaining)
+    IF (demand_remaining > 0) AND (lastCycle = TRUE) THEN
+        open_demand(p_parkhaus, p_gate_queue, p_settings.queue_max_len, demand_remaining)
     END IF
 
-    OUTPUT queue
-    OUTPUT queue_blocked
-
+    return 0
 END FUNCTION
 
 
-FUNCTION fill_from_queue(gate_queue, parkhouse_open_space)
+//////////////////////////////////////////////////////////
+// Queue / vehicle helper functions
+//////////////////////////////////////////////////////////
 
-    vehicle <- QueuePopFront(gate_queue)
+FUNCTION fill_from_queue(p_gate_queue, parkhouse_open_space)
 
-    base_space <- GetVehicleBaseSpace(vehicle)
+    vehicle <- Queue_PopFront(p_gate_queue)
+
+    base_space     <- GetVehicleBaseSpace(vehicle)
     required_space <- base_space
 
     // Bad parking only possible if double space is available
-    IF (parkhouse_open_space >= 2 * base_space) THEN
+    IF parkhouse_open_space >= 2 * base_space THEN
         r <- RandomPercent()
-        IF (r < GetBadParkingProbability(vehicle)) THEN
+        IF r < GetBadParkingProbability(vehicle) THEN
             required_space <- 2 * base_space
         END IF
     END IF
 
+    // park this vehicle in Parkhaus (caller will call parkhaus_park_vehicle)
     RETURN required_space
 END FUNCTION
 
 
-FUNCTION open_Demand(parkhouse, gate_queue, queue_max_len, demand_remaining)
+FUNCTION open_demand(p_parkhaus, p_gate_queue, queue_max_len, demand_remaining)
 
     open_demand <- demand_remaining
+
     // Uebrige moegliche Einfahrten in die Queue
-    WHILE ((open_demand > 0) AND (QueueLength(gate_queue) < queue_max_len)) DO
-        queue_add_random_vehicle(gate_queue)
-        open_demand--
+    WHILE (open_demand > 0) AND (Queue_Length(p_gate_queue) < queue_max_len) DO
+        queue_add_random_vehicle(p_gate_queue)
+        open_demand <- open_demand - 1
     END WHILE
 
     // Uebrige moegliche Einfahrten, welche nicht in Queue passen -> rejected
-    IF (open_demand > 0) THEN
-        parkhouse.rejections += open_demand
-    END IF
-END FUNCTION
-
-
-FUNCTION car_leaving(parkhouse, car_list, car)
-
-    IF (parkhouse = NULL) THEN
-        RETURN ERROR
+    IF open_demand > 0 THEN
+        p_parkhaus.missed_car_entries <- p_parkhaus.missed_car_entries + open_demand
     END IF
 
-    IF (car = NULL) THEN
-        RETURN ERROR
+    return 0
+END FUNCTION
+
+
+FUNCTION car_leaving(p_parkhaus, p_car_list_head, p_car)
+
+    IF p_parkhaus = NULL THEN
+        return -1
     END IF
 
-    update_parkhouse_on_exit(parkhouse, car.required_space)
-    car_list_remove_object(car_list, car)
-
-    RETURN OK
-END FUNCTION
-
-
-/////////////////////
-///Queue  Handling///
-///////////////////
-
-FUNCTION Parkhaus_CreateGateQueues(number_of_gates)
-
-    gate_queues <- List_CreateDynamic()
-
-    FOR (gate_index <- 0; gate_index < number_of_gates; gate_index++)
-        gate_queue <- Queue_CreateDynamic()
-        gate_queue.gate_id <- gate_index
-        List_PushBack(gate_queues, gate_queue)
-    END FOR
-
-    RETURN gate_queues
-END FUNCTION
-
-
-FUNCTION Parkhaus_EnqueueAtGate(gate_queues, gate_index, vehicle)
-
-    gate_queue <- List_Get(gate_queues, gate_index)
-
-    IF (gate_queue = NULL) THEN
-        RETURN ERROR
+    IF p_car = NULL THEN
+        return -1
     END IF
 
-    status <- QueuePushBack(gate_queue, vehicle)
+    required_space <- GetVehicleRequiredSpace(p_car)
 
-    RETURN status
+    update_parkhaus_on_exit(p_parkhaus, required_space)
+    vehicle_list_remove(p_car_list_head, NULL, p_car)
+
+    // free vehicle node when removing it from list.
+    // We will have to look at timings with the statistics objects,
+    // do we want to tick the statistics before Parkhaus and Queue?
+    // If not, freeing here is INVALID as we haven't collected the stats
+    // yet.
+    FREE(p_car)
+
+    return 0
 END FUNCTION
 
 
-FUNCTION Parkhaus_SetGateDemand(gate_queues, gate_index, demand_value)
+//////////////////////////////////////////////////////////
+// Small helpers for Parkhaus capacity & stats
+//////////////////////////////////////////////////////////
 
-    gate_queue <- List_Get(gate_queues, gate_index)
+FUNCTION get_open_space(p_parkhaus)
+    RETURN p_parkhaus.size - p_parkhaus.fill_size
+END FUNCTION
 
-    IF (gate_queue = NULL) THEN
-        RETURN ERROR
+
+FUNCTION update_parkhaus_on_exit(p_parkhaus, required_space)
+    p_parkhaus.fill_size <- p_parkhaus.fill_size - required_space
+    p_parkhaus.totalExit <- p_parkhaus.totalExit + 1
+    return
+END FUNCTION
+
+
+FUNCTION update_parkhaus_on_entry(p_parkhaus, required_space)
+    p_parkhaus.fill_size <- p_parkhaus.fill_size + required_space
+    p_parkhaus.totalEntry <- p_parkhaus.totalEntry + 1
+    return
+END FUNCTION
+
+
+//////////////////////////////////////////////////////////
+// Parkhaus free
+//////////////////////////////////////////////////////////
+
+FUNCTION parkhaus_free(p_parkhaus)
+    IF p_parkhaus = NULL THEN
+        return
     END IF
 
-    gate_queue.demand <- demand_value
+    // free all parked vehicles.
+    // Same as before, when do we collect statistics?
+    // Might make this also INVALID if we don't collect before this.
+    vehicle_list_remove_all(
+        &p_parkhaus.p_parked_head,
+        NULL
+    )
 
-    RETURN OK
+    // free associated queue as Parkhaus is owner!
+    IF p_parkhaus.queue != NULL THEN
+        queue_free(p_parkhaus.queue)
+        FREE(p_parkhaus.queue)
+        p_parkhaus.queue <- NULL
+    END IF
+
+    return
 END FUNCTION
-
-
-FUNCTION queue_add_random_vehicle(gate_queue)
-
-    vehicle <- CreateRandomVehicle()
-    status = QueuePushBack(gate_queue, vehicle)
-
-    RETURN status
-END FUNCTION
-
-/////////////////////
-///help Functions///
-///////////////////
-FUNCTION get_open_space(parkhouse)
-
-    RETURN parkhouse.size - parkhouse.fill_space
-END FUNCTION
-
-
-FUNCTION update_parkhouse_on_exit(parkhouse, required_space)
-
-    parkhouse.fill_space = parkhouse.fill_space - required_space
-    parkhouse.totalExit++
-
-END FUNCTION
-
-
-FUNCTION update_parkhouse_on_entry(parkhouse, required_space)
-
-    parkhouse.fill_space = parkhouse.fill_space + required_space
-    parkhouse.totalEntry++
-
-END FUNCTION
-
-
-
