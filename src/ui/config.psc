@@ -76,13 +76,13 @@ FUNCTION validate_int_input(value, min, max, allow_negative)
 END FUNCTION
 
 
-FUNCTION edit_setting(min, max, allow_negative)
+FUNCTION edit_int_setting(min, max, allow_negative)
 
     valid ← FALSE
 
     WHILE valid = FALSE DO
         new_value ← INPUT
-        valid ← CALL validate_user_input_config(new_value, min, max, allow_negative)
+        valid ← CALL validate_int_input(new_value, min, max, allow_negative)
     END WHILE
 
     return new_value
