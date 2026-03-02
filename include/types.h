@@ -15,6 +15,7 @@ typedef struct Settings Settings;
 typedef struct Queue Queue;
 typedef struct Simulation Simulation;
 typedef struct GenericVehicle GenericVehicle;
+typedef struct Stats Stats;
 
 /**
  * Can be expanded in the future to simulate EVs or Motorcycles etc.
@@ -88,6 +89,7 @@ struct Simulation {
     uint32_t current_tick; // Current tick time.
     uint16_t real_equivalent; // Tick equivalent in real time (seconds)
     Parkhaus* parkhaus; // The Parkhaus for this Simulation
+    Stats* stats; // Statistikcontainer fuer Tick- und Gesamtwerte
 };
 
 /**
