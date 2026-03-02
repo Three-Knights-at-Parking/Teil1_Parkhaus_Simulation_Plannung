@@ -5,11 +5,11 @@
 
 FUNCTION simulation_init(p_sim, p_settings, p_stats)
     IF p_sim = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     IF p_settings = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     p_sim.settings      <- p_settings
@@ -21,7 +21,7 @@ FUNCTION simulation_init(p_sim, p_settings, p_stats)
     p_sim.stats         <- p_stats
     p_sim.rng <- RNG_Create(p_sim.rand_seed)
     IF p_sim.rng = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     // create and initialize Queue for this parkhaus
@@ -29,7 +29,7 @@ FUNCTION simulation_init(p_sim, p_settings, p_stats)
     IF p_queue = NULL THEN
         RNG_Destroy(p_sim.rng)
         p_sim.rng <- NULL
-        return -1
+        return ERROR
     END IF
 
     // maximum size of queue may depend on settings (e.g. size or gates)
@@ -38,7 +38,7 @@ FUNCTION simulation_init(p_sim, p_settings, p_stats)
         FREE(p_queue)
         RNG_Destroy(p_sim.rng)
         p_sim.rng <- NULL
-        return -1
+        return ERROR
     END IF
 
     p_sim.parkhaus <- ALLOCATE(Parkhaus)
@@ -47,7 +47,7 @@ FUNCTION simulation_init(p_sim, p_settings, p_stats)
         FREE(p_queue)
         RNG_Destroy(p_sim.rng)
         p_sim.rng <- NULL
-        return -1
+        return ERROR
     END IF
 
     result <- parkhaus_init(p_sim.parkhaus, p_settings, p_queue)
@@ -58,7 +58,7 @@ FUNCTION simulation_init(p_sim, p_settings, p_stats)
         p_sim.parkhaus <- NULL
         RNG_Destroy(p_sim.rng)
         p_sim.rng <- NULL
-        return -1
+        return ERROR
     END IF
 
     return 0
@@ -67,12 +67,12 @@ END FUNCTION
 
 FUNCTION simulation_start(p_sim)
     IF p_sim = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     p_sim.current_tick <- 0
     OUTPUT "Simulation Started"
-    return 0
+    return OK
 END FUNCTION
 
 
@@ -81,7 +81,7 @@ FUNCTION simulation_tick(p_sim)
     status <- 0          // 0 = OK, non-zero = error or stop
 
     IF p_sim = NULL THEN
-        return -1
+        return ERROR
     END IF
     IF (p_sim.current_tick + 1) > p_sim.max_ticks THEN
         status <- Simulation_End(p_sim)
@@ -130,7 +130,7 @@ END FUNCTION
 
 FUNCTION Simulation_End(p_sim)
     IF p_sim = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     // save final summary statistics of the run at the end.
@@ -150,13 +150,13 @@ FUNCTION Simulation_End(p_sim)
     FREE(Settings) // free settings object
     OUTPUT "Simulation ended"
 
-    return 0
+    return OK
 END FUNCTION
 
 
 FUNCTION free_simulation(p_sim)
     IF p_sim = NULL THEN
-        return -1
+        return ERROR
     END IF
 
     // end simulation and free all children
@@ -164,5 +164,5 @@ FUNCTION free_simulation(p_sim)
     // free the Simulation object itself if dynamically allocated
     FREE(p_sim)
 
-    return 0
+    return OK
 END FUNCTION
