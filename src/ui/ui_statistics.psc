@@ -119,3 +119,13 @@ FUNCTION pad_left(text, width)
     return CALL repeat_char(" ", width - LENGTH(s)) + s
 
 END FUNCTION
+
+
+FUNCTION format_float_1(value)
+
+    // Pseudocode: round to 1 decimal and return as string
+    // Example: 87.04 -> "87.0"
+    rounded ← ROUND(value * 10) / 10
+    return TO_STRING(rounded)
+
+END FUNCTION
