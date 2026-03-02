@@ -128,6 +128,20 @@ FUNCTION edit_float_setting_percent()
 END FUNCTION
 
 
+FUNCTION edit_string_setting(max_len)
+
+    valid ← FALSE
+
+    WHILE valid = FALSE DO
+        new_text ← INPUT
+        valid ← CALL validate_string_input(new_text, max_len)
+    END WHILE
+
+    return new_text
+
+END FUNCTION
+
+
 FUNCTION config_menu(settings)
 
     IF settings_state_flag = NOT_INITIALIZED THEN
