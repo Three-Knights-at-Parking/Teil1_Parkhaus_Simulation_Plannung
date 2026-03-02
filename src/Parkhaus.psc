@@ -36,23 +36,6 @@ FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
     return OK
 END FUNCTION
 
-
-
-FUNCTION parkhaus_has_free_slot(p_parkhaus)
-    IF p_parkhaus = NULL THEN
-        return ERROR
-    END IF
-
-    // free slots = total size - currently filled
-    free_slots <- p_parkhaus.size - p_parkhaus.fill_size
-
-    IF free_slots > 0 THEN
-        return free_slots
-    ELSE
-        return ERROR
-    END IF
-END FUNCTION
-
 //Moving this to Stats -> Data Analyse 
 FUNCTION parkhaus_get_utilization(p_parkhaus)
     IF p_parkhaus = NULL THEN
@@ -202,11 +185,12 @@ FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_gate_que
     number_of_gates      <- p_parkhaus.num_gates
     max_entries_per_tick <- p_settings.max_entries_per_tick
 
+
     m <- 0
     WHILE m < max_entries_per_tick DO
 
         // last cycle if this is the last subtick
-        IF m = (max_entries_per_tick - 1) THEN
+        IF m == (max_entries_per_tick - 1) THEN
             lastCycle <- TRUE
         ELSE
             lastCycle <- FALSE
@@ -217,13 +201,12 @@ FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_gate_que
             p_gate_queue <- Queue_GetGateQueue(p_gate_queues, i)
 
             parkhouse_fill_subtick_routine(
-                current_tick,
-                p_parkhaus,
-                p_settings,
-                p_gate_queue,
-                lastCycle
+                    current_tick,
+                    p_parkhaus,
+                    p_settings,
+                    p_gate_queue,
+                    lastCycle
             )
-
             i <- i + 1
         END WHILE
 
@@ -233,7 +216,7 @@ FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_gate_que
     return OK
 END FUNCTION
 
-
+@brief: In this function the single subtick will be run -> parallel checking of all Entrys for an euqal entry possibility
 FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_gate_queue, lastCycle)
 
     queue_blocked    <- FALSE
@@ -254,13 +237,17 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_
 
             // Kontrolle ob Vehicle in Parkhaus passt
             IF next_vehicle_size <= get_open_space(p_parkhaus) THEN
-                required_space <- fill_from_queue(p_gate_queue, get_open_space(p_parkhaus))
+                required_space <- fill_from_queue(p_parkhaus, p_gate_queue)
                 update_parkhaus_on_entry(p_parkhaus, required_space)
+            ELSE
+                //Stats?
+                queue_blocked <- TRUE
             END IF
         END IF
     END IF
 
     IF (demand_remaining > 0) AND (lastCycle = TRUE) THEN
+        //Stats?
         open_demand(p_parkhaus, p_gate_queue, p_settings.queue_max_len, demand_remaining)
     END IF
 
@@ -281,6 +268,7 @@ FUNCTION parkhaus_enqueue_at_gate(p_parkhaus, gate_index, p_vehicle)
     return status
 END FUNCTION
 
+
 FUNCTION parkhaus_set_gate_demand(p_parkhaus, gate_index, demand_value)
     p_gate_queue <- p_parkhaus.gate_queues[gate_index]
     IF p_gate_queue = NULL THEN
@@ -290,6 +278,7 @@ FUNCTION parkhaus_set_gate_demand(p_parkhaus, gate_index, demand_value)
     return OK
 END FUNCTION
 
+
 FUNCTION queue_add_random_vehicle(p_gate_queue)
 
     p_vehicle <- create_random_vehicle()
@@ -298,7 +287,8 @@ FUNCTION queue_add_random_vehicle(p_gate_queue)
     return status
 END FUNCTION
 
-FUNCTION fill_from_queue(p_gate_queue, parkhouse_open_space)
+
+FUNCTION fill_from_queue(p_parkhaus, p_gate_queue)
 
     vehicle <- Queue_PopFront(p_gate_queue)
 
@@ -306,7 +296,7 @@ FUNCTION fill_from_queue(p_gate_queue, parkhouse_open_space)
     required_space <- base_space
 
     // Bad parking only possible if double space is available
-    IF parkhouse_open_space >= 2 * base_space THEN
+    IF get_open_space(P_parkhaus) >= 2 * base_space THEN
         r <- RandomPercent()
         IF r < GetBadParkingProbability(vehicle) THEN
             required_space <- 2 * base_space
