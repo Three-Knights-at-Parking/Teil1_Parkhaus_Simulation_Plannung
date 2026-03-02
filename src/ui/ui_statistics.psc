@@ -56,6 +56,52 @@ FUNCTION ui_statistics_print_tick_normal(stats_tick)
 END FUNCTION
 
 
+FUNCTION ui_statistics_print_tick_verbose(stats_tick)
+
+    status_text ← "OK"
+    IF stats_tick.capacity_free = 0 THEN
+        status_text ← "FULL"
+    END IF
+
+    OUTPUT "──────────────────────────────────────────────────────────────────────────────────────────────"
+    OUTPUT "Tick ", stats_tick.tick, " | Status=", status_text,
+           " | Occ=", stats_tick.capacity_taken, "/", stats_tick.capacity_total,
+           " (", CALL format_float_1(stats_tick.capacity_taken_percent), "%)",
+           " | Free=", stats_tick.capacity_free
+
+    OUTPUT "Peak/Full: peakUtilSoFar=", CALL format_float_1(stats_tick.peak_capacity_taken_percent_so_far), "% ",
+           " | firstFullTick=", stats_tick.first_full_tick,
+           " | fullTicksSoFar=", stats_tick.full_ticks_so_far
+
+    OUTPUT "Flow: arrivals=", stats_tick.arrivals_generated,
+           " | enqueued=", stats_tick.enqueued,
+           " | entered=", stats_tick.entered,
+           " | departed=", stats_tick.departed,
+           " | netOccChange=", stats_tick.net_occupancy_change
+
+    OUTPUT "Queue: lenEnd=", stats_tick.queue_length_end,
+           " | maxSoFar=", stats_tick.queue_length_max_so_far,
+           " | rejections=", stats_tick.queue_rejections,
+           " | avgWaitEntered=", CALL format_float_2(stats_tick.avg_queue_wait_ticks_entered),
+           " | maxWaitSoFar=", stats_tick.max_queue_wait_ticks_so_far,
+           " | activeRatioSoFar=", CALL format_float_1(stats_tick.queue_active_ratio_percent_so_far), "%"
+
+    OUTPUT "Parking/Block/Quality: avgParkDurDeparted=", CALL format_float_2(stats_tick.avg_parking_duration_ticks_departed),
+           " | blockerFullActive=", stats_tick.blocker_full_active,
+           " | blockerFullRatioSoFar=", CALL format_float_1(stats_tick.blocker_full_ratio_percent_so_far), "%",
+           " | badParkingCases=", stats_tick.bad_parking_cases,
+           " | badParkingTick%=", CALL format_float_1(stats_tick.bad_parking_tick_percent), "%"
+
+    OUTPUT "RunningAvgs/Peaks: avgUtilSoFar=", CALL format_float_1(stats_tick.avg_capacity_percent_so_far), "%",
+           " | avgQueueSoFar=", CALL format_float_2(stats_tick.avg_queue_length_so_far),
+           " | avgIn/tick=", stats_tick.avg_entered_per_tick_so_far,
+           " | avgOut/tick=", stats_tick.avg_departed_per_tick_so_far,
+           " | peakQueue=", stats_tick.peak_queue_value_so_far, " @T", stats_tick.peak_queue_tick,
+           " | peakUtil=", CALL format_float_1(stats_tick.peak_capacity_value_percent_so_far), "% @T", stats_tick.peak_capacity_tick
+
+END FUNCTION
+
+
 FUNCTION ui_statistics_print_tick(stats_tick, settings)
 
     IF settings.output_mode = NONE THEN
@@ -80,6 +126,7 @@ FUNCTION ui_statistics_print_tick(stats_tick, settings)
 END FUNCTION
 
 
+//Smaller helping-functions for data formatting process
 FUNCTION repeat_char(ch, count)
 
     result ← ""
