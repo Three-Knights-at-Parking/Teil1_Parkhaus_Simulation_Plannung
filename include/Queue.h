@@ -2,11 +2,12 @@
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_QUEUE_H
 
 #include "types.h"
+
 /**
- * Represents a Queue owned by a Parkhaus. Handles (and owns!) all waiting cars and "inherits"
- * SimulationObject for easy use of the tick() function. Parkhaus calls this object's free
- * function to free the Queue and the underlying cars.
- */
+* Represents a Queue owned by a Parkhaus. Handles (and owns!) all waiting cars and "inherits"
+* SimulationObject for easy use of the tick() function. Parkhaus calls this object's free
+* function to free the Queue and the underlying cars.
+*/
 
     /**
      * @brief Initialize the Queue.
@@ -32,6 +33,13 @@
     int queue_is_empty(const Queue *p_queue);
 
     /**
+     * @brief Get current number of vehicles in the queue.
+     * @param p_queue Pointer to the Queue.
+     * @return Current queue length, or 0 if p_queue is NULL.
+     */
+    uint16_t queue_length(const Queue *p_queue);
+
+    /**
      * @brief Enqueue a vehicle at the end of the queue.
      *        p_vehicle must be dynamically allocated. Queue will take the ownership of this vehicle.
      * @param p_queue Pointer to the Queue.
@@ -44,13 +52,12 @@
      * @brief Dequeue the first vehicle in the queue (FIFO). Ownership of the vehicle is given to the Parent!
      * @param p_queue Pointer to the Queue.
      * @return Pointer to the dequeued Vehicle, or NULL if the queue is empty.
-     *
      */
     GenericVehicle *queue_dequeue(Queue *p_queue);
 
     /**
      * @brief Remove a specific vehicle from the queue (z.B. Timeout / max tick reached).
-     * This will free the memory related to this vehicle.
+     *        This will free the memory related to this vehicle.
      * @param p_queue Pointer to the Queue.
      * @param p_target Pointer to the Vehicle that should be removed.
      * @return 0 on success, non-zero if the vehicle was not found in the queue.
@@ -58,7 +65,21 @@
     int queue_remove(Queue *p_queue, GenericVehicle *p_target);
 
     /**
-     * @brief Tick function for Queue for the underlying
+     * @brief Set the demand value for this gate queue for the current tick.
+     * @param p_queue Pointer to the Queue.
+     * @param demand_value New demand value.
+     */
+    void queue_set_demand(Queue *p_queue, uint16_t demand_value);
+
+    /**
+     * @brief Get the current demand value for this gate queue.
+     * @param p_queue Pointer to the Queue.
+     * @return Demand value, or 0 if p_queue is NULL.
+     */
+    uint16_t queue_get_demand(const Queue *p_queue);
+
+    /**
+     * @brief Tick function for Queue for the underlying SimulationObject.
      * @param p_self Pointer to the SimulationObject
      * @param current_tick Current simulation tick.
      */
