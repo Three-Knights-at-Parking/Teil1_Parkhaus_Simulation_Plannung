@@ -65,6 +65,7 @@ struct Parkhaus {
     uint32_t num_gates; // Number of gates.
     Queue **gate_queues; // array of Queue* with size = num_gates
     GenericVehicle *p_parked_head; // linked list of parked vehicles.
+    GenericVehicle *p_parked_tail;
     uint16_t missed_car_entries; // How many car spawns where missed because of full queue.
 };
 struct Simulation {

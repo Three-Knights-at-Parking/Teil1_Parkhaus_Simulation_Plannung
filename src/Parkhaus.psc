@@ -350,7 +350,7 @@ FUNCTION car_leaving(p_parkhaus, p_car_list_head, p_car)
     required_space <- GetVehicleRequiredSpace(p_car)
 
     update_parkhaus_on_exit(p_parkhaus, required_space)
-    vehicle_list_remove(p_car_list_head, NULL, p_car)
+    vehicle_list_remove(&p_parkhaus.parked_head, &p_parkhaus.parked_tail, p_car)
 
     // free vehicle node when removing it from list.
     // We will have to look at timings with the statistics objects,
@@ -398,10 +398,8 @@ FUNCTION parkhaus_free(p_parkhaus)
     // free all parked vehicles. Same as before,
     // freeing is only valid if we collect statistics
     // before this. Otherwise data is lost!
-    vehicle_list_remove_all(
-        &p_parkhaus.p_parked_head,
-        NULL
-    )
+    vehicle_list_remove_all(&p_parkhaus.parked_head, &p_parkhaus.parked_tail)
+
 
     // free all associated gate queues (Parkhaus is owner)
     IF p_parkhaus.gate_queues != NULL THEN

@@ -75,7 +75,7 @@ FUNCTION queue_enqueue(p_queue, p_vehicle)
     END IF
 
     // append vehicle to internal list of waiting_cars
-    vehicle_list_push_back(&p_queue.waiting_cars, p_vehicle)
+    vehicle_list_append(&p_queue.waiting_head, &p_queue.waiting_tail, p_vehicle)
     p_queue.size <- p_queue.size + 1
 
     return 0
@@ -92,7 +92,7 @@ FUNCTION queue_dequeue(p_queue)
     END IF
 
     // take first vehicle from internal list and transfer ownership
-    p_vehicle <- vehicle_list_pop_front(&p_queue.waiting_cars)
+    p_vehicle <- vehicle_list_pop_front(&p_queue.waiting_head, &p_queue.waiting_tail)
     p_queue.size <- p_queue.size - 1
 
     // ownership of p_vehicle goes to caller (Parkhaus).
@@ -110,7 +110,7 @@ FUNCTION queue_remove(p_queue, p_target)
     END IF
 
     // try to remove p_target from waiting_cars list
-    removed <- vehicle_list_remove(&p_queue.waiting_cars, p_target)
+    removed <- vehicle_list_remove(&p_queue.waiting_head, &p_queue.waiting_tail, p_target)
 
     IF removed = 0 THEN
         return -1
