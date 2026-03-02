@@ -76,6 +76,28 @@ FUNCTION validate_int_input(value, min, max, allow_negative)
 END FUNCTION
 
 
+FUNCTION validate_float_input_percent(value)
+
+    IF value != type float THEN
+        OUTPUT "Your input is not a valid number!"
+        OUTPUT "Please enter a decimal value (e.g. 25.5)"
+        OUTPUT "Press ENTER and try again..."
+        INPUT dummy
+        return INVALID
+    END IF
+
+    IF value < 0.0 OR value > 100.0 THEN
+        OUTPUT "Probability must be between 0.0 and 100.0 percent."
+        OUTPUT "Press ENTER and try again..."
+        INPUT dummy
+        return INVALID
+    END IF
+
+    return VALID
+
+END FUNCTION
+
+
 FUNCTION edit_int_setting(min, max, allow_negative)
 
     valid ← FALSE
