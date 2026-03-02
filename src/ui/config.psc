@@ -6,7 +6,7 @@ FUNCTION init_settings()
 
     CREATE FROM STRUCT Settings settings
 
-    settings.size ← 100
+    settings.capacity ← 100
     settings.floors ← 1
     settings.gates ← 1
     settings.entry_probability_perSec_prec ← 75.0
@@ -29,7 +29,7 @@ FUNCTION print_configscreen(settings)
     OUTPUT ""
     OUTPUT "Current Settings"
     OUTPUT "------------------------------------"
-    OUTPUT "1 Spots per Floor      : ", settings.size
+    OUTPUT "1 Capacity per Floor   : ", settings.capacity
     OUTPUT "2 Floors               : ", settings.floors
     OUTPUT "3 Gates                : ", settings.gates
     OUTPUT "4 Entry Prob (in %)    : ", settings.entry_probability_perSec_prec
@@ -145,18 +145,18 @@ FUNCTION config_menu(settings)
     END WHILE
 
     IF choice = 1 THEN
-        OUTPUT "Enter spots per floor (min 1 / max MAX_SIZE): "
-        settings.size ← CALL edit_setting(MIN_SIZE, MAX_SIZE, FALSE)
+        OUTPUT "Enter capacity per floor (min 1 / max MAX_CAPACITY): "
+        settings.capacity ← CALL edit_int_setting(MIN_CAPACITY, MAX_CAPACITY, FALSE)
         return UI_KONFIG
 
     ELSE IF choice = 2 THEN
         OUTPUT "Enter number of floors (min 1 / max MAX_FLOORS): "
-        settings.floors ← CALL edit_setting(MIN_FLOORS, MAX_FLOORS, FALSE)
+        settings.floors ← CALL edit_int_setting(MIN_FLOORS, MAX_FLOORS, FALSE)
         return UI_KONFIG
 
     ELSE IF choice = 3 THEN
         OUTPUT "Enter number of gates (min 1 / max MAX_GATES): "
-        settings.gates ← CALL edit_setting(MIN_GATES, MAX_GATES, FALSE)
+        settings.gates ← CALL edit_int_setting(MIN_GATES, MAX_GATES, FALSE)
         return UI_KONFIG
 
     ELSE IF choice = 4 THEN
@@ -166,17 +166,17 @@ FUNCTION config_menu(settings)
 
     ELSE IF choice = 5 THEN
         OUTPUT "Enter tick length in seconds (min MIN_TICK / max MAX_TICK): "
-        settings.real_equivalent ← CALL edit_setting(MIN_TICK, MAX_TICK, FALSE)
+        settings.real_equivalent ← CALL edit_int_setting(MIN_TICK, MAX_TICK, FALSE)
         return UI_KONFIG
 
     ELSE IF choice = 6 THEN
         OUTPUT "Enter max ticks (or use -1/-2/... for 1/2/... days; max MAX_MAX_TICKS): "
-        settings.max_ticks ← CALL edit_setting(MIN_MAX_TICKS, MAX_MAX_TICKS, TRUE)
+        settings.max_ticks ← CALL edit_int_setting(MIN_MAX_TICKS, MAX_MAX_TICKS, TRUE)
         return UI_KONFIG
 
     ELSE IF choice = 7 THEN
         OUTPUT "Enter random seed (or use -1 for default): "
-        settings.rand_seed ← CALL edit_setting(MIN_SEED, MAX_SEED, TRUE)
+        settings.rand_seed ← CALL edit_int_setting(MIN_SEED, MAX_SEED, TRUE)
         return UI_KONFIG
 
     ELSE IF choice = 0 THEN

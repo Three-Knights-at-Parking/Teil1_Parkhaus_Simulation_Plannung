@@ -10,17 +10,17 @@
 #include "ui.h"
 
 /* Maximum valid menu number in Config menu (0..CONFIG_MAX_VALID_NUMBER). */
-#define CONFIG_MAX_VALID_NUMBER 6
+#define CONFIG_MAX_VALID_NUMBER 7
 
 /* Allowed ranges for settings (min/max). */
-#define MIN_SIZE       1
+#define MIN_CAPACITY   1
 #define MIN_FLOORS     1
 #define MIN_GATES      1
 #define MIN_TICK       10
 #define MIN_MAX_TICKS  -365
 #define MIN_SEED       -1
 
-#define MAX_SIZE       200
+#define MAX_CAPACITY   200
 #define MAX_FLOORS     10
 #define MAX_GATES      6
 #define MAX_TICK       8640
