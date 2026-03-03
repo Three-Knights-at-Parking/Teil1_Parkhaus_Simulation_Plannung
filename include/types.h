@@ -138,7 +138,7 @@ struct Settings {
     uint16_t capacity; // Total parking spots per floor ##UI##
     uint8_t floors; // Number of floors. This is currently miscellaneous ##UI##
     uint8_t gates; // Number of gates. This will affect queue time. ##UI##
-    uint16_t gate_entry_inSec; // Time needed for an vehicle to enter der parkhouse ##UI##
+    uint16_t gate_entry_inSec; // Time needed for an vehicle to enter the parkhouse ##UI##
 	uint16_t tick_inSec; //Time in seconds of one Tick ##UI##
     uint32_t max_parking_ticks; //maximum of Ticks a car is allowed to Park ##UI##
     uint32_t min_parking_ticks; //minimum of Ticks a car will park -> assumption is 1 ##UI##
@@ -160,10 +160,9 @@ struct Settings {
  * @author: ibach
  */
 struct StatsTick {
-    StatList base;
     uint32_t current_tick; /**< Current tick of this snapshot. */
-    struct StatsTick *p_prev; /**< Previous tick in the statistics list. */
-    struct StatsTick *p_next; /**< Next tick in the statistics list. */
+    StatsTick *p_prev; /**< Previous tick in the statistics list. */
+    StatsTick *p_next; /**< Next tick in the statistics list. */
 
     /* Raw values at tick end */
     uint16_t capacity_total; /**< Total parking garage capacity. */
@@ -190,8 +189,7 @@ struct StatsTick {
     /* Raw quality/blocker values */
     uint16_t blocker_full_active; /**< How often a Gate was blocked in tis Tick */
     uint16_t bad_parking_cases; /**< Number of "badly parked" cases in this tick. */
-
-} StatsTick;
+};
 
 /**
  * Aggregated final evaluation over the complete simulation.
@@ -248,7 +246,7 @@ struct StatsSummary {
 
     /* 5) ADD-ON analysis of individual gates & vehicle types */
 
-} StatsSummary;
+};
 
 /**
  * Statistics container for tick progression and cumulative totals.

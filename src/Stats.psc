@@ -11,9 +11,10 @@
 
 // Brief: Sets all pointers, sums, and totals to defined
 // initial values. Must be executed once before the first tick call.
-FUNCTION StatsTick_init(p_StatList, capacity_total, current_tick)
+FUNCTION StatsTick_init(p_sim, capacity_total, current_tick)
 
     p_CurrentTick <- ALLOCATE(StatsTick)
+    p_StatList <- p_sim.p_StatList
 
     IF p_StatList = NULL THEN
         return ERROR
@@ -27,20 +28,7 @@ FUNCTION StatsTick_init(p_StatList, capacity_total, current_tick)
            return ERROR
     END IF
 
-    //Moving the Current Tick into the StatList and moving the pushing the last tick back
-    IF p_StatList.p_tick_head = NULL THEN
-        p_StatList.p_tick_head <- p_CurrentTick
-        struct StatsTick *p_prev <- NULL
-    ELSE
-        IF p_StatList.p_current_tick = NULL THEN
-            return ERROR
-        END IF
-        p_CurrentTick.p_prev <- p_StatList.p_tick_tail
-        p_StatList.p_tick_tail.p_next <- p_StatList.p_current_tick
-        p_StatList.p_tick_tail <- p_StatList.p_current_tick
-        p_StatList.p_current_tick <- p_CurrentTick
-    END IF
-
+    statlist_append(p_sim, p_CurrentTick)
     current_tick <- current_tick
 
     capacity_total <- capacity_total
@@ -68,6 +56,8 @@ FUNCTION StatsTick_init(p_StatList, capacity_total, current_tick)
 END FUNCTION
 
 
+// Brief: Allocates and initializes a fresh statistics list for a simulation.
+// The list starts empty and receives tick snapshots over time.
 FUNCTION StatList_init(p_simulation)
 
     IF p_simulation = NULL THEN
@@ -88,12 +78,14 @@ FUNCTION StatList_init(p_simulation)
 END FUNCTION
 
 
+// Brief: Releases only the StatList container object.
+// Note: Tick nodes must be released beforehand via StatsTick_free.
 FUNCTION StatList_free(p_StatList)
 
     IF p_StatList = NULL THEN
         return ERROR
     END IF
-
+    FREE(p_StatList.base)
     FREE(p_StatList)
 
     RETURN OK
@@ -101,6 +93,7 @@ FUNCTION StatList_free(p_StatList)
 END FUNCTION
 
 
+// Brief: Frees all stored tick nodes and resets list pointers to NULL.
 FUNCTION StatsTick_free(p_stats)
     IF p_stats = NULL THEN
         return ERROR
@@ -230,6 +223,7 @@ END FUNCTION
 //////////////////////////////////////////////////////////
 
 
+// Brief: Returns the most recently finalized tick snapshot (tail element).
 FUNCTION stats_get_latest_tick(p_stats)
     IF p_stats = NULL THEN
         return NULL
@@ -245,6 +239,8 @@ END FUNCTION
 // tick snapshots in StatList sequentially in a loop
 // and transferring them into the external result object.
 
+// Brief: Aggregates totals, averages, peaks, and ratios from all tick snapshots.
+// The caller provides p_summary, which is reset and then fully populated.
 FUNCTION stats_build_summary(p_stats, p_summary)
 
     IF p_stats = NULL OR p_summary = NULL THEN
@@ -367,4 +363,3 @@ FUNCTION stats_build_summary(p_stats, p_summary)
 
     return OK
 END FUNCTION
-

@@ -6,7 +6,7 @@
 #ifndef TEIL1_PARKHAUS_SIMULATION_PLANNUNG_STATS_H
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_STATS_H
 
-#include "../types.h"
+#include "types.h"
 
 /**
  * @file Stats.h
@@ -21,10 +21,10 @@
 /**
  * Initializes the statistics container for tick history.
  *
- * @param p_stats         Target container
+ * @param p_sim         Target container
  * @param capacity_total  Total parking garage capacity
  */
-int StatsTick_init(StatList *p_stats, uint16_t capacity_total, uint32_t current_tick);
+int StatsTick_init(Simulation *p_sim, uint16_t capacity_total, uint32_t current_tick);
 
 /**
  * Initializes the statistics list container for a simulation.
