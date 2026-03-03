@@ -36,21 +36,6 @@ FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
      RETURN OK
 END FUNCTION
 
-//Moving this to Stats -> Data Analyse 
-FUNCTION parkhaus_get_utilization(p_parkhaus)
-     IF p_parkhaus = NULL THEN
-         RETURN 0.0
-     END IF
-
-     IF p_parkhaus.capacity = 0 THEN // CHANGED: from size
-         RETURN 0.0
-     END IF
-
-      utilization <- (p_parkhaus.capacity_taken * 100) / p_parkhaus.capacity
-      RETURN utilization
-END FUNCTION
-
-
 //////////////////////////////////////////////////////////
 // Tick logic for Parkhaus (outer tick) / Primary Function
 // @author: ibach
