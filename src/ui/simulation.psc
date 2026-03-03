@@ -120,15 +120,3 @@ END FUNCTION
 FUNCTION hand_over_simulationdata(pStatList)
     g_pStatList ← pStatList
 END FUNCTION
-
-
-FUNCTION print_simulationdata(simulation_data[], pEndStats)
-
-    FOR i ← 0 TO simulation_data_lenght DO
-        OUTPUT simulation_data[i]       //Formatted simulation data displayed tick per tick
-    END FOR
-
-    OUTPUT "End-Statistics:"
-    OUTPUT pEndStats            //Formatted end statistic data displayed
-
-END FUNCTION
