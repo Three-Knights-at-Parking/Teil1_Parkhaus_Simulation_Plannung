@@ -67,7 +67,7 @@ FUNCTION parkhaus_tick(p_self, p_settings, p_StatList, current_tick)
     status <- parkhouse_tick_empty_general(
                   current_tick,
                   p_parkhaus,
-                  p_parkhaus.settings,       // or p_sim.settings
+                  p_settings,       // or p_sim.settings
                   p_StatList,
                   p_parkhaus.p_parked_head
               )
@@ -79,10 +79,10 @@ FUNCTION parkhaus_tick(p_self, p_settings, p_StatList, current_tick)
         status <- parkhouse_tick_fill_general(
                       current_tick,
                       p_parkhaus,
-                      p_parkhaus.settings,
-                      p_parkhaus.p_parked_head,
+                      p_settings,
                       p_StatList,
-                      p_parkhaus.queue
+                      p_parkhaus.queue,
+                      p_parkhaus.p_parked_head
                   )
         RETURN status
     ELSE
@@ -91,9 +91,9 @@ FUNCTION parkhaus_tick(p_self, p_settings, p_StatList, current_tick)
         status <- parkhouse_fill_subtick(
                       current_tick,
                       p_parkhaus,
-                      p_parkhaus.settings,
+                      p_settings,
                       p_StatList,
-                      p_parkhaus.queue
+                      p_parkhaus.queues
                   )
          // The gate_time scenario on exit is temporarily ignored
          //IF ((p_settings.num_gates > 1) AND settings.gate_time_exit_enabled) THEN
@@ -141,7 +141,7 @@ END FUNCTION
 // @author: ibach
 //////////////////////////////////////////////////////////
 
-FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_StatList, p_car_list_head, p_gate_queue)
+FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_StatList, p_gate_queue, p_car_list_head)
 
     // demand is number of vehicles that want to enter at this gate
     demand_remaining <- Queue_GetDemand(p_gate_queue)
@@ -166,7 +166,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_Sta
             next_vehicle_size <- GetNextQueueVehicleSize(p_gate_queue)
 
             IF next_vehicle_size <= get_open_space(p_parkhaus) THEN
-                required_space <- fill_from_queue(p_gate_queue, get_open_space(p_parkhaus))
+                required_space <- fill_from_queue(p_parkhaus, p_gate_queue)
                 update_parkhouse_on_entry(p_parkhaus, required_space)
                 entries_processed <- entries_processed + 1
             ELSE // Waiting vehicle is too large to enter
@@ -267,7 +267,6 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_
     RETURN OK
 END FUNCTION
 
-
 //////////////////////////////////////////////////////////
 // Queue / vehicle helper functions
 // @author: ibach
@@ -301,11 +300,12 @@ FUNCTION queue_add_random_vehicle(p_gate_queue)
     RETURN status
 END FUNCTION
 
+FUNCION park_vehicle()
+
 
 FUNCTION fill_from_queue(p_parkhous, p_gate_queue)
 
     vehicle <- Queue_PopFront(p_gate_queue)
-
     base_space     <- GetVehicleBaseSpace(vehicle)
     required_space <- base_space
 
