@@ -138,7 +138,7 @@ struct Settings {
     uint16_t capacity; // Total parking spots per floor ##UI##
     uint8_t floors; // Number of floors. This is currently miscellaneous ##UI##
     uint8_t gates; // Number of gates. This will affect queue time. ##UI##
-    uint16_t gate_entry_inSec; // Time needed for an vehicle to enter der parkhouse ##UI##
+    uint16_t gate_entry_inSec; // Time needed for an vehicle to enter the parkhouse ##UI##
 	uint16_t tick_inSec; //Time in seconds of one Tick ##UI##
     uint32_t max_parking_ticks; //maximum of Ticks a car is allowed to Park ##UI##
     uint32_t min_parking_ticks; //minimum of Ticks a car will park -> assumption is 1 ##UI##
