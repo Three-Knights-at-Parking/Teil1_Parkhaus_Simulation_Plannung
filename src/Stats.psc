@@ -13,12 +13,12 @@
 // 2) Tick-Abschluss
 //    - `stats_tick_finalize` validiert den aktuellen Tick-Builder.
 //    - `stats_tick_commit` haengt den Tick in die Historie an
-//      (doppelt verkettete Liste) und aktualisiert die Aggregation.
+//      (doppelt verkettete Liste).
 //
 // 3) Gesamtstatistik
 //    - `StatsSummary` speichert Summen, Mittelwerte und Peak-Werte.
-//    - Laufende Summen im Container vermeiden teure Re-Iteration
-//      ueber alle bereits gespeicherten Ticks.
+//    - Die Aggregation wird bei Bedarf am Ende aus allen gespeicherten
+//      Ticks Schritt fuer Schritt neu berechnet.
 //////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////
@@ -35,47 +35,6 @@ FUNCTION stats_init(p_stats, capacity_total)
     p_stats.p_tick_head <- NULL
     p_stats.p_tick_tail <- NULL
     p_stats.p_current_tick <- NULL
-    p_stats.tick_count <- 0
-
-    p_stats.gesamt.total_ticks <- 0
-    p_stats.gesamt.capacity_total <- capacity_total
-    p_stats.gesamt.capacity_taken_percent_avg <- 0
-    p_stats.gesamt.capacity_taken_percent_peak <- 0
-    p_stats.gesamt.capacity_taken_peak_tick <- 0
-    p_stats.gesamt.first_full_tick <- -1
-    p_stats.gesamt.full_ticks <- 0
-
-    p_stats.gesamt.arrivals_total <- 0
-    p_stats.gesamt.enqueued_total <- 0
-    p_stats.gesamt.entered_total <- 0
-    p_stats.gesamt.departed_total <- 0
-    p_stats.gesamt.net_occupancy_change_total <- 0
-    p_stats.gesamt.entered_per_tick_avg <- 0
-    p_stats.gesamt.departed_per_tick_avg <- 0
-
-    p_stats.gesamt.queue_length_avg <- 0
-    p_stats.gesamt.queue_length_peak <- 0
-    p_stats.gesamt.queue_length_peak_tick <- 0
-    p_stats.gesamt.queue_rejections_total <- 0
-    p_stats.gesamt.queue_wait_avg_ticks <- 0
-    p_stats.gesamt.queue_wait_max_ticks <- 0
-    p_stats.gesamt.queue_active_ratio_percent <- 0
-
-    p_stats.gesamt.parking_duration_avg_ticks <- 0
-    p_stats.gesamt.blocker_full_ratio_percent <- 0
-    p_stats.gesamt.bad_parking_cases_total <- 0
-    p_stats.gesamt.bad_parking_share_percent <- 0
-
-    p_stats.sum_capacity_taken_percent <- 0
-    p_stats.sum_queue_length_end <- 0
-    p_stats.sum_entered <- 0
-    p_stats.sum_departed <- 0
-    p_stats.sum_queue_wait_entered_ticks <- 0
-    p_stats.sum_queue_wait_entered_count <- 0
-    p_stats.sum_parking_duration_departed_ticks <- 0
-    p_stats.sum_parking_duration_departed_count <- 0
-    p_stats.queue_active_ticks <- 0
-    p_stats.blocker_full_ticks <- 0
 
     return OK
 END FUNCTION
@@ -102,7 +61,7 @@ FUNCTION stats_tick_begin(p_stats, tick)
 
     MEMSET(p_tick, 0, SIZEOF(StatsTick))
     p_tick.tick <- tick
-    p_tick.capacity_total <- p_stats.gesamt.capacity_total
+    p_tick.capacity_total <- 0
 
     p_stats.p_current_tick <- p_tick
     return OK
@@ -121,6 +80,7 @@ FUNCTION stats_tick_set_capacity(p_stats, taken, free)
 
     p_tick.capacity_taken <- taken
     p_tick.capacity_free <- free
+    p_tick.capacity_total <- taken + free
     return OK
 END FUNCTION
 
@@ -246,8 +206,7 @@ FUNCTION stats_tick_finalize(p_stats)
     return OK
 END FUNCTION
 
-// Brief: Haengt den Tick in die Historie ein und aktualisiert alle
-// laufenden Summen, Mittelwerte und Peak-Kennzahlen in `StatsSummary`.
+// Brief: Haengt den Tick in die Historie ein.
 FUNCTION stats_tick_commit(p_stats)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -265,85 +224,6 @@ FUNCTION stats_tick_commit(p_stats)
 
     p_stats.p_tick_tail <- p_tick
     p_stats.p_current_tick <- NULL
-    p_stats.tick_count <- p_stats.tick_count + 1
-
-    g <- &p_stats.gesamt
-    g.total_ticks <- p_stats.tick_count
-
-    g.arrivals_total <- g.arrivals_total + p_tick.arrivals_generated
-    g.enqueued_total <- g.enqueued_total + p_tick.enqueued
-    g.entered_total <- g.entered_total + p_tick.entered
-    g.departed_total <- g.departed_total + p_tick.departed
-    g.net_occupancy_change_total <- g.net_occupancy_change_total + (p_tick.entered - p_tick.departed)
-    g.queue_rejections_total <- g.queue_rejections_total + p_tick.queue_rejections
-    g.bad_parking_cases_total <- g.bad_parking_cases_total + p_tick.bad_parking_cases
-
-    IF p_tick.capacity_total > 0 THEN
-        current_capacity_percent <- (p_tick.capacity_taken * 100.0) / p_tick.capacity_total
-    ELSE
-        current_capacity_percent <- 0
-    END IF
-
-    IF p_tick.capacity_free = 0 THEN
-        g.full_ticks <- g.full_ticks + 1
-        IF g.first_full_tick < 0 THEN
-            g.first_full_tick <- p_tick.tick
-        END IF
-    END IF
-
-    IF current_capacity_percent > g.capacity_taken_percent_peak THEN
-        g.capacity_taken_percent_peak <- current_capacity_percent
-        g.capacity_taken_peak_tick <- p_tick.tick
-    END IF
-
-    IF p_tick.queue_length_end > g.queue_length_peak THEN
-        g.queue_length_peak <- p_tick.queue_length_end
-        g.queue_length_peak_tick <- p_tick.tick
-    END IF
-
-    p_stats.sum_capacity_taken_percent <- p_stats.sum_capacity_taken_percent + current_capacity_percent
-    p_stats.sum_queue_length_end <- p_stats.sum_queue_length_end + p_tick.queue_length_end
-    p_stats.sum_entered <- p_stats.sum_entered + p_tick.entered
-    p_stats.sum_departed <- p_stats.sum_departed + p_tick.departed
-
-    IF p_tick.queue_length_end > 0 THEN
-        p_stats.queue_active_ticks <- p_stats.queue_active_ticks + 1
-    END IF
-
-    IF p_tick.blocker_full_active = 1 THEN
-        p_stats.blocker_full_ticks <- p_stats.blocker_full_ticks + 1
-    END IF
-
-    p_stats.sum_queue_wait_entered_ticks <- p_stats.sum_queue_wait_entered_ticks + p_tick.queue_wait_entered_sum_ticks
-    p_stats.sum_queue_wait_entered_count <- p_stats.sum_queue_wait_entered_count + p_tick.queue_wait_entered_count
-
-    p_stats.sum_parking_duration_departed_ticks <- p_stats.sum_parking_duration_departed_ticks +
-                                                  p_tick.parking_duration_departed_sum_ticks
-    p_stats.sum_parking_duration_departed_count <- p_stats.sum_parking_duration_departed_count +
-                                                  p_tick.parking_duration_departed_count
-
-    g.capacity_taken_percent_avg <- p_stats.sum_capacity_taken_percent / g.total_ticks
-    g.entered_per_tick_avg <- p_stats.sum_entered / g.total_ticks
-    g.departed_per_tick_avg <- p_stats.sum_departed / g.total_ticks
-    g.queue_length_avg <- p_stats.sum_queue_length_end / g.total_ticks
-    g.queue_active_ratio_percent <- (p_stats.queue_active_ticks * 100.0) / g.total_ticks
-    g.blocker_full_ratio_percent <- (p_stats.blocker_full_ticks * 100.0) / g.total_ticks
-
-    IF p_stats.sum_queue_wait_entered_count > 0 THEN
-        g.queue_wait_avg_ticks <- p_stats.sum_queue_wait_entered_ticks / p_stats.sum_queue_wait_entered_count
-        IF g.queue_wait_avg_ticks > g.queue_wait_max_ticks THEN
-            g.queue_wait_max_ticks <- g.queue_wait_avg_ticks
-        END IF
-    END IF
-
-    IF p_stats.sum_parking_duration_departed_count > 0 THEN
-        g.parking_duration_avg_ticks <- p_stats.sum_parking_duration_departed_ticks /
-                                        p_stats.sum_parking_duration_departed_count
-    END IF
-
-    IF g.enqueued_total > 0 THEN
-        g.bad_parking_share_percent <- (g.bad_parking_cases_total * 100.0) / g.enqueued_total
-    END IF
 
     return OK
 END FUNCTION
@@ -374,11 +254,116 @@ FUNCTION stats_get_latest_tick(p_stats)
     return p_stats.p_tick_tail
 END FUNCTION
 
-FUNCTION stats_get_summary(p_stats)
-    IF p_stats = NULL THEN
-        return NULL
+//////////////////////////////////////////////////////////
+// Summary Builder
+//////////////////////////////////////////////////////////
+// Brief: Baut die finale Gesamtstatistik, indem alle gespeicherten
+// Tick-Snapshots in der StatList per Schleife nacheinander
+// durchlaufen und in das externe Ergebnisobjekt uebertragen werden.
+FUNCTION stats_build_summary(p_stats, p_summary)
+    IF p_stats = NULL OR p_summary = NULL THEN
+        return ERROR
     END IF
-    return &p_stats.gesamt
+
+    MEMSET(p_summary, 0, SIZEOF(StatsSummary))
+    p_summary.first_full_tick <- -1
+
+    sum_capacity_taken_percent <- 0
+    sum_queue_length_end <- 0
+    sum_entered <- 0
+    sum_departed <- 0
+    sum_queue_wait_entered_ticks <- 0
+    sum_queue_wait_entered_count <- 0
+    sum_parking_duration_departed_ticks <- 0
+    sum_parking_duration_departed_count <- 0
+    queue_active_ticks <- 0
+    blocker_full_ticks <- 0
+
+    p_next_tick <- p_stats.p_tick_head
+    WHILE p_next_tick != NULL DO
+        p_tick <- p_next_tick
+        p_summary.total_ticks <- p_summary.total_ticks + 1
+
+        p_summary.arrivals_total <- p_summary.arrivals_total + p_tick.arrivals_generated
+        p_summary.enqueued_total <- p_summary.enqueued_total + p_tick.enqueued
+        p_summary.entered_total <- p_summary.entered_total + p_tick.entered
+        p_summary.departed_total <- p_summary.departed_total + p_tick.departed
+        p_summary.net_occupancy_change_total <- p_summary.net_occupancy_change_total + (p_tick.entered - p_tick.departed)
+        p_summary.queue_rejections_total <- p_summary.queue_rejections_total + p_tick.queue_rejections
+        p_summary.bad_parking_cases_total <- p_summary.bad_parking_cases_total + p_tick.bad_parking_cases
+
+        IF p_tick.capacity_total > 0 THEN
+            current_capacity_percent <- (p_tick.capacity_taken * 100.0) / p_tick.capacity_total
+        ELSE
+            current_capacity_percent <- 0
+        END IF
+
+        sum_capacity_taken_percent <- sum_capacity_taken_percent + current_capacity_percent
+        sum_queue_length_end <- sum_queue_length_end + p_tick.queue_length_end
+        sum_entered <- sum_entered + p_tick.entered
+        sum_departed <- sum_departed + p_tick.departed
+
+        IF p_tick.capacity_free = 0 THEN
+            p_summary.full_ticks <- p_summary.full_ticks + 1
+            IF p_summary.first_full_tick < 0 THEN
+                p_summary.first_full_tick <- p_tick.tick
+            END IF
+        END IF
+
+        IF current_capacity_percent > p_summary.capacity_taken_percent_peak THEN
+            p_summary.capacity_taken_percent_peak <- current_capacity_percent
+            p_summary.capacity_taken_peak_tick <- p_tick.tick
+        END IF
+
+        IF p_tick.queue_length_end > p_summary.queue_length_peak THEN
+            p_summary.queue_length_peak <- p_tick.queue_length_end
+            p_summary.queue_length_peak_tick <- p_tick.tick
+        END IF
+
+        IF p_tick.queue_length_end > 0 THEN
+            queue_active_ticks <- queue_active_ticks + 1
+        END IF
+
+        IF p_tick.blocker_full_active = 1 THEN
+            blocker_full_ticks <- blocker_full_ticks + 1
+        END IF
+
+        sum_queue_wait_entered_ticks <- sum_queue_wait_entered_ticks + p_tick.queue_wait_entered_sum_ticks
+        sum_queue_wait_entered_count <- sum_queue_wait_entered_count + p_tick.queue_wait_entered_count
+
+        sum_parking_duration_departed_ticks <- sum_parking_duration_departed_ticks + p_tick.parking_duration_departed_sum_ticks
+        sum_parking_duration_departed_count <- sum_parking_duration_departed_count + p_tick.parking_duration_departed_count
+
+        IF p_summary.total_ticks = 1 THEN
+            p_summary.capacity_total <- p_tick.capacity_total
+        END IF
+
+        p_next_tick <- p_tick.p_next
+    END WHILE
+
+    IF p_summary.total_ticks > 0 THEN
+        p_summary.capacity_taken_percent_avg <- sum_capacity_taken_percent / p_summary.total_ticks
+        p_summary.entered_per_tick_avg <- sum_entered / p_summary.total_ticks
+        p_summary.departed_per_tick_avg <- sum_departed / p_summary.total_ticks
+        p_summary.queue_length_avg <- sum_queue_length_end / p_summary.total_ticks
+        p_summary.queue_active_ratio_percent <- (queue_active_ticks * 100.0) / p_summary.total_ticks
+        p_summary.blocker_full_ratio_percent <- (blocker_full_ticks * 100.0) / p_summary.total_ticks
+    END IF
+
+    IF sum_queue_wait_entered_count > 0 THEN
+        p_summary.queue_wait_avg_ticks <- sum_queue_wait_entered_ticks / sum_queue_wait_entered_count
+        p_summary.queue_wait_max_ticks <- p_summary.queue_wait_avg_ticks
+    END IF
+
+    IF sum_parking_duration_departed_count > 0 THEN
+        p_summary.parking_duration_avg_ticks <- sum_parking_duration_departed_ticks / sum_parking_duration_departed_count
+    END IF
+
+    IF p_summary.enqueued_total > 0 THEN
+        p_summary.bad_parking_share_percent <- (p_summary.bad_parking_cases_total * 100.0) / p_summary.enqueued_total
+    END IF
+
+    return OK
 END FUNCTION
 
 FUNCTION stats_free(p_stats)
@@ -396,7 +381,6 @@ FUNCTION stats_free(p_stats)
     p_stats.p_tick_head <- NULL
     p_stats.p_tick_tail <- NULL
     p_stats.p_current_tick <- NULL
-    p_stats.tick_count <- 0
 
     return OK
 END FUNCTION

@@ -284,7 +284,7 @@ FUNCTION queue_add_random_vehicle(p_gate_queue)
 END FUNCTION
 
 
-FUNCTION fill_from_queue(p_parkhaus, p_gate_queue)
+FUNCTION fill_from_queue(p_parkhous, p_gate_queue)
 
     vehicle <- Queue_PopFront(p_gate_queue)
 
@@ -292,7 +292,7 @@ FUNCTION fill_from_queue(p_parkhaus, p_gate_queue)
     required_space <- base_space
 
     // Bad parking only possible if double space is available
-    IF get_open_space(P_parkhaus) >= 2 * base_space THEN
+    IF get_open_space(p_parkhous) >= 2 * base_space THEN
         r <- RandomPercent()
         IF r < GetBadParkingProbability(vehicle) THEN
             required_space <- 2 * base_space
