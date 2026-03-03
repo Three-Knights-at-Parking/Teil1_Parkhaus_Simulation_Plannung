@@ -10,7 +10,7 @@
 
     /**
      * @brief Initialize a GenericVehicle base object.
-     *        This sets the SimulationObject part and the common vehicle fields. The ownership of it's members
+     *        This sets the SimulationObject.psc part and the common vehicle fields. The ownership of it's members
      *        stay with the caller object.
      * @param p_vehicle Pointer to the GenericVehicle to initialize.
      * @param type Object type (e.g., CAR, later EV, MOTORCYCLE).

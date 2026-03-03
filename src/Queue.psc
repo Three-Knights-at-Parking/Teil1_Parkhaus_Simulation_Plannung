@@ -26,6 +26,21 @@ FUNCTION queue_init(p_queue, max_size)
     return 0
 END FUNCTION
 
+FUNCTION queue_free(p_queue)
+    IF p_queue = NULL THEN
+        return
+    END IF
+
+    // The queue owns its waiting cars. We must free them first.
+    vehicle_list_remove_all(&p_queue.waiting_head, &p_queue.waiting_tail)
+
+    p_queue.size <- 0
+    p_queue.waiting_head <- NULL
+    p_queue.waiting_tail <- NULL
+    p_queue.demand <- 0
+    return
+END FUNCTION
+
 
 FUNCTION queue_is_full(p_queue)
     IF p_queue = NULL THEN
