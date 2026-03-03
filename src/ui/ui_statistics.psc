@@ -125,6 +125,29 @@ FUNCTION ui_statistics_print_tick_verbose(stats_tick)
 END FUNCTION
 
 
+FUNCTION ui_statistics_print_tick(stats_tick, settings)
+
+    IF settings.output_mode = NONE THEN
+        return
+    END IF
+
+    IF settings.output_mode = VERBOSE THEN
+        CALL ui_statistics_print_tick_verbose(stats_tick)
+        return
+    END IF
+
+    /* NORMAL and DEBUG share the same readable box output. */
+    CALL ui_statistics_print_tick_normal(stats_tick)
+
+    IF settings.output_mode = DEBUG THEN
+        OUTPUT "DEBUG: blocker_full_active=", stats_tick.blocker_full_active,
+               " | full_ticks_so_far=", stats_tick.full_ticks_so_far,
+               " | peak_util_so_far%=", format_float_2(stats_tick.peak_capacity_taken_percent_so_far)
+    END IF
+
+END FUNCTION
+
+
 FUNCTION ui_statistics_print_summary(stats_total, settings)
 
     IF settings.output_mode = NONE THEN
@@ -148,30 +171,6 @@ FUNCTION ui_statistics_print_summary(stats_total, settings)
 
     OUTPUT "╚══════════════════════════════════════════════════════════════════════════════╝"
     OUTPUT ""
-
-END FUNCTION
-
-
-FUNCTION ui_statistics_print_tick(stats_tick, settings)
-
-    IF settings.output_mode = NONE THEN
-        return
-    END IF
-
-    IF settings.output_mode = NORMAL OR settings.output_mode = DEBUG THEN
-        CALL ui_statistics_print_tick_normal(stats_tick)
-
-        IF settings.output_mode = DEBUG THEN
-            OUTPUT "  DEBUG: blocker_full_active=", stats_tick.blocker_full_active
-        END IF
-
-        return
-    END IF
-
-    IF settings.output_mode = VERBOSE THEN
-        CALL ui_statistics_print_tick_verbose(stats_tick)
-        return
-    END IF
 
 END FUNCTION
 
