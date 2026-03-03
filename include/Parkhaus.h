@@ -139,7 +139,7 @@
      * @brief Creates a random vehicle and enqueues it into a gate queue.
      * @author Simon Ibach
      */
-    int queue_add_random_vehicle(Queue *p_gate_queue);
+    GenericVehicle* queue_add_random_vehicle(Queue *p_gate_queue);
 
 /**
      * @brief Calculates currently available space in the garage.

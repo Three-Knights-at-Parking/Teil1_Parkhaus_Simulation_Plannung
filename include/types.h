@@ -44,6 +44,13 @@ enum QueueLeavable {LEAVABLE, NON_LEAVABLE};
 enum SuccessState{ ERROR = -1, OK = 0, UNKNOWN = 1};
 
 /**
+ * Minimum Vehicle Spaces
+ */
+
+enum MinimumSpace{ Bike_Space = 1, Car_Space = 2 };
+
+
+/**
  * Polymorphic base for anything that has a tick.
  */
 struct SimulationObject {
@@ -66,16 +73,6 @@ struct GenericVehicle {
     uint16_t current_slot; // Currently occupied parking spot, 0 if none.
     uint16_t current_floor; // Currently occupied floor, 0 if none or don't care
 };
-
-/**
- * Definition of needed base Spcae per Vehice
- * @author Simon Ibach
- */
-
-#define car_base_space 2
-//further Add possibilitys
-//#define bike_base_space 1
-//#define van_base_space 3
 
 /**
  * Parkhaus parent representing a parkhaus.
@@ -160,7 +157,7 @@ struct Settings {
  * for history in the statistics container.
  * @author: ibach
  */
-typedef struct StatsTick {
+struct StatsTick {
     SimulationObject base;
     uint32_t tick; /**< Current tick of this snapshot. */
     struct StatsTick *p_prev; /**< Previous tick in the statistics list. */

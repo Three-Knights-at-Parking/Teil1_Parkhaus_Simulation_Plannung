@@ -300,7 +300,13 @@ FUNCTION queue_add_random_vehicle(p_gate_queue)
     RETURN status
 END FUNCTION
 
-FUNCION park_vehicle()
+
+FUNKTION park_vehicle(p_gate_queue, p_vehicle)
+
+
+    vehicle_list_append(GenericVehicle **pp_head, GenericVehicle **pp_tail, GenericVehicle *p_vehicle)
+
+END FUNKTION
 
 
 FUNCTION fill_from_queue(p_parkhous, p_gate_queue)
