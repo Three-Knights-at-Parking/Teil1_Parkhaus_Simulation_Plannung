@@ -1,3 +1,80 @@
+INCLUDE FILE ui_statistics.h
+
+/* ========================================================================= */
+/* Helper functions                                                          */
+/* ========================================================================= */
+FUNCTION repeat_char(ch, count)
+
+    result ← ""
+    i ← 0
+
+    WHILE i < count DO
+        result ← result + ch
+        i ← i + 1
+    END WHILE
+
+    return result
+
+END FUNCTION
+
+
+FUNCTION clamp_int(value, min, max)
+
+    IF value < min THEN
+        return min
+    END IF
+
+    IF value > max THEN
+        return max
+    END IF
+
+    return value
+
+END FUNCTION
+
+
+FUNCTION build_occupancy_bar(taken_percent)
+
+    filled ← (taken_percent / 100.0) * UI_STATS_BAR_WIDTH
+    filled_int ← clamp_int(ROUND(filled), 0, UI_STATS_BAR_WIDTH)
+    empty_int ← UI_STATS_BAR_WIDTH - filled_int
+
+    bar ← "[" + repeat_char("#", filled_int) + repeat_char("-", empty_int) + "]"
+    return bar
+
+END FUNCTION
+
+
+FUNCTION derive_status_text(stats_tick)
+
+    IF stats_tick.capacity_free = 0 THEN
+        return "FULL"
+    END IF
+
+    return "OK"
+
+END FUNCTION
+
+
+FUNCTION format_float_1(value)
+
+    // Pseudocode: round to 1 decimal and return as string
+    // Example: 87.04 -> "87.0"
+    rounded ← ROUND(value * 10) / 10
+    return TO_STRING(rounded)
+
+END FUNCTION
+
+
+FUNCTION format_float_2(value)
+
+    //Used in VERBOSE mode - rounds floating numbers to two decimals.
+    rounded ← ROUND(value * 100) / 100
+    return TO_STRING(rounded)
+
+END FUNCTION
+
+
 /* ========================================================================= */
 /* Header / Legend                                                           */
 /* ========================================================================= */
@@ -7,8 +84,8 @@ FUNCTION ui_statistics_print_header_normal()
     OUTPUT ""
     OUTPUT "======================================================================"
     OUTPUT "                PARKHAUS – TICK STATISTICS (NORMAL)"
-    OUTPUT "----------------------------------------------------------------------
-Legend:"
+    OUTPUT "----------------------------------------------------------------------"
+    OUTPUT "Legend:"
     OUTPUT "  Status : OK = capacity available | FULL = no free capacity"
     OUTPUT "  OCC    : occupied spots / total spots"
     OUTPUT "  Util % : utilization of parking capacity"
@@ -24,7 +101,7 @@ FUNCTION ui_statistics_print_header_verbose()
 
     OUTPUT ""
     OUTPUT "======================================================================"
-    OUTPUT "           PARKHAUS – TICK STATISTICS (VERBOSE MODE)"
+    OUTPUT "           PARKHAUS – TICK STATISTICS (VERBOSE)"
     OUTPUT "----------------------------------------------------------------------"
     OUTPUT "All metrics per tick are printed in technical format."
     OUTPUT "Each block represents one simulation tick snapshot."
@@ -80,7 +157,7 @@ FUNCTION ui_statistics_print_tick_verbose(stats_tick)
     status_text ← CALL derive_status_text(stats_tick)
 
     OUTPUT "----------------------------------------------------------------------"
-        OUTPUT "Tick = ", stats_tick.tick, " | Status = ", status_text
+    OUTPUT "Tick = ", stats_tick.tick, " | Status = ", status_text
 
     OUTPUT "Capacity: total=", stats_tick.capacity_total,
            " | taken=", stats_tick.capacity_taken,
@@ -187,80 +264,5 @@ FUNCTION ui_statistics_print_final(stats_total, settings)
 
     OUTPUT "======================================================================"
     OUTPUT ""
-
-END FUNCTION
-
-
-/* ========================================================================= */
-/* Helper functions                                                          */
-/* ========================================================================= */
-FUNCTION repeat_char(ch, count)
-
-    result ← ""
-    i ← 0
-
-    WHILE i < count DO
-        result ← result + ch
-        i ← i + 1
-    END WHILE
-
-    return result
-
-END FUNCTION
-
-
-FUNCTION clamp_int(value, min, max)
-
-    IF value < min THEN
-        return min
-    END IF
-
-    IF value > max THEN
-        return max
-    END IF
-
-    return value
-
-END FUNCTION
-
-
-FUNCTION build_occupancy_bar(taken_percent)
-
-    filled ← (taken_percent / 100.0) * UI_STATS_BAR_WIDTH
-    filled_int ← clamp_int(ROUND(filled), 0, UI_STATS_BAR_WIDTH)
-    empty_int ← UI_STATS_BAR_WIDTH - filled_int
-
-    bar ← "[" + repeat_char("#", filled_int) + repeat_char("-", empty_int) + "]"
-    return bar
-
-END FUNCTION
-
-
-FUNCTION derive_status_text(stats_tick)
-
-    IF stats_tick.capacity_free = 0 THEN
-        return "FULL"
-    END IF
-
-    return "OK"
-
-END FUNCTION
-
-
-FUNCTION format_float_1(value)
-
-    // Pseudocode: round to 1 decimal and return as string
-    // Example: 87.04 -> "87.0"
-    rounded ← ROUND(value * 10) / 10
-    return TO_STRING(rounded)
-
-END FUNCTION
-
-
-FUNCTION format_float_2(value)
-
-    //Used in VERBOSE mode - rounds floating numbers to two decimals.
-    rounded ← ROUND(value * 100) / 100
-    return TO_STRING(rounded)
 
 END FUNCTION
