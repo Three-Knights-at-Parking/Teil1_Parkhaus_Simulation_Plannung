@@ -148,28 +148,45 @@ FUNCTION ui_statistics_print_tick(stats_tick, settings)
 END FUNCTION
 
 
-FUNCTION ui_statistics_print_summary(stats_total, settings)
+/* ========================================================================= */
+/* Final / End statistics                                                    */
+/* ========================================================================= */
+
+FUNCTION ui_statistics_print_final(stats_total, settings)
 
     IF settings.output_mode = NONE THEN
         return
     END IF
 
     OUTPUT ""
-    OUTPUT "╔══════════════════════════════════════════════════════════════════════════════╗"
-    OUTPUT "║                               SIMULATION SUMMARY                             ║"
-    OUTPUT "╠══════════════════════════════════════════════════════════════════════════════╣"
+    OUTPUT "======================================================================"
+    OUTPUT "                       SIMULATION SUMMARY"
+    OUTPUT "======================================================================"
 
-    OUTPUT "║ Total Ticks           : ", stats_total.total_ticks
-    OUTPUT "║ Avg Utilization (%)   : ", CALL format_float_1(stats_total.capacity_taken_percent_avg)
-    OUTPUT "║ Peak Utilization (%)  : ", CALL format_float_1(stats_total.capacity_taken_percent_peak),
-           "  @ Tick ", stats_total.capacity_taken_peak_tick
-    OUTPUT "║ First FULL Tick       : ", stats_total.first_full_tick
-    OUTPUT "║ FULL Ticks            : ", stats_total.full_ticks
-    OUTPUT "║ Queue Peak            : ", stats_total.queue_length_peak,
-           "  @ Tick ", stats_total.queue_length_peak_tick
-    OUTPUT "║ Total Rejections      : ", stats_total.queue_rejections_total
+    OUTPUT "Total ticks            : ", stats_total.total_ticks
+    OUTPUT "Avg utilization (%)    : ", format_float_2(stats_total.capacity_taken_percent_avg)
+    OUTPUT "Peak utilization (%)   : ", format_float_2(stats_total.capacity_taken_percent_peak),
+           " at tick ", stats_total.capacity_taken_peak_tick
+    OUTPUT "First FULL tick        : ", stats_total.first_full_tick
+    OUTPUT "FULL ticks             : ", stats_total.full_ticks
 
-    OUTPUT "╚══════════════════════════════════════════════════════════════════════════════╝"
+    OUTPUT "Arrivals total         : ", stats_total.arrivals_total
+    OUTPUT "Entered total          : ", stats_total.entered_total
+    OUTPUT "Departed total         : ", stats_total.departed_total
+
+    OUTPUT "Queue avg length       : ", stats_total.queue_length_avg
+    OUTPUT "Queue peak             : ", stats_total.queue_length_peak,
+           " at tick ", stats_total.queue_length_peak_tick
+    OUTPUT "Queue rejections total : ", stats_total.queue_rejections_total
+    OUTPUT "Avg queue wait (ticks) : ", stats_total.queue_wait_avg_ticks
+    OUTPUT "Max queue wait (ticks) : ", stats_total.queue_wait_max_ticks
+
+    OUTPUT "Blocker FULL ratio (%) : ", format_float_2(stats_total.blocker_full_ratio_percent)
+
+    OUTPUT "Bad parking total      : ", stats_total.bad_parking_cases_total
+    OUTPUT "Bad parking share (%)  : ", format_float_2(stats_total.bad_parking_share_percent)
+
+    OUTPUT "======================================================================"
     OUTPUT ""
 
 END FUNCTION
