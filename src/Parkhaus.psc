@@ -429,18 +429,53 @@ END FUNCTION
 //////////////////////////////////////////////////////////
 
 FUNCTION get_open_space(p_parkhaus)
+
+    IF p_parkhaus = NULL THEN
+        RETURN ERROR
+    END IF
+
     RETURN p_parkhaus.capacity - p_parkhaus.capacity_taken
 END FUNCTION
 
-FUNCTION update_parkhaus_on_exit(p_parkhaus, required_space)
+
+FUNCTION update_parkhaus_on_exit(p_parkhaus, p_StatsTick, required_space)
+
+    IF p_parkhaus = NULL THEN
+        RETURN ERROR
+    END IF
+
+    IF p_StatsTick = NULL THEN
+        RETURN ERROR
+    END IF
+
+    IF required_space = 0 THEN
+        RETURN ERROR
+    END IF
+
     p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken - required_space
-    p_parkhaus.total_exited <- p_parkhaus.total_exited + 1
+    p_StatsTick.departed <- p_StatsTick.departed + 1
+
     RETURN
 END FUNCTION
 
-FUNCTION update_parkhaus_on_entry(p_parkhaus, required_space)
+
+FUNCTION update_parkhaus_on_entry(p_parkhaus, p_StatsTick, required_space)
+
+    IF p_parkhaus = NULL THEN
+        RETURN ERROR
+    END IF
+
+    IF p_StatsTick = NULL THEN
+        RETURN ERROR
+    END IF
+
+    IF required_space = 0 THEN
+        RETURN ERROR
+    END IF
+
     p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken + required_space
-    p_parkhaus.total_entered <- p_parkhaus.total_entered + 1
+    p_StatsTick.entered <- p_StatsTick.entered + 1
+
     RETURN
 END FUNCTION
 

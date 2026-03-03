@@ -164,12 +164,12 @@
      * @brief Updates occupancy and exit counter when a vehicle leaves.
      * @author Simon Ibach
      */
-    void update_parkhouse_on_exit(Parkhaus *p_parkhouse, uint16_t required_space);
+    void update_parkhouse_on_exit(Parkhaus *p_parkhouse,p_StatsTick, StatsTick *p_StatsTick, uint16_t required_space);
 
     /**
      * @brief Updates occupancy and entry counter when a vehicle enters.
      * @author Simon Ibach
      */
-    void update_parkhouse_on_entry(Parkhaus *p_parkhouse, uint16_t required_space);
+    void update_parkhouse_on_entry(Parkhaus *p_parkhouse, StatsTick *p_StatsTick, uint16_t required_space);
 
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_PARKHAUS_H
