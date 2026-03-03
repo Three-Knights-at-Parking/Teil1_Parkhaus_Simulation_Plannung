@@ -1,26 +1,9 @@
 //////////////////////////////////////////////////////////
 // Module: Stats
-// Dependencies: types, parkhaus, queue
-//@author: ibach
+// @author: ibach
 //////////////////////////////////////////////////////////
-// Description:
-// This module manages the complete statistics pipeline of the simulation.
-//
-// 1) Tick recording (raw values)
-//    - A tick is started with `stats_tick_begin`.
-//    - During the tick, raw data is collected via `stats_tick_add_*`
-//      and `stats_tick_set_*`.
-//
-// 2) Tick finalization
-//    - `stats_tick_finalize` validates the current tick builder.
-//    - `stats_tick_commit` appends the tick to history
-//      (doubly linked list).
-//
-// 3) Overall statistics
-//    - `StatsSummary` stores sums, averages, and peak values.
-//    - Aggregation is computed on demand at the end from all stored
-//      ticks, recalculated step by step.
-//////////////////////////////////////////////////////////
+
+
 
 //////////////////////////////////////////////////////////
 // Lifecycle: initialize/free container
@@ -29,6 +12,8 @@
 // Brief: Sets all pointers, sums, and totals to defined
 // initial values. Must be executed once before the first tick call.
 FUNCTION stats_init(p_stats, capacity_total)
+
+
     IF p_stats = NULL THEN
         return ERROR
     END IF
@@ -40,13 +25,34 @@ FUNCTION stats_init(p_stats, capacity_total)
     return OK
 END FUNCTION
 
+
+FUNCTION stats_free(p_stats)
+    IF p_stats = NULL THEN
+        return ERROR
+    END IF
+
+    p_current <- p_stats.p_tick_head
+    WHILE p_current != NULL DO
+        p_next <- p_current.p_next
+        FREE(p_current)
+        p_current <- p_next
+    END WHILE
+
+    p_stats.p_tick_head <- NULL
+    p_stats.p_tick_tail <- NULL
+    p_stats.p_current_tick <- NULL
+
+    return OK
+END FUNCTION
+
 //////////////////////////////////////////////////////////
-// Lifecycle: begin/finalize/commit tick
+// Lifecycle: begin/record
 //////////////////////////////////////////////////////////
 
 // Brief: Creates a new tick builder for the specified tick index.
 // After that, tick raw values may be captured via add/set functions.
 FUNCTION stats_tick_begin(p_stats, tick)
+
     IF p_stats = NULL THEN
         return ERROR
     END IF
@@ -65,6 +71,40 @@ FUNCTION stats_tick_begin(p_stats, tick)
     p_tick.capacity_total <- 0
 
     p_stats.p_current_tick <- p_tick
+
+    return OK
+END FUNCTION
+
+// @brief: Saving the current Tick
+FUNCTION Stats_RecordTick(p_stats, current_tick)
+
+    IF p_stats = NULL OR p_stats.p_current_tick = NULL THEN
+        return ERROR
+    END IF
+
+    return stats_tick_commit(p_stats)
+END FUNCTION
+
+
+// Brief: Appends the tick to history.
+FUNCTION stats_tick_commit(p_stats)
+    p_tick <- p_stats.p_current_tick
+    IF p_tick = NULL THEN
+        return ERROR
+    END IF
+
+    p_tick.p_prev <- p_stats.p_tick_tail
+    p_tick.p_next <- NULL
+
+    IF p_stats.p_tick_tail = NULL THEN
+        p_stats.p_tick_head <- p_tick
+    ELSE
+        p_stats.p_tick_tail.p_next <- p_tick
+    END IF
+
+    p_stats.p_tick_tail <- p_tick
+    p_stats.p_current_tick <- NULL
+
     return OK
 END FUNCTION
 
@@ -74,6 +114,7 @@ END FUNCTION
 
 // Brief: Sets the capacity raw values for the current tick.
 FUNCTION stats_tick_set_capacity(p_stats, taken, free)
+
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
@@ -82,41 +123,53 @@ FUNCTION stats_tick_set_capacity(p_stats, taken, free)
     p_tick.capacity_taken <- taken
     p_tick.capacity_free <- free
     p_tick.capacity_total <- taken + free
+
     return OK
 END FUNCTION
 
+
 // Brief: Increments number of newly generated arrivals in current tick.
 FUNCTION stats_tick_add_arrivals_generated(p_stats, amount)
+
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
     END IF
     p_tick.arrivals_generated <- p_tick.arrivals_generated + amount
+
     return OK
 END FUNCTION
 
+
 // Brief: Increments the number of queue rejections in the current tick.
 FUNCTION stats_tick_add_queue_rejections(p_stats, amount)
+
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
     END IF
     p_tick.queue_rejections <- p_tick.queue_rejections + amount
+
     return OK
 END FUNCTION
 
+
 // Brief: Marks whether the "full" blocker was active in the tick.
 FUNCTION stats_tick_add_blocker_full_active(p_stats)
+
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
     END IF
     p_tick.blocker_full_active <- p_tick.blocker_full_active + 1
+
     return OK
 END FUNCTION
 
+
 // Brief: Derives and writes all useful vehicle metrics into current tick.
 FUNCTION stats_tick_add_vehicle(p_stats, p_vehicle, current_tick)
+
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL OR p_vehicle = NULL THEN
         return ERROR
@@ -158,54 +211,10 @@ FUNCTION stats_tick_add_vehicle(p_stats, p_vehicle, current_tick)
     return OK
 END FUNCTION
 
-// Brief: Validates the tick builder before commit (currently without derived metrics).
-FUNCTION stats_tick_finalize(p_stats)
-    IF p_stats = NULL OR p_stats.p_current_tick = NULL THEN
-        return ERROR
-    END IF
-    return OK
-END FUNCTION
-
-// Brief: Appends the tick to history.
-FUNCTION stats_tick_commit(p_stats)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-
-    p_tick.p_prev <- p_stats.p_tick_tail
-    p_tick.p_next <- NULL
-
-    IF p_stats.p_tick_tail = NULL THEN
-        p_stats.p_tick_head <- p_tick
-    ELSE
-        p_stats.p_tick_tail.p_next <- p_tick
-    END IF
-
-    p_stats.p_tick_tail <- p_tick
-    p_stats.p_current_tick <- NULL
-
-    return OK
-END FUNCTION
 
 //////////////////////////////////////////////////////////
 // Access/compatibility
 //////////////////////////////////////////////////////////
-
-// Brief: Compatibility function for existing call sites.
-FUNCTION Stats_RecordTick(p_stats, current_tick)
-    status <- stats_tick_begin(p_stats, current_tick)
-    IF status != OK THEN
-        return status
-    END IF
-
-    status <- stats_tick_finalize(p_stats)
-    IF status != OK THEN
-        return status
-    END IF
-
-    return stats_tick_commit(p_stats)
-END FUNCTION
 
 
 FUNCTION stats_get_latest_tick(p_stats)
@@ -222,7 +231,9 @@ END FUNCTION
 // Brief: Builds the final overall statistics by iterating all stored
 // tick snapshots in StatList sequentially in a loop
 // and transferring them into the external result object.
+
 FUNCTION stats_build_summary(p_stats, p_summary)
+
     IF p_stats = NULL OR p_summary = NULL THEN
         return ERROR
     END IF
@@ -344,21 +355,3 @@ FUNCTION stats_build_summary(p_stats, p_summary)
     return OK
 END FUNCTION
 
-FUNCTION stats_free(p_stats)
-    IF p_stats = NULL THEN
-        return ERROR
-    END IF
-
-    p_current <- p_stats.p_tick_head
-    WHILE p_current != NULL DO
-        p_next <- p_current.p_next
-        FREE(p_current)
-        p_current <- p_next
-    END WHILE
-
-    p_stats.p_tick_head <- NULL
-    p_stats.p_tick_tail <- NULL
-    p_stats.p_current_tick <- NULL
-
-    return OK
-END FUNCTION

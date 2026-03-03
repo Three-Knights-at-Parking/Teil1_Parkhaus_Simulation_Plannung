@@ -14,7 +14,7 @@
  *
  * Expected sequence per tick:
  * 1) stats_tick_begin(...)
- * 2) populate during the tick via stats_tick_add_* / stats_tick_set_*
+ * 2) populate during the tick
  * 3) stats_tick_finalize(...)
  * 4) stats_tick_commit(...)
  *
@@ -41,11 +41,6 @@ int stats_free(StatList *p_stats);
  * Starts a new tick builder (p_current_tick).
  */
 int stats_tick_begin(StatList *p_stats, uint32_t tick);
-
-/**
- * Computes tick-internal metrics (e.g., averages).
- */
-int stats_tick_finalize(StatList *p_stats);
 
 /**
  * Appends the finalized tick to the list.
