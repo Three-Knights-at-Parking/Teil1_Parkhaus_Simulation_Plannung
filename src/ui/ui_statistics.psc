@@ -1,7 +1,5 @@
 INCLUDE FILE ui_statistics.h
 
-INCLUDE FILE ui_statistics.h
-
 /*
  * @file ui_statistics.psc
  * @brief Terminal output for simulation statistics.
