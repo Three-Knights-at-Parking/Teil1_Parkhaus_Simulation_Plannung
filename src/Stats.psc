@@ -68,6 +68,8 @@ FUNCTION StatsTick_init(p_StatList, capacity_total, current_tick)
 END FUNCTION
 
 
+// Brief: Allocates and initializes a fresh statistics list for a simulation.
+// The list starts empty and receives tick snapshots over time.
 FUNCTION StatList_init(p_simulation)
 
     IF p_simulation = NULL THEN
@@ -88,6 +90,8 @@ FUNCTION StatList_init(p_simulation)
 END FUNCTION
 
 
+// Brief: Releases only the StatList container object.
+// Note: Tick nodes must be released beforehand via StatsTick_free.
 FUNCTION StatList_free(p_StatList)
 
     IF p_StatList = NULL THEN
@@ -101,6 +105,7 @@ FUNCTION StatList_free(p_StatList)
 END FUNCTION
 
 
+// Brief: Frees all stored tick nodes and resets list pointers to NULL.
 FUNCTION StatsTick_free(p_stats)
     IF p_stats = NULL THEN
         return ERROR
@@ -230,6 +235,7 @@ END FUNCTION
 //////////////////////////////////////////////////////////
 
 
+// Brief: Returns the most recently finalized tick snapshot (tail element).
 FUNCTION stats_get_latest_tick(p_stats)
     IF p_stats = NULL THEN
         return NULL
@@ -245,6 +251,8 @@ END FUNCTION
 // tick snapshots in StatList sequentially in a loop
 // and transferring them into the external result object.
 
+// Brief: Aggregates totals, averages, peaks, and ratios from all tick snapshots.
+// The caller provides p_summary, which is reset and then fully populated.
 FUNCTION stats_build_summary(p_stats, p_summary)
 
     IF p_stats = NULL OR p_summary = NULL THEN
@@ -367,4 +375,3 @@ FUNCTION stats_build_summary(p_stats, p_summary)
 
     return OK
 END FUNCTION
-
