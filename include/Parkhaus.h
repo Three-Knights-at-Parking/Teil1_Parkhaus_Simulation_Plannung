@@ -29,7 +29,7 @@
      *
      * @author Luca Perri
      */
-    void parkhaus_tick(SimulationObject *p_self, uint32_t current_tick);
+    void parkhaus_tick(SimulationObject *p_self, const Settings *p_settings, StatList *p_stats, uint32_t current_tick);
 
     /**
      * @brief Try to park a vehicle in this Parkhaus.
@@ -76,27 +76,28 @@
      * @author Simon Ibach
      */
     int parkhouse_tick_empty_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
-                                     GenericVehicle **pp_car_list_head);
+                                        StatList *p_stats, GenericVehicle **pp_car_list_head);
 
     /**
      * @brief Processes entries for a single gate in one tick.
      * * @author Simon Ibach
      */
     int parkhouse_tick_fill_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
-                                    GenericVehicle **pp_car_list_head, Queue *p_gate_queue);
+                                        StatList *p_stats, GenericVehicle **pp_car_list_head, Queue *p_gate_queue);
 
     /**
      * @brief Distributes entries across multiple gates using subticks.
      * * @author Simon Ibach
      */
-    int parkhouse_fill_subtick(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings, Queue *p_gate_queues);
+    int parkhouse_fill_subtick(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
+                                StatList *p_stats, Queue *p_gate_queues);
 
     /**
      * @brief One subtick step for exactly one gate.
      * @author Simon Ibach
      */
     int parkhouse_fill_subtick_routine(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
-                                       Queue *p_gate_queue, int last_cycle);
+                                        StatList *p_stats, Queue *p_gate_queue, int last_cycle);
 
     /**
      * @brief Takes a vehicle from the queue and calculates required space.
@@ -105,10 +106,10 @@
     uint16_t fill_from_queue(Parkhaus* p_parkhaus, Queue *p_gate_queue);
 
     /**
-     * @brief Writes remaining demand to the queue and increments rejections if needed.
+     * @brief Writes remaining demand to the queue and reports queue rejections to stats if needed.
      * @author Simon Ibach
      */
-    int open_demand(Parkhaus *p_parkhouse, Queue *p_gate_queue, uint16_t queue_max_len, uint16_t demand_remaining);
+    int open_demand(StatList *p_stats, Queue *p_gate_queue, uint16_t queue_max_len, uint16_t demand_remaining);
 
     /**
      * @brief Removes a vehicle from the garage and frees the space.
