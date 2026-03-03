@@ -131,7 +131,6 @@
 
     /**
      * Free up this Settings-Object and it's associated memory. Settings object has ownership of all underlying objects.
-     * @param p_settings Pointer to the Settings object to free.
      * @return 0 on success, non-zero on error.
      */
     int delete_settings(Settings *p_settings);
