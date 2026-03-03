@@ -351,6 +351,8 @@ FUNCTION stats_build_summary(p_stats, p_summary)
     END WHILE
 
     IF p_summary.total_ticks > 0 THEN
+        // Utilization average includes all ticks. Ticks with capacity_total=0
+        // contribute 0% utilization by definition.
         p_summary.capacity_taken_percent_avg <- sum_capacity_taken_percent / p_summary.total_ticks
         p_summary.entered_per_tick_avg <- sum_entered / p_summary.total_ticks
         p_summary.departed_per_tick_avg <- sum_departed / p_summary.total_ticks
@@ -359,16 +361,28 @@ FUNCTION stats_build_summary(p_stats, p_summary)
         p_summary.blocker_full_ratio_percent <- (blocker_full_ticks * 100.0) / p_summary.total_ticks
     END IF
 
+    // Wait average is only valid with at least one wait sample.
     IF sum_queue_wait_entered_count > 0 THEN
         p_summary.queue_wait_avg_ticks <- sum_queue_wait_entered_ticks / sum_queue_wait_entered_count
+    ELSE
+        // Explicit fallback implementation for missing basis data.
+        p_summary.queue_wait_avg_ticks <- 0
     END IF
 
+    // Parking-duration average is only valid with at least one departed sample.
     IF sum_parking_duration_departed_count > 0 THEN
         p_summary.parking_duration_avg_ticks <- sum_parking_duration_departed_ticks / sum_parking_duration_departed_count
+    ELSE
+        // Explicit fallback implementation for missing basis data.
+        p_summary.parking_duration_avg_ticks <- 0
     END IF
 
-    IF p_summary.enqueued_total > 0 THEN
-        p_summary.bad_parking_share_percent <- (p_summary.bad_parking_cases_total * 100.0) / p_summary.enqueued_total
+    // Bad-parking share is only valid if entered_total > 0.
+    IF p_summary.entered_total > 0 THEN
+        p_summary.bad_parking_share_percent <- (p_summary.bad_parking_cases_total * 100.0) / p_summary.entered_total
+    ELSE
+        // Explicit fallback implementation for missing basis data.
+        p_summary.bad_parking_share_percent <- 0
     END IF
 
     return OK

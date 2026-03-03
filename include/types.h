@@ -199,6 +199,12 @@ typedef struct StatsTick {
  *
  * Includes cumulative sums, averages, and peak values
  * across all ticks already committed.
+ *
+ * Fallback conventions for missing basis data:
+ * - Numeric averages/ratios remain 0 if their denominator is 0.
+ * - `first_full_tick` remains -1 if no full tick exists.
+ *
+ * Denominator conventions are documented per field below.
  * @author: ibach
  */
 struct StatsSummary {
@@ -207,7 +213,7 @@ struct StatsSummary {
 
     /* 1) Utilization & capacity */
     uint16_t capacity_total; /**< Total parking garage capacity. */
-    float capacity_taken_percent_avg; /**< Average utilization across all ticks in %. */
+    float capacity_taken_percent_avg; /**< Average utilization in % (denominator: total_ticks; capacity_total=0 contributes 0%). */
     float capacity_taken_percent_peak; /**< Maximum utilization in %. */
     uint32_t capacity_taken_peak_tick; /**< Tick of maximum utilization. */
     int32_t first_full_tick; /**< First tick without free spaces, -1 if never full. */
@@ -219,27 +225,27 @@ struct StatsSummary {
     uint64_t entered_total; /**< Cumulative entries. */
     uint64_t departed_total; /**< Cumulative exits. */
     double net_occupancy_change_total; /**< Cumulative net occupancy change. */
-    float entered_per_tick_avg; /**< Average entered per tick. */
-    float departed_per_tick_avg; /**< Average departed per tick. */
+    float entered_per_tick_avg; /**< Average entered per tick (denominator: total_ticks). */
+    float departed_per_tick_avg; /**< Average departed per tick (denominator: total_ticks). */
 
     /* 3) Queue (global) */
-    float queue_length_avg; /**< Average queue length across all ticks. */
+    float queue_length_avg; /**< Average queue length across all ticks (denominator: total_ticks). */
     uint8_t queue_length_peak; /**< Maximum global queue length. */
     uint32_t queue_length_peak_tick; /**< Tick of global queue peak. */
     uint64_t queue_rejections_total; /**< Summe aller Queue-Rejections. */
-    uint32_t queue_wait_avg_ticks; /**< Avg. wait time across all successfully entered vehicles. */
+    uint32_t queue_wait_avg_ticks; /**< Avg. wait time (denominator: summed queue_wait_entered_count; fallback 0 if no samples). */
     uint32_t queue_wait_max_ticks; /**< Maximum wait time in the whole simulation. */
-    float queue_active_ratio_percent; /**< Share of ticks with queue>0 in %. */
+    float queue_active_ratio_percent; /**< Share of ticks with queue>0 in % (denominator: total_ticks). */
 
     /* 4) Parking duration */
-    uint16_t parking_duration_avg_ticks; /**< Avg. parking duration of all departed vehicles. */
+    uint16_t parking_duration_avg_ticks; /**< Avg. parking duration (denominator: departed duration sample count; fallback 0 if none). */
 
     /* 6) Blockers / cause analysis */
-    float blocker_full_ratio_percent; /**< Share of ticks where "full" was active as blocker. */
+    float blocker_full_ratio_percent; /**< Share of ticks where "full" blocker was active (denominator: total_ticks). */
 
     /* 8) Quality/rule statistics */
     uint64_t bad_parking_cases_total; /**< Total number of "badly parked" cases. */
-    float bad_parking_share_percent; /**< Share of "badly parked" over total runtime in %. */
+    float bad_parking_share_percent; /**< Share of "badly parked" in % (denominator: entered_total; fallback 0 if entered_total=0). */
 
     /* 5) ADD-ON analysis of individual gates & vehicle types */
 

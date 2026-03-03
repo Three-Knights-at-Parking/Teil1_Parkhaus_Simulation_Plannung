@@ -103,6 +103,15 @@ const StatsTick *stats_get_latest_tick(const StatList *p_stats);
 /**
  * Computes the aggregated summary statistics from all stored ticks.
  * p_summary must be provided by the caller.
+ *
+ * Denominator/fallback conventions of `stats_build_summary(...)`:
+ * - Tick-based averages/ratios use `total_ticks` as denominator.
+ * - `capacity_taken_percent_avg` uses all ticks (`total_ticks`); ticks with `capacity_total=0` contribute 0%.
+ * - `queue_wait_avg_ticks` uses number of wait samples (`queue_wait_entered_count`).
+ * - `parking_duration_avg_ticks` uses number of departed duration samples.
+ * - `bad_parking_share_percent` uses `entered_total` as denominator.
+ * - Missing basis data keeps the initialized fallback value (0 for numeric fields,
+ *   -1 for `first_full_tick`).
  */
 int stats_build_summary(const StatList *p_stats, StatsSummary *p_summary);
 
