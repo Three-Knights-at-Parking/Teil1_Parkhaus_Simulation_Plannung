@@ -80,20 +80,22 @@ FUNCTION simulation_menu(settings)
             return UI_KONFIG
         END IF
 
-        OUTPUT "Starting simulation..."
+                OUTPUT "Starting simulation..."
+
+        g_pStatList ← NULL
+        g_pStatsSummary ← NULL
 
         CALL start_simulation(settings)
 
-        /* Sicherheitscheck */
         IF g_pStatList = NULL THEN
             OUTPUT "Error: No simulation data received from backend."
+            INPUT dummy
             return UI_SIMULATION
         END IF
 
         CALL ui_statistics_print_header(settings)
 
         current_tick ← g_pStatList.p_tick_head
-
         WHILE current_tick ≠ NULL DO
             CALL ui_statistics_print_tick(current_tick, settings)
             current_tick ← current_tick.p_next
@@ -101,12 +103,12 @@ FUNCTION simulation_menu(settings)
 
         IF g_pStatsSummary ≠ NULL THEN
             CALL ui_statistics_print_final(g_pStatsSummary, settings)
+        ELSE
+            OUTPUT "Warning: No summary received."
         END IF
 
         OUTPUT "Simulation finished."
-
         CALL post_simulation_prompt(sim_output_path)
-
         return UI_SIMULATION
 
     ELSE IF choice = 2 THEN
@@ -124,6 +126,6 @@ FUNCTION hand_over_simulationdata(pStatList)
 END FUNCTION
 
 
-FUNCTION hand_over_simulationdata(pStatList)
-    g_pStatList ← pStatList
+FUNCTION hand_over_endstatistics(pStatsSummary)
+    g_pStatsSummary ← pStatsSummary
 END FUNCTION
