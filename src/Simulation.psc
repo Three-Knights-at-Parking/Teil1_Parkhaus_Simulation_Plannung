@@ -170,6 +170,12 @@ FUNCTION Simulation_End(p_sim)
     END IF
 
     status <- OK
+
+    leave_status <- vehicles_leaving_end(p_sim.parkhaus, p_sim.StatList)
+    IF leave_status != OK THEN
+        status <- leave_status
+    END IF
+
     summary
     p_summary <- &summary
     MEMSET(p_summary, 0, SIZEOF(StatsSummary))

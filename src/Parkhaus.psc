@@ -435,6 +435,31 @@ FUNCTION vehicle_leaving(p_parkhaus, p_StatList, p_vehicle_list_head, p_vehicle)
 END FUNCTION
 
 
+FUNCTION vehicles_leaving_end(p_parkhaus, p_StatList)
+
+    IF p_parkhaus = NULL THEN
+        RETURN ERROR
+    END IF
+
+    IF p_StatList = NULL THEN
+        RETURN ERROR
+    END IF
+
+    currentNode <- p_parkhaus.p_parked_head
+
+    WHILE currentNode != NULL DO
+        nextNode <- currentNode.p_next
+        status <- vehicle_leaving(p_parkhaus, p_StatList, p_parkhaus.p_parked_head, currentNode)
+        IF status != OK THEN
+            RETURN status
+        END IF
+
+        currentNode <- nextNode
+    END WHILE
+
+    RETURN OK
+END FUNCTION
+
 //////////////////////////////////////////////////////////
 // Small helpers for Parkhaus capacity & stats
 // @author: ibach
@@ -512,6 +537,8 @@ FUNCTION update_on_vehicle_entry(p_parkhaus, p_StatList, p_vehicle, required_spa
 
     RETURN
 END FUNCTION
+
+
 
 
 //////////////////////////////////////////////////////////
