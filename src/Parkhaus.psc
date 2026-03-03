@@ -125,6 +125,7 @@ FUNCTION parkhouse_tick_empty_general(current_tick, p_parkhaus, p_settings, p_St
         leave_tick   <- created_at + parking_time
         IF current_tick >= leave_tick THEN
             // remove this vehicle from Parkhaus and free its space
+            // updating StatsTick
             vehicle_leaving(p_parkhaus, p_StatList, p_vehicle_list_head, currentNode)
         END IF
 
@@ -151,6 +152,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_Sta
 
     entries_processed <- 0
     queue_blocked     <- FALSE
+
     WHILE (get_open_space(p_parkhaus) > 0) AND
           (entries_processed < max_entries_per_tick) AND
           (demand_remaining > 0) AND
@@ -158,19 +160,25 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_Sta
 
         // Is there something in the queue? If not, create a new vehicle in the queue
         IF Queue_IsEmpty(p_gate_queue) THEN
+
             queue_add_random_vehicle(p_gate_queue, current_tick, p_settings)
             demand_remaining <- demand_remaining - 1
+
         END IF
 
         IF NOT Queue_IsEmpty(p_gate_queue) THEN
             next_vehicle_size <- GetNextQueueVehicleSize(p_gate_queue)
 
             IF next_vehicle_size <= get_open_space(p_parkhaus) THEN
-                required_space <- fill_from_queue(p_parkhaus, p_gate_queue)
-                  update_parkhaus_on_entry(p_parkhaus, p_StatList.p_current_tick, required_space)
+
+                required_space <- fill_from_queue(p_parkhaus, p_gate_queue, p_vehicle)
+                update_on_vehicle_entry(p_parkhaus, p_StatList, p_vehicle, required_space, current_tick)
                 entries_processed <- entries_processed + 1
-            ELSE // Waiting vehicle is too large to enter
+
+            ELSE // Waiting vehicle is too large to enter -> Entry Blocked
                 queue_blocked <- TRUE
+                stats_tick_set_blocker_full_active(p_StatsList)
+
             END IF
         END IF
     END WHILE
@@ -232,7 +240,7 @@ END FUNCTION
 // -> parallel checking of all Entrys for an euqal entry possibility
 FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_StatsList, p_gate_queue, lastCycle)
 
-    queue_blocked    <- FALSE
+
     required_space   <- 0
     demand_remaining <- Queue_GetDemand(p_gate_queue)
 
@@ -250,11 +258,10 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_
 
             // Check whether the vehicle fits in the garage
             IF next_vehicle_size <= get_open_space(p_parkhaus) THEN
-                required_space <- fill_from_queue(p_parkhaus, p_gate_queue)
-                update_parkhaus_on_entry(p_parkhaus, p_StatList, required_space)
+                required_space <- fill_from_queue(p_parkhaus, p_gate_queue, p_vehicle)
+                update_on_vehicle_entry(p_parkhaus, p_StatList, p_vehicle, required_space, current_tick)
             ELSE
-                //Stats?
-                queue_blocked <- TRUE
+                stats_tick_set_blocker_full_active(p_StatsList)
             END IF
         END IF
     END IF
@@ -340,11 +347,15 @@ FUNCTION park_vehicle(p_parkhaus, p_vehicle)
 END FUNCTION
 
 
-FUNCTION fill_from_queue(p_parkhous, p_gate_queue)
+FUNCTION fill_from_queue(p_parkhous, p_gate_queue, pp_vehicle)
 
     p_vehicle <- Queue_PopFront(p_gate_queue)
     IF p_vehicle = NULL THEN
         RETURN 0
+    END IF
+
+    IF pp_vehicle != NULL THEN
+        pp_vehicle <- p_vehicle
     END IF
 
     p_car <- (Car) p_vehicle
@@ -397,7 +408,7 @@ FUNCTION open_demand(p_StatList, p_gate_queue, queue_max_len, demand_remaining, 
 END FUNCTION
 
 
-FUNCTION vehicle_leaving(p_parkhaus, p_StatsTick, p_vehicle_list_head, p_vehicle)
+FUNCTION vehicle_leaving(p_parkhaus, p_StatList, p_vehicle_list_head, p_vehicle)
 
     IF p_parkhaus = NULL THEN
         RETURN ERROR
@@ -407,16 +418,17 @@ FUNCTION vehicle_leaving(p_parkhaus, p_StatsTick, p_vehicle_list_head, p_vehicle
         RETURN ERROR
     END IF
 
-    required_space <- GetVehicleRequiredSpace(p_vehicle)
+    p_StatsTick <- p_StatList.p_current_tick
+    IF p_StatsTick = NULL THEN
+        RETURN ERROR
+    END IF
 
-    update_parkhaus_on_exit(p_parkhaus, p_StatsTick, required_space)
-    vehicle_list_remove(&p_parkhaus.parked_head, &p_parkhaus.parked_tail, p_vehicle)
+    p_car <- (Car) p_vehicle
 
-    // free vehicle node when removing it from list.
-    // We will have to look at timings with the statistics objects,
-    // do we want to tick the statistics before Parkhaus and Queue?
-    // If not, freeing here is INVALID as we haven't collected the stats
-    // yet.
+    //Saving Data from Vehicle into Stats
+    update_on_vehicle_exit(p_parkhaus, p_StatList, p_vehicle, p_car.spaces_needed, p_StatsTick.tick)
+    vehicle_list_remove(p_parkhaus.parked_head, p_parkhaus.parked_tail, p_vehicle)
+
     FREE(p_vehicle)
 
     RETURN OK
@@ -438,13 +450,22 @@ FUNCTION get_open_space(p_parkhaus)
 END FUNCTION
 
 
-FUNCTION update_parkhaus_on_exit(p_parkhaus, p_StatsTick, required_space)
+FUNCTION update_on_vehicle_exit(p_parkhaus, p_StatList, p_vehicle, required_space, current_tick)
 
     IF p_parkhaus = NULL THEN
         RETURN ERROR
     END IF
 
+    IF p_StatList = NULL THEN
+        RETURN ERROR
+    END IF
+
+    p_StatsTick <- p_StatList.p_current_tick
     IF p_StatsTick = NULL THEN
+        RETURN ERROR
+    END IF
+
+    IF p_vehicle = NULL THEN
         RETURN ERROR
     END IF
 
@@ -452,20 +473,31 @@ FUNCTION update_parkhaus_on_exit(p_parkhaus, p_StatsTick, required_space)
         RETURN ERROR
     END IF
 
+    //Saving Data from Vehicle into Stats
     p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken - required_space
     p_StatsTick.departed <- p_StatsTick.departed + 1
+    stats_tick_add_vehicle(p_StatList, p_vehicle, current_tick)
 
     RETURN
 END FUNCTION
 
 
-FUNCTION update_parkhaus_on_entry(p_parkhaus, p_StatsTick, required_space)
+FUNCTION update_on_vehicle_entry(p_parkhaus, p_StatList, p_vehicle, required_space, current_tick)
 
     IF p_parkhaus = NULL THEN
         RETURN ERROR
     END IF
 
+    IF p_StatList = NULL THEN
+        RETURN ERROR
+    END IF
+
+    p_StatsTick <- p_StatList.p_current_tick
     IF p_StatsTick = NULL THEN
+        RETURN ERROR
+    END IF
+
+    IF p_vehicle = NULL THEN
         RETURN ERROR
     END IF
 
@@ -473,7 +505,10 @@ FUNCTION update_parkhaus_on_entry(p_parkhaus, p_StatsTick, required_space)
         RETURN ERROR
     END IF
 
+    //Saving Data from Vehicle into Stats
     p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken + required_space
+    p_StatsTick.entered <- p_StatsTick.entered + 1
+    stats_tick_add_vehicle(p_StatList, p_vehicle, current_tick)
 
     RETURN
 END FUNCTION

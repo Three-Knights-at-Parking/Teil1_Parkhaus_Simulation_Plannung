@@ -193,12 +193,12 @@ FUNCTION stats_tick_add_bad_parking_cases(p_stats, amount)
 END FUNCTION
 
 // Brief: Marks whether the "full" blocker was active in the tick.
-FUNCTION stats_tick_set_blocker_full_active(p_stats, active)
+FUNCTION stats_tick_add_blocker_full_active(p_stats, active)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
     END IF
-    p_tick.blocker_full_active <- active
+    p_tick.blocker_full_active <- p_tick.blocker_full_active + 1
     return OK
 END FUNCTION
 

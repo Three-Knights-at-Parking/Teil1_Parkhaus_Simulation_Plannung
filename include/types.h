@@ -188,7 +188,7 @@ struct StatsTick {
     uint32_t parking_duration_departed_count; /**< Number of vehicles departed in this tick for duration evaluation. */
 
     /* Raw quality/blocker values */
-    uint8_t blocker_full_active; /**< 1 if tick was blocked due to full capacity, otherwise 0. */
+    uint16_t blocker_full_active; /**< How often a Gate was blocked in tis Tick */
     uint16_t bad_parking_cases; /**< Number of "badly parked" cases in this tick. */
 
 } StatsTick;

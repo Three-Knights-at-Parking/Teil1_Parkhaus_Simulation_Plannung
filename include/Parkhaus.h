@@ -103,7 +103,7 @@
      * @brief Takes a vehicle from the queue and calculates required space.
      * @author Simon Ibach
      */
-    uint16_t fill_from_queue(Parkhaus* p_parkhaus, Queue *p_gate_queue);
+    uint16_t fill_from_queue(Parkhaus* p_parkhaus, Queue *p_gate_queue, GenericVehicle **pp_vehicle);
 
     /**
      * @brief Writes remaining demand to the queue and reports queue rejections to stats if needed.
@@ -115,7 +115,7 @@
      * @brief Removes a vehicle from the garage and frees the space.
      * @author Simon Ibach
      */
-    int vehicle_leaving(Parkhaus *p_parkhouse, StatsTick *p_StatsTick, GenericVehicle **pp_vehicle_list_head, GenericVehicle *p_vehicle);
+    int vehicle_leaving(Parkhaus *p_parkhouse, StatList *p_StatList, GenericVehicle **pp_vehicle_list_head, GenericVehicle *p_vehicle);
 
     /**
      * @brief Creates a queue structure for multiple gates.
@@ -164,12 +164,12 @@
      * @brief Updates occupancy and exit counter when a vehicle leaves.
      * @author Simon Ibach
      */
-    void update_parkhaus_on_exit(Parkhaus *p_parkhouse, StatsTick *p_StatsTick, uint16_t required_space);
+    void update_on_vehicle_exit(Parkhaus *p_parkhouse, StatList *p_StatList, const GenericVehicle *p_vehicle, uint16_t required_space, uint32_t current_tick);
 
     /**
      * @brief Updates occupancy and entry counter when a vehicle enters.
      * @author Simon Ibach
      */
-    void update_parkhaus_on_entry(Parkhaus *p_parkhouse, StatsTick *p_StatsTick, uint16_t required_space);
+    void update_on_vehicle_entry(Parkhaus *p_parkhouse, StatList *p_StatList, const GenericVehicle *p_vehicle, uint16_t required_space, uint32_t current_tick);
 
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_PARKHAUS_H

@@ -92,7 +92,7 @@ int stats_tick_set_bad_parking_cases(StatList *p_stats, uint16_t bad_cases);
 int stats_tick_add_bad_parking_cases(StatList *p_stats, uint16_t amount);
 
 /** Sets whether the "full" blocker was active in this tick (0/1). */
-int stats_tick_set_blocker_full_active(StatList *p_stats, uint8_t active);
+int stats_tick_add_blocker_full_active(StatList *p_stats);
 
 /**
  * Records vehicle-based metrics into the current tick.
