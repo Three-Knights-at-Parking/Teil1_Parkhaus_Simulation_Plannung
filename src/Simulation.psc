@@ -19,7 +19,7 @@ FUNCTION simulation_init(p_sim, p_settings, p_stats)
     p_sim.max_ticks     <- p_settings.max_ticks
     p_sim.rand_seed     <- p_settings.rand_seed
 
-    p_sim.stats         <- p_stats
+    p_sim.StatList        <- p_stats
     p_sim.rng <- RNG_Create(p_sim.rand_seed)
     IF p_sim.rng = NULL THEN
         return ERROR
@@ -147,11 +147,11 @@ FUNCTION simulation_tick(p_sim)
     tick(p_sim.parkhaus.base, current_tick)
 
 
-    status <- Stats_RecordTick(p_sim.stats, current_tick)
+    status <- Stats_RecordTick(p_sim.StatList, current_tick)
     IF status != 0 THEN
         return status
     END IF
-    p_tickstats <- stats_get_latest_tick(p_sim.stats)
+    p_tickstats <- stats_get_latest_tick(p_sim.StatList)
     status <- savehandler_save_tick(p_sim, p_tickstats, "stats.csv")
     IF status != 0 THEN
         return status
