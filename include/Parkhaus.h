@@ -76,14 +76,14 @@
      * @author Simon Ibach
      */
     int parkhouse_tick_empty_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
-                                        StatList *p_StatList, GenericVehicle **pp_car_list_head);
+                                        StatList *p_StatList, GenericVehicle **pp_vehicle_list_head);
 
     /**
      * @brief Processes entries for a single gate in one tick.
      * * @author Simon Ibach
      */
     int parkhouse_tick_fill_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
-                                        StatList *p_StatList, GenericVehicle **pp_car_list_head, Queue *p_gate_queue);
+                                        StatList *p_StatList, GenericVehicle **pp_vehicle_list_head, Queue *p_gate_queue);
 
     /**
      * @brief Distributes entries across multiple gates using subticks.
@@ -115,7 +115,7 @@
      * @brief Removes a vehicle from the garage and frees the space.
      * @author Simon Ibach
      */
-    int car_leaving(Parkhaus *p_parkhouse, GenericVehicle **pp_car_list_head, GenericVehicle *p_car);
+    int vehicle_leaving(Parkhaus *p_parkhouse, StatsTick *p_StatsTick, GenericVehicle **pp_vehicle_list_head, GenericVehicle *p_vehicle);
 
     /**
      * @brief Creates a queue structure for multiple gates.
@@ -164,12 +164,12 @@
      * @brief Updates occupancy and exit counter when a vehicle leaves.
      * @author Simon Ibach
      */
-    void update_parkhouse_on_exit(Parkhaus *p_parkhouse,p_StatsTick, StatsTick *p_StatsTick, uint16_t required_space);
+    void update_parkhaus_on_exit(Parkhaus *p_parkhouse, StatsTick *p_StatsTick, uint16_t required_space);
 
     /**
      * @brief Updates occupancy and entry counter when a vehicle enters.
      * @author Simon Ibach
      */
-    void update_parkhouse_on_entry(Parkhaus *p_parkhouse, StatsTick *p_StatsTick, uint16_t required_space);
+    void update_parkhaus_on_entry(Parkhaus *p_parkhouse, StatsTick *p_StatsTick, uint16_t required_space);
 
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_PARKHAUS_H

@@ -202,6 +202,49 @@ FUNCTION stats_tick_set_blocker_full_active(p_stats, active)
     return OK
 END FUNCTION
 
+// Brief: Derives and writes all useful vehicle metrics into current tick.
+FUNCTION stats_tick_add_vehicle(p_stats, p_vehicle, current_tick)
+    p_tick <- p_stats.p_current_tick
+    IF p_tick = NULL OR p_vehicle = NULL THEN
+        return ERROR
+    END IF
+
+    // Vehicle entered this tick -> entered counter + queue wait sample.
+    IF p_vehicle.park_house_entered = current_tick THEN
+        p_tick.entered <- p_tick.entered + 1
+
+        IF p_vehicle.park_house_entered >= p_vehicle.created_at_tick THEN
+            wait_ticks <- p_vehicle.park_house_entered - p_vehicle.created_at_tick
+            p_tick.queue_wait_entered_sum_ticks <- p_tick.queue_wait_entered_sum_ticks + wait_ticks
+            p_tick.queue_wait_entered_count <- p_tick.queue_wait_entered_count + 1
+            IF wait_ticks > p_tick.queue_wait_max_ticks_tick THEN
+                p_tick.queue_wait_max_ticks_tick <- wait_ticks
+            END IF
+        END IF
+    END IF
+
+    // Vehicle left this tick -> departed counter + parking duration sample.
+    IF p_vehicle.park_house_left = current_tick THEN
+        p_tick.departed <- p_tick.departed + 1
+
+        IF p_vehicle.park_house_left >= p_vehicle.park_house_entered THEN
+            duration_ticks <- p_vehicle.park_house_left - p_vehicle.park_house_entered
+            p_tick.parking_duration_departed_sum_ticks <- p_tick.parking_duration_departed_sum_ticks + duration_ticks
+            p_tick.parking_duration_departed_count <- p_tick.parking_duration_departed_count + 1
+        END IF
+    END IF
+
+    // Car-specific rule quality metric: required spaces exceed minimum spaces.
+    IF p_vehicle.base.type = CAR THEN
+        p_car <- (Car) p_vehicle
+        IF p_car.spaces_needed > p_car.minimum_spaces THEN
+            p_tick.bad_parking_cases <- p_tick.bad_parking_cases + 1
+        END IF
+    END IF
+
+    return OK
+END FUNCTION
+
 // Brief: Validates the tick builder before commit (currently without derived metrics).
 FUNCTION stats_tick_finalize(p_stats)
     IF p_stats = NULL OR p_stats.p_current_tick = NULL THEN

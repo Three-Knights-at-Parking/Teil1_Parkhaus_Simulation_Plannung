@@ -94,6 +94,20 @@ int stats_tick_add_bad_parking_cases(StatList *p_stats, uint16_t amount);
 /** Sets whether the "full" blocker was active in this tick (0/1). */
 int stats_tick_set_blocker_full_active(StatList *p_stats, uint8_t active);
 
+/**
+ * Records vehicle-based metrics into the current tick.
+ *
+ * The function derives values from GenericVehicle timestamps relative
+ * to `current_tick`:
+ * - queue wait + entered counter if `park_house_entered == current_tick`
+ * - parking duration + departed counter if `park_house_left == current_tick`
+ *
+ * For car objects, bad parking is counted when `spaces_needed > minimum_spaces`.
+ */
+int stats_tick_add_vehicle(StatList *p_stats,
+                           const GenericVehicle *p_vehicle,
+                           uint32_t current_tick);
+
 
 int Stats_RecordTick(StatList *p_stats, uint32_t current_tick);
 
