@@ -1,92 +1,99 @@
 INCLUDE FILE ui_statistics.h
 
+INCLUDE FILE ui_statistics.h
+
+/*
+ * @file ui_statistics.psc
+ * @brief Terminal output for simulation statistics.
+ *
+ * This module prints:
+ * - Header/legend (depending on output mode)
+ * - Tick-by-tick statistics (NORMAL / VERBOSE / DEBUG)
+ * - Final simulation summary (StatsSummary)
+ *
+ * Design note:
+ * - The UI only formats and prints existing values.
+ * - Minimal derived values are computed only where required for readability:
+ *   - Utilization in percent (capacity_taken / capacity_total)
+ *   - Average queue wait (sum / count)
+ */
+
+
 /* ========================================================================= */
 /* Helper functions                                                          */
 /* ========================================================================= */
-FUNCTION repeat_char(ch, count)
 
+FUNCTION repeat_char(ch, count)
     result ← ""
     i ← 0
-
     WHILE i < count DO
         result ← result + ch
         i ← i + 1
     END WHILE
-
     return result
-
 END FUNCTION
 
 
 FUNCTION clamp_int(value, min, max)
-
     IF value < min THEN
         return min
     END IF
-
     IF value > max THEN
         return max
     END IF
-
     return value
-
 END FUNCTION
 
 
 FUNCTION format_float_1(value)
+    // Rounds to 1 decimal place (readable NORMAL mode).
     rounded ← ROUND(value * 10) / 10
     return TO_STRING(rounded)
 END FUNCTION
 
 
 FUNCTION format_float_2(value)
+    // Rounds to 2 decimals (used for VERBOSE mode / summary values).
     rounded ← ROUND(value * 100) / 100
     return TO_STRING(rounded)
 END FUNCTION
 
 
 FUNCTION build_occupancy_bar(taken_percent)
-
+    // Visual bar for utilization. "UI_STATS_BAR_WIDTH" controls the size.
     filled ← (taken_percent / 100.0) * UI_STATS_BAR_WIDTH
     filled_int ← clamp_int(ROUND(filled), 0, UI_STATS_BAR_WIDTH)
     empty_int ← UI_STATS_BAR_WIDTH - filled_int
 
     bar ← "[" + repeat_char("#", filled_int) + repeat_char("-", empty_int) + "]"
     return bar
-
 END FUNCTION
 
 
 FUNCTION derive_status_text(stats_tick)
-
+    // FULL means no free capacity at the end of the tick.
     IF stats_tick.capacity_free = 0 THEN
         return "FULL"
     END IF
-
     return "OK"
-
 END FUNCTION
 
 
 FUNCTION calc_util_percent(stats_tick)
-
+    // Minimal derived value: utilization in percent.
     IF stats_tick.capacity_total = 0 THEN
         return 0
     END IF
-
     return (stats_tick.capacity_taken * 100.0) / stats_tick.capacity_total
-
 END FUNCTION
 
 
 FUNCTION calc_avg_queue_wait_entered(stats_tick)
-
+    // Minimal derived value: avg waiting time of vehicles that entered in this tick.
     IF stats_tick.queue_wait_entered_count = 0 THEN
         return 0
     END IF
-
     return stats_tick.queue_wait_entered_sum_ticks / stats_tick.queue_wait_entered_count
-
 END FUNCTION
 
 
@@ -127,6 +134,7 @@ END FUNCTION
 
 FUNCTION ui_statistics_print_header(settings)
 
+    // Output can be fully disabled by selecting NONE.
     IF settings.output_mode = NONE THEN
         return
     END IF
@@ -134,6 +142,7 @@ FUNCTION ui_statistics_print_header(settings)
     IF settings.output_mode = VERBOSE THEN
         CALL ui_statistics_print_header_verbose()
     ELSE
+        // NORMAL and DEBUG use the readable header.
         CALL ui_statistics_print_header_normal()
     END IF
 
@@ -171,6 +180,7 @@ END FUNCTION
 
 FUNCTION ui_statistics_print_tick_verbose(stats_tick)
 
+    // Verbose prints only the metrics that actually exist in StatsTick.
     status_text ← CALL derive_status_text(stats_tick)
     util_percent ← CALL calc_util_percent(stats_tick)
     avg_wait ← CALL calc_avg_queue_wait_entered(stats_tick)
@@ -214,7 +224,7 @@ FUNCTION ui_statistics_print_tick(stats_tick, settings)
         return
     END IF
 
-    /* NORMAL and DEBUG share the same readable box output. */
+    // NORMAL and DEBUG share the same readable box output.
     CALL ui_statistics_print_tick_normal(stats_tick)
 
     IF settings.output_mode = DEBUG THEN
