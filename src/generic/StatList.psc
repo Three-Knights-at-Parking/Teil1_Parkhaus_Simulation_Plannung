@@ -59,9 +59,6 @@ FUNCTION statlist_compute_summary(p_sim, p_summary)
     IF current = NULL THEN
         return ERROR
     END IF
-
-    total_ticks <- OK
-
-    // Implementation follows @Simon Ibach
+    stats_build_summary(p_sim, p_summary)
     return 0
 END FUNCTION
