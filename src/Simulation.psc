@@ -151,7 +151,18 @@ FUNCTION Simulation_End(p_sim)
         p_sim.rng <- NULL
     END IF
 
-    FREE(Settings) // free settings object
+    IF p_sim.settings != NULL THEN
+        IF p_sim.settings.src_path != NULL THEN
+            FREE(p_sim.settings.src_path)
+        END IF
+        IF p_sim.settings.name != NULL THEN
+            FREE(p_sim.settings.name)
+        END IF
+
+        // Free struct.
+        FREE(p_sim.settings)
+        p_sim.settings <- NULL
+    END IF
     OUTPUT "Simulation ended"
 
     return OK

@@ -110,8 +110,8 @@ FUNCTION parkhouse_tick_empty_general(current_tick, p_parkhaus, p_settings, p_ca
     WHILE currentNode != NULL DO
         nextNode <- currentNode.p_next
 
-        created_at   <- currentNode.created_at
-        parking_time <- currentNode.parking_time
+        created_at   <- currentNode.created_at_tick
+        parking_time <- currentNode.leaving_in_ticks
         leave_tick   <- created_at + parking_time
         IF current_tick >= leave_tick THEN
             // remove this car from Parkhaus and free its space

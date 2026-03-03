@@ -15,8 +15,9 @@ FUNCTION queue_init(p_queue, max_size)
     END IF
 
     p_queue.max_size    <- max_size
-    p_queue.size        <- 0
-    p_queue.waiting_cars <- NULL        // empty dynamic list
+    p_queue.capacity <- 0
+    p_queue.p_head   <- NULL
+    p_queue.p_tail   <- NULL
     p_queue.demand      <- 0
 
     p_queue.base.id     <- 0           // or some id generator
@@ -90,8 +91,8 @@ FUNCTION queue_enqueue(p_queue, p_vehicle)
     END IF
 
     // append vehicle to internal list of waiting_cars
-    vehicle_list_append(&p_queue.waiting_head, &p_queue.waiting_tail, p_vehicle)
-    p_queue.size <- p_queue.size + 1
+    vehicle_list_append(&p_queue.p_head, &p_queue.p_tail, p_vehicle)
+    p_queue.capacity <- p_queue.capacity + 1
 
     return OK
 END FUNCTION
