@@ -68,6 +68,16 @@ struct GenericVehicle {
 };
 
 /**
+ * Definition of needed base Spcae per Vehice
+ * @author Simon Ibach
+ */
+
+#define car_base_space 2
+//further Add possibilitys
+//#define bike_base_space 1
+//#define van_base_space 3
+
+/**
  * Parkhaus parent representing a parkhaus.
  * @author Luca Perri
  */
