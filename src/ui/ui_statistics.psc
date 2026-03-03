@@ -33,6 +33,18 @@ FUNCTION clamp_int(value, min, max)
 END FUNCTION
 
 
+FUNCTION format_float_1(value)
+    rounded ← ROUND(value * 10) / 10
+    return TO_STRING(rounded)
+END FUNCTION
+
+
+FUNCTION format_float_2(value)
+    rounded ← ROUND(value * 100) / 100
+    return TO_STRING(rounded)
+END FUNCTION
+
+
 FUNCTION build_occupancy_bar(taken_percent)
 
     filled ← (taken_percent / 100.0) * UI_STATS_BAR_WIDTH
@@ -56,21 +68,24 @@ FUNCTION derive_status_text(stats_tick)
 END FUNCTION
 
 
-FUNCTION format_float_1(value)
+FUNCTION calc_util_percent(stats_tick)
 
-    // Pseudocode: round to 1 decimal and return as string
-    // Example: 87.04 -> "87.0"
-    rounded ← ROUND(value * 10) / 10
-    return TO_STRING(rounded)
+    IF stats_tick.capacity_total = 0 THEN
+        return 0
+    END IF
+
+    return (stats_tick.capacity_taken * 100.0) / stats_tick.capacity_total
 
 END FUNCTION
 
 
-FUNCTION format_float_2(value)
+FUNCTION calc_avg_queue_wait_entered(stats_tick)
 
-    //Used in VERBOSE mode - rounds floating numbers to two decimals.
-    rounded ← ROUND(value * 100) / 100
-    return TO_STRING(rounded)
+    IF stats_tick.queue_wait_entered_count = 0 THEN
+        return 0
+    END IF
+
+    return stats_tick.queue_wait_entered_sum_ticks / stats_tick.queue_wait_entered_count
 
 END FUNCTION
 
@@ -103,8 +118,7 @@ FUNCTION ui_statistics_print_header_verbose()
     OUTPUT "======================================================================"
     OUTPUT "           PARKHAUS – TICK STATISTICS (VERBOSE)"
     OUTPUT "----------------------------------------------------------------------"
-    OUTPUT "All metrics per tick are printed in technical format."
-    OUTPUT "Each block represents one simulation tick snapshot."
+    OUTPUT "All available raw metrics per tick are printed."
     OUTPUT "======================================================================"
     OUTPUT ""
 
@@ -134,8 +148,11 @@ FUNCTION ui_statistics_print_tick_normal(stats_tick)
 
     status_text ← CALL derive_status_text(stats_tick)
 
-    occ_bar ← CALL build_occupancy_bar(stats_tick.capacity_taken_percent)
-    occ_pct ← CALL format_float_1(stats_tick.capacity_taken_percent) + "%"
+    util_percent ← CALL calc_util_percent(stats_tick)
+    occ_bar ← CALL build_occupancy_bar(util_percent)
+    occ_pct ← CALL format_float_1(util_percent) + "%"
+
+    avg_wait ← CALL calc_avg_queue_wait_entered(stats_tick)
 
     OUTPUT "+--------------------------------------------------------------------+"
     OUTPUT "| Tick: ", stats_tick.tick, "   Status: ", status_text
@@ -146,7 +163,7 @@ FUNCTION ui_statistics_print_tick_normal(stats_tick)
            " | In: ", stats_tick.entered,
            " | Out: ", stats_tick.departed,
            " | Rej: ", stats_tick.queue_rejections
-    OUTPUT "| Avg Queue Wait (entered): ", CALL format_float_2(stats_tick.avg_queue_wait_ticks_entered), " ticks"
+    OUTPUT "| Avg Queue Wait (entered): ", CALL format_float_2(avg_wait), " ticks"
     OUTPUT "+--------------------------------------------------------------------+"
 
 END FUNCTION
@@ -155,6 +172,8 @@ END FUNCTION
 FUNCTION ui_statistics_print_tick_verbose(stats_tick)
 
     status_text ← CALL derive_status_text(stats_tick)
+    util_percent ← CALL calc_util_percent(stats_tick)
+    avg_wait ← CALL calc_avg_queue_wait_entered(stats_tick)
 
     OUTPUT "----------------------------------------------------------------------"
     OUTPUT "Tick = ", stats_tick.tick, " | Status = ", status_text
@@ -162,41 +181,24 @@ FUNCTION ui_statistics_print_tick_verbose(stats_tick)
     OUTPUT "Capacity: total=", stats_tick.capacity_total,
            " | taken=", stats_tick.capacity_taken,
            " | free=", stats_tick.capacity_free,
-           " | util%=", CALL format_float_2(stats_tick.capacity_taken_percent)
-
-    OUTPUT "Capacity Peaks: peakUtilSoFar%=", CALL format_float_2(stats_tick.peak_capacity_taken_percent_so_far),
-           " | peakUtilValueSoFar%=", CALL format_float_2(stats_tick.peak_capacity_value_percent_so_far),
-           " @tick ", stats_tick.peak_capacity_tick,
-           " | firstFullTick=", stats_tick.first_full_tick,
-           " | fullTicksSoFar=", stats_tick.full_ticks_so_far
+           " | util%=", CALL format_float_2(util_percent)
 
     OUTPUT "Flow (tick): arrivals=", stats_tick.arrivals_generated,
            " | enqueued=", stats_tick.enqueued,
            " | entered=", stats_tick.entered,
-           " | departed=", stats_tick.departed,
-           " | netOccChange=", stats_tick.net_occupancy_change
+           " | departed=", stats_tick.departed
 
     OUTPUT "Queue: lenEnd=", stats_tick.queue_length_end,
-           " | maxLenSoFar=", stats_tick.queue_length_max_so_far,
            " | rejections=", stats_tick.queue_rejections,
-           " | avgWaitEntered=", CALL format_float_2(stats_tick.avg_queue_wait_ticks_entered),
-           " | maxWaitSoFar=", stats_tick.max_queue_wait_ticks_so_far,
-           " | activeRatioSoFar%=", CALL format_float_2(stats_tick.queue_active_ratio_percent_so_far)
+           " | waitSumEnteredTicks=", stats_tick.queue_wait_entered_sum_ticks,
+           " | waitCountEntered=", stats_tick.queue_wait_entered_count,
+           " | avgWaitEntered=", CALL format_float_2(avg_wait)
 
-    OUTPUT "Parking: avgParkingDurDeparted=", CALL format_float_2(stats_tick.avg_parking_duration_ticks_departed), " ticks"
+    OUTPUT "Parking: durSumDepartedTicks=", stats_tick.parking_duration_departed_sum_ticks,
+           " | durCountDeparted=", stats_tick.parking_duration_departed_count
 
-    OUTPUT "Blocker: fullRatioSoFar%=", CALL format_float_2(stats_tick.blocker_full_ratio_percent_so_far)
-
-    OUTPUT "Quality: badParkingCases=", stats_tick.bad_parking_cases,
-           " | badParkingTick%=", CALL format_float_2(stats_tick.bad_parking_tick_percent)
-
-    OUTPUT "Running Averages: avgUtilSoFar%=", CALL format_float_2(stats_tick.avg_capacity_percent_so_far),
-           " | avgQueueLenSoFar=", CALL format_float_2(stats_tick.avg_queue_length_so_far),
-           " | avgEntered/tick=", stats_tick.avg_entered_per_tick_so_far,
-           " | avgDeparted/tick=", stats_tick.avg_departed_per_tick_so_far
-
-    OUTPUT "Queue Peak So Far: value=", stats_tick.peak_queue_value_so_far,
-           " @tick ", stats_tick.peak_queue_tick
+    OUTPUT "Quality/Blocker: blocker_full_active=", stats_tick.blocker_full_active,
+           " | bad_parking_cases=", stats_tick.bad_parking_cases
 
 END FUNCTION
 
@@ -216,9 +218,7 @@ FUNCTION ui_statistics_print_tick(stats_tick, settings)
     CALL ui_statistics_print_tick_normal(stats_tick)
 
     IF settings.output_mode = DEBUG THEN
-        OUTPUT "DEBUG: blocker_full_active=", stats_tick.blocker_full_active,
-               " | full_ticks_so_far=", stats_tick.full_ticks_so_far,
-               " | peak_util_so_far%=", CALL format_float_2(stats_tick.peak_capacity_taken_percent_so_far)
+        OUTPUT "DEBUG: blocker_full_active=", stats_tick.blocker_full_active
     END IF
 
 END FUNCTION
@@ -231,6 +231,11 @@ END FUNCTION
 FUNCTION ui_statistics_print_final(stats_total, settings)
 
     IF settings.output_mode = NONE THEN
+        return
+    END IF
+
+    IF stats_total = NULL THEN
+        OUTPUT "No summary statistics available."
         return
     END IF
 
@@ -250,12 +255,14 @@ FUNCTION ui_statistics_print_final(stats_total, settings)
     OUTPUT "Entered total          : ", stats_total.entered_total
     OUTPUT "Departed total         : ", stats_total.departed_total
 
-    OUTPUT "Queue avg length       : ", stats_total.queue_length_avg
+    OUTPUT "Queue avg length       : ", CALL format_float_2(stats_total.queue_length_avg)
     OUTPUT "Queue peak             : ", stats_total.queue_length_peak,
            " at tick ", stats_total.queue_length_peak_tick
     OUTPUT "Queue rejections total : ", stats_total.queue_rejections_total
     OUTPUT "Avg queue wait (ticks) : ", stats_total.queue_wait_avg_ticks
     OUTPUT "Max queue wait (ticks) : ", stats_total.queue_wait_max_ticks
+
+    OUTPUT "Avg parking duration   : ", stats_total.parking_duration_avg_ticks, " ticks"
 
     OUTPUT "Blocker FULL ratio (%) : ", CALL format_float_2(stats_total.blocker_full_ratio_percent)
 
