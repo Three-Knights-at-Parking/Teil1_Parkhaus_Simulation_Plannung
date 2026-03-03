@@ -2,7 +2,7 @@
 
 > **Kurs:** Programmieren 1 (TSA-TSL25, Embedded Systems)  
 > **Abgabe:** Teil I – Programmentwurf / Design-Dokumentation  
-> **Sprache:** C 
+> **Sprache:** C
 ---
 ## Projektbeschreibung
 
