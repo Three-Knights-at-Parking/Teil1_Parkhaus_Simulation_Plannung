@@ -26,17 +26,17 @@ Teil1_Parkhaus_Simulation_Plannung/
 ├── docs/                      ← Gesamte Entwurfs-Dokumentation
 │   ├── statistiken.*       ← Übersicht aller Statistiken (pro Zeitschritt + Endsimulation)
 │   ├── datenstrukturen.*     ← Beschreibung aller structs, enums, Typedefs mit Begründung
-│   └── diagrams/              ← Flussdiagramme und sonstige Diagramme
+│   ├── examples/
+│   │   ├── example_save_file_output
+│   │   ├── example_cli_output
+│   │   ├── ...
+│   │   └── example_graph_output
+│   └── diagrams/[author]/              ← Flussdiagramme und sonstige Diagramme
 │       ├── flowchart_main_loop
 │       ├── flowchart_user_input
 │       ├── flowchart_simulation_loop
 │       ├── ...
-│       └── exported/          ← Exportierte Bilder (PNG/SVG) der Diagramme
-│           ├── flowchart_main_loop.png
-│           ├── flowchart_user_input.png
-│           ├── flowchart_simulation_loop.png
-│           ├── ...
-│           └── flowchart_data_handling.png
+│       └── ...
 │
 ├── include/                   ← Header-Dateien (Schnittstellen / Prototypen)
 │   ├── parkhaus.h             

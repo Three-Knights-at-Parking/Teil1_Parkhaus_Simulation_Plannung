@@ -16,38 +16,41 @@ FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
         return ERROR
     END IF
 
-    // basic fields from Settings
+    IF p_gate_queues = NULL THEN
+        return ERROR
+    END IF
+
     p_parkhaus.base.id   <- 0
     p_parkhaus.base.type <- PARKHAUS
     p_parkhaus.base.tick <- parkhaus_tick
-
-    p_parkhaus.size      <- p_settings.size
-    p_parkhaus.floors    <- p_settings.floors
-    p_parkhaus.fill_size <- 0
-    p_parkhaus.num_gates <- p_settings.gates
+    p_parkhaus.capacity       <- p_settings.capacity
+    p_parkhaus.floors         <- p_settings.floors
+    p_parkhaus.capacity_taken <- 0
+    p_parkhaus.num_gates      <- p_settings.gates
     p_parkhaus.missed_car_entries <- 0
+    p_parkhaus.total_entered      <- 0
+    p_parkhaus.total_exited       <- 0
 
-    // p_parkhaus.name <- "Rauenegg" or p_settings.name
+    // Init gate queues array and parked-vehicle list pointers
+    p_parkhaus.gate_queues   <- p_gate_queues
+    p_parkhaus.p_parked_head <- NULL
+    p_parkhaus.p_parked_tail <- NULL
 
-    // init gate queues and parked-vehicle list
-    p_parkhaus.gate_queues    <- p_gate_queues
-    p_parkhaus.p_parked_head  <- NULL
-
-    return OK
+     return OK
 END FUNCTION
 
 //Moving this to Stats -> Data Analyse 
 FUNCTION parkhaus_get_utilization(p_parkhaus)
-    IF p_parkhaus = NULL THEN
-        return 0.0
-    END IF
+     IF p_parkhaus = NULL THEN
+         return 0.0
+     END IF
 
-    IF p_parkhaus.size = 0 THEN
-        return 0.0
-    END IF
+     IF p_parkhaus.capacity = 0 THEN // CHANGED: from size
+         return 0.0
+     END IF
 
-    utilization <- (p_parkhaus.fill_size * 100.0) / p_parkhaus.size
-    return utilization
+      utilization <- (p_parkhaus.capacity_taken * 100) / p_parkhaus.capacity
+      return utilization
 END FUNCTION
 
 
@@ -288,7 +291,7 @@ FUNCTION queue_add_random_vehicle(p_gate_queue)
 END FUNCTION
 
 
-FUNCTION fill_from_queue(p_parkhaus, p_gate_queue)
+FUNCTION fill_from_queue(p_parkhous, p_gate_queue)
 
     vehicle <- Queue_PopFront(p_gate_queue)
 
@@ -296,7 +299,7 @@ FUNCTION fill_from_queue(p_parkhaus, p_gate_queue)
     required_space <- base_space
 
     // Bad parking only possible if double space is available
-    IF get_open_space(P_parkhaus) >= 2 * base_space THEN
+    IF get_open_space(p_parkhous) >= 2 * base_space THEN
         r <- RandomPercent()
         IF r < GetBadParkingProbability(vehicle) THEN
             required_space <- 2 * base_space
@@ -358,20 +361,18 @@ END FUNCTION
 //////////////////////////////////////////////////////////
 
 FUNCTION get_open_space(p_parkhaus)
-    RETURN p_parkhaus.size - p_parkhaus.fill_size
+    RETURN p_parkhaus.capacity - p_parkhaus.capacity_taken
 END FUNCTION
 
-
 FUNCTION update_parkhaus_on_exit(p_parkhaus, required_space)
-    p_parkhaus.fill_size <- p_parkhaus.fill_size - required_space
-    p_parkhaus.totalExit <- p_parkhaus.totalExit + 1
+    p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken - required_space
+    p_parkhaus.total_exited <- p_parkhaus.total_exited + 1
     return
 END FUNCTION
 
-
 FUNCTION update_parkhaus_on_entry(p_parkhaus, required_space)
-    p_parkhaus.fill_size <- p_parkhaus.fill_size + required_space
-    p_parkhaus.totalEntry <- p_parkhaus.totalEntry + 1
+    p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken + required_space
+    p_parkhaus.total_entered <- p_parkhaus.total_entered + 1
     return
 END FUNCTION
 
