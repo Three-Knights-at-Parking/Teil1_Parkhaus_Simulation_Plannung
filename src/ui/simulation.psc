@@ -76,7 +76,6 @@ FUNCTION simulation_menu(settings)
         IF settings_state_flag = NOT_INITIALIZED THEN
             OUTPUT "Settings not initialized!"
             OUTPUT "Please open the Configuration Menu first."
-            OUTPUT "Press ENTER to change to Config-Menu."
             INPUT dummy
             return UI_KONFIG
         END IF
@@ -84,6 +83,12 @@ FUNCTION simulation_menu(settings)
         OUTPUT "Starting simulation..."
 
         CALL start_simulation(settings)
+
+        /* Sicherheitscheck */
+        IF g_pStatList = NULL THEN
+            OUTPUT "Error: No simulation data received from backend."
+            return UI_SIMULATION
+        END IF
 
         CALL ui_statistics_print_header(settings)
 
@@ -94,7 +99,9 @@ FUNCTION simulation_menu(settings)
             current_tick ← current_tick.p_next
         END WHILE
 
-        CALL ui_statistics_print_final(settings.stats_summary, settings)
+        IF g_pStatsSummary ≠ NULL THEN
+            CALL ui_statistics_print_final(g_pStatsSummary, settings)
+        END IF
 
         OUTPUT "Simulation finished."
 
