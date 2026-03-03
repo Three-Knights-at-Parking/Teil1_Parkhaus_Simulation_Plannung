@@ -1,21 +1,49 @@
+/* ========================================================================= */
+/* Header / Legend                                                           */
+/* ========================================================================= */
+
+FUNCTION ui_statistics_print_header_normal()
+
+    OUTPUT ""
+    OUTPUT "======================================================================"
+    OUTPUT "                PARKHAUS – TICK STATISTICS (NORMAL)"
+    OUTPUT "----------------------------------------------------------------------
+Legend:"
+    OUTPUT "  Status : OK = capacity available | FULL = no free capacity"
+    OUTPUT "  OCC    : occupied spots / total spots"
+    OUTPUT "  Util % : utilization of parking capacity"
+    OUTPUT "  Queue  : queue length at tick end"
+    OUTPUT "  Arr/In/Out/Rej: arrivals / entered / departed / rejected"
+    OUTPUT "======================================================================"
+    OUTPUT ""
+
+END FUNCTION
+
+
+FUNCTION ui_statistics_print_header_verbose()
+
+    OUTPUT ""
+    OUTPUT "======================================================================"
+    OUTPUT "           PARKHAUS – TICK STATISTICS (VERBOSE MODE)"
+    OUTPUT "----------------------------------------------------------------------"
+    OUTPUT "All metrics per tick are printed in technical format."
+    OUTPUT "Each block represents one simulation tick snapshot."
+    OUTPUT "======================================================================"
+    OUTPUT ""
+
+END FUNCTION
+
+
 FUNCTION ui_statistics_print_header(settings)
 
     IF settings.output_mode = NONE THEN
         return
     END IF
 
-    OUTPUT ""
-    OUTPUT "╔══════════════════════════════════════════════════════════════════════════════════════════════╗"
-    OUTPUT "║                                   PARKHAUS – TICK STATISTICS                                ║"
-    OUTPUT "╠══════════════════════════════════════════════════════════════════════════════════════════════╣"
-    OUTPUT "║ Legend: Status=OK/FULL | Occ=Occupied | Util=Utilization% | Q=QueueLen | Arr=Arrivals        ║"
-    OUTPUT "║         In=Entered | Out=Departed | Rej=Queue Rejections                                      ║"
-    OUTPUT "╚══════════════════════════════════════════════════════════════════════════════════════════════╝"
-
-    IF settings.output_mode = NORMAL OR settings.output_mode = DEBUG THEN
-        OUTPUT "┌───────┬────────┬─────────────┬────────┬────────┬───────┬───────┬──────┬──────┬───────┐"
-        OUTPUT "│ Tick  │ Status │ Occ (taken) │ Total  │ Util % │ Queue │  Arr  │  In  │ Out  │  Rej  │"
-        OUTPUT "├───────┼────────┼─────────────┼────────┼────────┼───────┼───────┼──────┼──────┼───────┤"
+    IF settings.output_mode = VERBOSE THEN
+        CALL ui_statistics_print_header_verbose()
+    ELSE
+        CALL ui_statistics_print_header_normal()
     END IF
 
 END FUNCTION
