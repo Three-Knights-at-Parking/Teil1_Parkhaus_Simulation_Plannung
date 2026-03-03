@@ -3,28 +3,28 @@
  #include "types.h"
 /**
  * Represents a Parkhaus owned by a Simulation. Handles (and owns!) all parking cars, its Queue and "inherits"
- * SimulationObject for easy use of the tick() function. Simulation calls this object's free
+ * SimulationObject.psc for easy use of the tick() function. Simulation calls this object's free
  * function to free the Parkhaus which in turn frees the Queue and the underlying cars. Parkaus also owns
  * the Settings of a Simulation and frees it at the end.
  */
 
     /**
      * @brief Initialize a Parkhaus object from given Settings.
-     *        This sets all fields, connects the queue pointer, and prepares the parked-vehicle list.
+     * This sets all fields, connects the gate queues array, and prepares the parked-vehicle list.
      * @param p_parkhaus Pointer to the Parkhaus to initialize.
      * @param p_settings Pointer to the Settings used as configuration source.
-     * @param p_queue Pointer to the Queue that belongs to this Parkhaus (may be NULL if not used).
+     * @param p_gate_queues Pointer to the array of Queues that belongs to this Parkhaus.
      * @return 0 on success, non-zero on invalid parameters.
      *
      * @author Luca Perri
      */
     int parkhaus_init(Parkhaus *p_parkhaus,
                       const Settings *p_settings,
-                      Queue *p_queue);
+                      Queue **p_gate_queues);
 
     /**
      * @brief Tick function for Parkhaus.
-     * @param p_self Pointer to the SimulationObject
+     * @param p_self Pointer to the SimulationObject.psc
      * @param current_tick Current simulation tick.
      *
      * @author Luca Perri

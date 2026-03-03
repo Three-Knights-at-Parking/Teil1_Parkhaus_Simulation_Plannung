@@ -5,7 +5,7 @@
 
 /**
 * Represents a Queue owned by a Parkhaus. Handles (and owns!) all waiting cars and "inherits"
-* SimulationObject for easy use of the tick() function. Parkhaus calls this object's free
+* SimulationObject.psc for easy use of the tick() function. Parkhaus calls this object's free
 * function to free the Queue and the underlying cars.
 */
 
@@ -79,10 +79,21 @@
     uint16_t queue_get_demand(const Queue *p_queue);
 
     /**
-     * @brief Tick function for Queue for the underlying SimulationObject.
-     * @param p_self Pointer to the SimulationObject
+     * @brief Tick function for Queue for the underlying SimulationObject.psc.
+     * @param p_self Pointer to the SimulationObject.psc
      * @param current_tick Current simulation tick.
      */
     void queue_tick(SimulationObject *p_self, uint32_t current_tick);
+
+    /**
+     * @brief Free all dynamically allocated resources owned by the Queue.
+     * This removes and safely frees all remaining GenericVehicle nodes
+     * in the waiting list.
+     * @note This does NOT free the Queue struct pointer itself. Ownership of the Queue
+     * is with the Parkhaus / caller.
+     * * @param p_queue Pointer to the Queue to clean up.
+     * @author Luca Perri
+     */
+    void queue_free(Queue *p_queue);
 
 #endif // TEIL1_PARKHAUS_SIMULATION_PLANNUNG_QUEUE_H

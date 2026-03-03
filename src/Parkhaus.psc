@@ -16,38 +16,41 @@ FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
         return ERROR
     END IF
 
-    // basic fields from Settings
+    IF p_gate_queues = NULL THEN
+        return ERROR
+    END IF
+
     p_parkhaus.base.id   <- 0
     p_parkhaus.base.type <- PARKHAUS
     p_parkhaus.base.tick <- parkhaus_tick
-
-    p_parkhaus.size      <- p_settings.size
-    p_parkhaus.floors    <- p_settings.floors
-    p_parkhaus.fill_size <- 0
-    p_parkhaus.num_gates <- p_settings.gates
+    p_parkhaus.capacity       <- p_settings.capacity
+    p_parkhaus.floors         <- p_settings.floors
+    p_parkhaus.capacity_taken <- 0
+    p_parkhaus.num_gates      <- p_settings.gates
     p_parkhaus.missed_car_entries <- 0
+    p_parkhaus.total_entered      <- 0
+    p_parkhaus.total_exited       <- 0
 
-    // p_parkhaus.name <- "Rauenegg" or p_settings.name
+    // Init gate queues array and parked-vehicle list pointers
+    p_parkhaus.gate_queues   <- p_gate_queues
+    p_parkhaus.p_parked_head <- NULL
+    p_parkhaus.p_parked_tail <- NULL
 
-    // init gate queues and parked-vehicle list
-    p_parkhaus.gate_queues    <- p_gate_queues
-    p_parkhaus.p_parked_head  <- NULL
-
-    return OK
+     return OK
 END FUNCTION
 
 //Moving this to Stats -> Data Analyse 
 FUNCTION parkhaus_get_utilization(p_parkhaus)
-    IF p_parkhaus = NULL THEN
-        return 0.0
-    END IF
+     IF p_parkhaus = NULL THEN
+         return 0.0
+     END IF
 
-    IF p_parkhaus.size = 0 THEN
-        return 0.0
-    END IF
+     IF p_parkhaus.capacity = 0 THEN // CHANGED: from size
+         return 0.0
+     END IF
 
-    utilization <- (p_parkhaus.fill_size * 100.0) / p_parkhaus.size
-    return utilization
+      utilization <- (p_parkhaus.capacity_taken * 100) / p_parkhaus.capacity
+      return utilization
 END FUNCTION
 
 
@@ -160,7 +163,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_car
             next_vehicle_size <- GetNextQueueVehicleSize(p_gate_queue)
 
             IF next_vehicle_size <= get_open_space(p_parkhaus) THEN
-                required_space <- fill_from_queue(p_parkhouse, p_gate_queue)
+                required_space <- fill_from_queue(p_gate_queue, get_open_space(p_parkhaus))
                 update_parkhouse_on_entry(p_parkhaus, required_space)
                 entries_processed <- entries_processed + 1
             ELSE // Waiting vehicle is too large to enter
@@ -311,7 +314,7 @@ FUNCTION fill_from_queue(p_parkhous, p_gate_queue)
     RETURN required_space
 END FUNCTION
 
-//STATS - rejections & queued
+
 FUNCTION open_demand(p_parkhaus, p_gate_queue, queue_max_len, demand_remaining)
 
     open_demand <- demand_remaining
@@ -330,7 +333,7 @@ FUNCTION open_demand(p_parkhaus, p_gate_queue, queue_max_len, demand_remaining)
     return OK
 END FUNCTION
 
-//STATS
+
 FUNCTION car_leaving(p_parkhaus, p_car_list_head, p_car)
 
     IF p_parkhaus = NULL THEN
@@ -361,27 +364,19 @@ END FUNCTION
 // Small helpers for Parkhaus capacity & stats
 //////////////////////////////////////////////////////////
 
-FUNCTION get_open_space(p_parkhous)
-
-    IF p_parkhouse != NULL THEN
-        RETURN p_parkhaus.size - p_parkhaus.fill_size
-    ELSE
-        RETURN ERROR
-    END IF
-
+FUNCTION get_open_space(p_parkhaus)
+    RETURN p_parkhaus.capacity - p_parkhaus.capacity_taken
 END FUNCTION
 
-//STATS - parkingTime, queueTime, ...
 FUNCTION update_parkhaus_on_exit(p_parkhaus, required_space)
-    p_parkhaus.fill_size <- p_parkhaus.fill_size - required_space
-    p_parkhaus.totalExit <- p_parkhaus.totalExit + 1
+    p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken - required_space
+    p_parkhaus.total_exited <- p_parkhaus.total_exited + 1
     return
 END FUNCTION
 
-//STATS -
 FUNCTION update_parkhaus_on_entry(p_parkhaus, required_space)
-    p_parkhaus.fill_size <- p_parkhaus.fill_size + required_space
-    p_parkhaus.totalEntry <- p_parkhaus.totalEntry + 1
+    p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken + required_space
+    p_parkhaus.total_entered <- p_parkhaus.total_entered + 1
     return
 END FUNCTION
 

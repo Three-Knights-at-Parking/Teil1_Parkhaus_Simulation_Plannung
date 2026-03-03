@@ -4,7 +4,7 @@
 #include "types.h"
 /**
  * Normal car (only type right now) that can enter a Queue and Parkhaus. Car is typically
- * owned by Queue or Parkhaus and inherits GenericVehicle (and in turn SimulationObject).
+ * owned by Queue or Parkhaus and inherits GenericVehicle (and in turn SimulationObject.psc).
  */
 
     /**
@@ -32,7 +32,7 @@
 
     /**
      * @brief Tick function for Car.
-     * @param p_self Pointer to the SimulationObject.
+     * @param p_self Pointer to the SimulationObject.psc.
      * @param current_tick Current simulation tick.
      */
     void car_tick(SimulationObject *p_self, uint32_t current_tick);
