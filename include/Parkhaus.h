@@ -72,88 +72,88 @@
     void parkhaus_free(Parkhaus *p_parkhaus);
 
     /**
-     * @brief Verarbeitet ausfahrende Fahrzeuge am Tick-Anfang.
+     * @brief Processes departing vehicles at tick start.
      * @author Simon Ibach
      */
     int parkhouse_tick_empty_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
                                      GenericVehicle **pp_car_list_head);
 
     /**
-     * @brief Verarbeitet Einfahrten fuer ein einzelnes Gate in einem Tick.
+     * @brief Processes entries for a single gate in one tick.
      * * @author Simon Ibach
      */
     int parkhouse_tick_fill_general(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
                                     GenericVehicle **pp_car_list_head, Queue *p_gate_queue);
 
     /**
-     * @brief Verteilt Einfahrten subtick-basiert ueber mehrere Gates.
+     * @brief Distributes entries across multiple gates using subticks.
      * * @author Simon Ibach
      */
     int parkhouse_fill_subtick(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings, Queue *p_gate_queues);
 
     /**
-     * @brief Ein einzelner Subtick-Schritt fuer genau ein Gate.
+     * @brief One subtick step for exactly one gate.
      * @author Simon Ibach
      */
     int parkhouse_fill_subtick_routine(uint32_t current_tick, Parkhaus *p_parkhouse, Settings *p_settings,
                                        Queue *p_gate_queue, int last_cycle);
 
     /**
-     * @brief Uebernimmt ein Fahrzeug aus der Queue und berechnet den benoetigten Platz.
+     * @brief Takes a vehicle from the queue and calculates required space.
      * @author Simon Ibach
      */
     uint16_t fill_from_queue(Parkhaus* p_parkhaus, Queue *p_gate_queue);
 
     /**
-     * @brief Schreibt verbleibenden Demand in die Queue und zaehlt ggf. Rejections hoch.
+     * @brief Writes remaining demand to the queue and increments rejections if needed.
      * @author Simon Ibach
      */
     int open_demand(Parkhaus *p_parkhouse, Queue *p_gate_queue, uint16_t queue_max_len, uint16_t demand_remaining);
 
     /**
-     * @brief Entfernt ein Fahrzeug aus dem Parkhaus und gibt den Platz frei.
+     * @brief Removes a vehicle from the garage and frees the space.
      * @author Simon Ibach
      */
     int car_leaving(Parkhaus *p_parkhouse, GenericVehicle **pp_car_list_head, GenericVehicle *p_car);
 
     /**
-     * @brief Erstellt eine Queue-Struktur fuer mehrere Gates.
+     * @brief Creates a queue structure for multiple gates.
      * @author Simon Ibach
      */
     Queue *parkhaus_create_gate_queues(uint32_t number_of_gates);
 
     /**
-     * @brief Fuegt ein Fahrzeug an einem Gate in die Queue ein.
+     * @brief Enqueues a vehicle at a gate.
      * @author Simon Ibach
      */
     int parkhaus_enqueue_at_gate(Queue *p_gate_queues, uint32_t gate_index, GenericVehicle *p_vehicle);
 
     /**
-     * @brief Setzt den Demand-Wert eines Gates.
+     * @brief Sets the demand value for a gate.
      * @author Simon Ibach
      */
     int parkhaus_set_gate_demand(Queue *p_gate_queues, uint32_t gate_index, uint16_t demand_value);
 
     /**
-     * @brief Erzeugt ein zufaelliges Fahrzeug und fuegt es in eine Gate-Queue ein.
+     * @brief Creates a random vehicle and enqueues it into a gate queue.
      * @author Simon Ibach
      */
     int queue_add_random_vehicle(Queue *p_gate_queue);
 
 /**
-     * @brief Berechnet den aktuell verfuegbaren Platz im Parkhaus.
+     * @brief Calculates currently available space in the garage.
      * @author Simon Ibach
      */
     uint16_t get_open_space(const Parkhaus *p_parkhouse);
 
     /**
-     * @brief Aktualisiert Belegung und Ausfahrtszaehler beim Verlassen eines Fahrzeugs.
+     * @brief Updates occupancy and exit counter when a vehicle leaves.
      * @author Simon Ibach
      */
     void update_parkhouse_on_exit(Parkhaus *p_parkhouse, uint16_t required_space);
 
     /**
-     * @brief Aktualisiert Belegung und Einfahrtszaehler beim Einfahren eines Fahrzeugs.
+     * @brief Updates occupancy and entry counter when a vehicle enters.
      * @author Simon Ibach
      */
     void update_parkhouse_on_entry(Parkhaus *p_parkhouse, uint16_t required_space);

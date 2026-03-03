@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
-// Modul: parkhaus
-// Abhaengigkeiten: queue, vehicle_list, stats_model, rng
+// Module: parkhaus
+// Dependencies: queue, vehicle_list, stats_model, rng
 //////////////////////////////////////////////////////////
 
 
@@ -91,7 +91,7 @@ FUNCTION parkhaus_tick(p_self, current_tick)
                       p_parkhaus.settings,
                       p_parkhaus.queue
                   )
-         // Das Szenario mit gate_time beim Exit wird voruebergehend vernachlaessigt
+         // The gate_time scenario on exit is temporarily ignored
          //IF ((settings.number_of_gates > 1) AND settings.gate_time_exit_enabled) THEN
          //
          //    parkhouse_tick_empty_subtick(current_tick, settings, parkhouse, stats)
@@ -148,7 +148,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_car
           (demand_remaining > 0) AND
           (queue_blocked = FALSE) DO
 
-        // Liegt etwas in der Queue? Wenn nein, erstelle neues Vehicle in Queue
+        // Is there something in the queue? If not, create a new vehicle in the queue
         IF Queue_IsEmpty(p_gate_queue) THEN
             queue_add_random_vehicle(p_gate_queue)
             demand_remaining <- demand_remaining - 1
@@ -161,7 +161,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_car
                 required_space <- fill_from_queue(p_parkhouse, p_gate_queue)
                 update_parkhouse_on_entry(p_parkhaus, required_space)
                 entries_processed <- entries_processed + 1
-            ELSE // Anstehendes Fahrzeug zu gross um einzufahren
+            ELSE // Waiting vehicle is too large to enter
                 queue_blocked <- TRUE
             END IF
         END IF
@@ -225,17 +225,17 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_
 
     IF (get_open_space(p_parkhaus) > 0) AND (demand_remaining > 0) THEN
 
-        // Wenn die Queue leer ist, wird ein neues Front Vehicle erstellt
+        // If the queue is empty, a new front vehicle is created
         IF Queue_IsEmpty(p_gate_queue) THEN
             queue_add_random_vehicle(p_gate_queue)
             demand_remaining <- demand_remaining - 1
         END IF
 
-        // Wenn die Queue infolge nicht leer ist, wird das erste Element der Liste in das Parkhaus uebernommen
+        // If the queue is then not empty, the first list element is moved into the garage
         IF NOT Queue_IsEmpty(p_gate_queue) THEN
             next_vehicle_size <- GetNextQueueVehicleSize(p_gate_queue)
 
-            // Kontrolle ob Vehicle in Parkhaus passt
+            // Check whether the vehicle fits in the garage
             IF next_vehicle_size <= get_open_space(p_parkhaus) THEN
                 required_space <- fill_from_queue(p_parkhaus, p_gate_queue)
                 update_parkhaus_on_entry(p_parkhaus, required_space)
@@ -312,13 +312,13 @@ FUNCTION open_demand(p_parkhaus, p_gate_queue, queue_max_len, demand_remaining)
 
     open_demand <- demand_remaining
 
-    // Uebrige moegliche Einfahrten in die Queue
+    // Remaining possible entries into the queue
     WHILE (open_demand > 0) AND (Queue_Length(p_gate_queue) < queue_max_len) DO
         queue_add_random_vehicle(p_gate_queue)
         open_demand <- open_demand - 1
     END WHILE
 
-    // Uebrige moegliche Einfahrten, welche nicht in Queue passen -> rejected
+    // Remaining possible entries that do not fit in queue -> rejected
     IF open_demand > 0 THEN
         p_parkhaus.missed_car_entries <- p_parkhaus.missed_car_entries + open_demand
     END IF

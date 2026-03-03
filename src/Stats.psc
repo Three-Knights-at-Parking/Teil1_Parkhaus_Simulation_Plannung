@@ -1,32 +1,32 @@
 //////////////////////////////////////////////////////////
-// Modul: Stats
-// Abhaengigkeiten: types, parkhaus, queue
+// Module: Stats
+// Dependencies: types, parkhaus, queue
 //////////////////////////////////////////////////////////
-// Beschreibung:
-// Dieses Modul verwaltet die komplette Statistik-Pipeline der Simulation.
+// Description:
+// This module manages the complete statistics pipeline of the simulation.
 //
-// 1) Tick-Erfassung (Rohwerte)
-//    - Ein Tick wird mit `stats_tick_begin` gestartet.
-//    - Waehrend des Ticks werden Rohdaten per `stats_tick_add_*`
-//      und `stats_tick_set_*` gesammelt.
+// 1) Tick recording (raw values)
+//    - A tick is started with `stats_tick_begin`.
+//    - During the tick, raw data is collected via `stats_tick_add_*`
+//      and `stats_tick_set_*`.
 //
-// 2) Tick-Abschluss
-//    - `stats_tick_finalize` validiert den aktuellen Tick-Builder.
-//    - `stats_tick_commit` haengt den Tick in die Historie an
-//      (doppelt verkettete Liste).
+// 2) Tick finalization
+//    - `stats_tick_finalize` validates the current tick builder.
+//    - `stats_tick_commit` appends the tick to history
+//      (doubly linked list).
 //
-// 3) Gesamtstatistik
-//    - `StatsSummary` speichert Summen, Mittelwerte und Peak-Werte.
-//    - Die Aggregation wird bei Bedarf am Ende aus allen gespeicherten
-//      Ticks Schritt fuer Schritt neu berechnet.
+// 3) Overall statistics
+//    - `StatsSummary` stores sums, averages, and peak values.
+//    - Aggregation is computed on demand at the end from all stored
+//      ticks, recalculated step by step.
 //////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////
-// Lifecycle: Container initialisieren/freigeben
+// Lifecycle: initialize/free container
 //////////////////////////////////////////////////////////
 
-// Brief: Setzt alle Pointer, Summen und Gesamtwerte auf definierte
-// Startwerte. Muss vor dem ersten Tick-Aufruf einmalig ausgefuehrt werden.
+// Brief: Sets all pointers, sums, and totals to defined
+// initial values. Must be executed once before the first tick call.
 FUNCTION stats_init(p_stats, capacity_total)
     IF p_stats = NULL THEN
         return ERROR
@@ -40,11 +40,11 @@ FUNCTION stats_init(p_stats, capacity_total)
 END FUNCTION
 
 //////////////////////////////////////////////////////////
-// Lifecycle: Tick beginnen/finalisieren/committen
+// Lifecycle: begin/finalize/commit tick
 //////////////////////////////////////////////////////////
 
-// Brief: Erzeugt einen neuen Tick-Builder fuer den angegebenen Tick-Index.
-// Danach duerfen Tick-Rohwerte ueber Add/Set-Funktionen erfasst werden.
+// Brief: Creates a new tick builder for the specified tick index.
+// After that, tick raw values may be captured via add/set functions.
 FUNCTION stats_tick_begin(p_stats, tick)
     IF p_stats = NULL THEN
         return ERROR
@@ -68,10 +68,10 @@ FUNCTION stats_tick_begin(p_stats, tick)
 END FUNCTION
 
 //////////////////////////////////////////////////////////
-// Tick-Rohwerte: Set/Add-Funktionen
+// Tick raw values: set/add functions
 //////////////////////////////////////////////////////////
 
-// Brief: Setzt die Kapazitaets-Rohwerte fuer den aktuellen Tick.
+// Brief: Sets the capacity raw values for the current tick.
 FUNCTION stats_tick_set_capacity(p_stats, taken, free)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -84,7 +84,7 @@ FUNCTION stats_tick_set_capacity(p_stats, taken, free)
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl neu erzeugter Ankuenfte im aktuellen Tick.
+// Brief: Increments number of newly generated arrivals in current tick.
 FUNCTION stats_tick_add_arrivals_generated(p_stats, amount)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -94,7 +94,7 @@ FUNCTION stats_tick_add_arrivals_generated(p_stats, amount)
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl in Queue aufgenommener Fahrzeuge.
+// Brief: Increments number of vehicles taken into queue.
 FUNCTION stats_tick_add_enqueued(p_stats, amount)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -104,7 +104,7 @@ FUNCTION stats_tick_add_enqueued(p_stats, amount)
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl effektiv eingefahrener Fahrzeuge.
+// Brief: Increments number of vehicles that actually entered.
 FUNCTION stats_tick_add_entered(p_stats, amount)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -114,7 +114,7 @@ FUNCTION stats_tick_add_entered(p_stats, amount)
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl ausgefahrener Fahrzeuge.
+// Brief: Increments number of departing vehicles.
 FUNCTION stats_tick_add_departed(p_stats, amount)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -124,7 +124,7 @@ FUNCTION stats_tick_add_departed(p_stats, amount)
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl Queue-Rejections im aktuellen Tick.
+// Brief: Increments the number of queue rejections in the current tick.
 FUNCTION stats_tick_add_queue_rejections(p_stats, amount)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -134,7 +134,7 @@ FUNCTION stats_tick_add_queue_rejections(p_stats, amount)
     return OK
 END FUNCTION
 
-// Brief: Setzt die Queue-Laenge am Tick-Ende.
+// Brief: Sets queue length at end of tick.
 FUNCTION stats_tick_set_queue_length_end(p_stats, queue_length_end)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -144,7 +144,7 @@ FUNCTION stats_tick_set_queue_length_end(p_stats, queue_length_end)
     return OK
 END FUNCTION
 
-// Brief: Addiert Wartezeit + Zaehler fuer eingetretene Fahrzeuge.
+// Brief: Adds wait time + counter for entered vehicles.
 FUNCTION stats_tick_add_entered_queue_wait(p_stats, wait_ticks)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -156,7 +156,7 @@ FUNCTION stats_tick_add_entered_queue_wait(p_stats, wait_ticks)
     return OK
 END FUNCTION
 
-// Brief: Addiert Parkdauer + Zaehler fuer ausgefahrene Fahrzeuge.
+// Brief: Adds parking duration + counter for departed vehicles.
 FUNCTION stats_tick_add_departed_parking_duration(p_stats, duration_ticks)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -168,7 +168,7 @@ FUNCTION stats_tick_add_departed_parking_duration(p_stats, duration_ticks)
     return OK
 END FUNCTION
 
-// Brief: Setzt die Anzahl Bad-Parking-Faelle des Ticks.
+// Brief: Sets number of bad parking cases for the tick.
 FUNCTION stats_tick_set_bad_parking_cases(p_stats, bad_cases)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -178,7 +178,7 @@ FUNCTION stats_tick_set_bad_parking_cases(p_stats, bad_cases)
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl Bad-Parking-Faelle des Ticks inkrementell.
+// Brief: Incrementally increases bad parking cases for the tick.
 FUNCTION stats_tick_add_bad_parking_cases(p_stats, amount)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -188,7 +188,7 @@ FUNCTION stats_tick_add_bad_parking_cases(p_stats, amount)
     return OK
 END FUNCTION
 
-// Brief: Markiert, ob im Tick der Blocker "voll" aktiv war.
+// Brief: Marks whether the "full" blocker was active in the tick.
 FUNCTION stats_tick_set_blocker_full_active(p_stats, active)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -198,7 +198,7 @@ FUNCTION stats_tick_set_blocker_full_active(p_stats, active)
     return OK
 END FUNCTION
 
-// Brief: Validiert den Tick-Builder vor dem Commit (derzeit ohne Ableitungen).
+// Brief: Validates the tick builder before commit (currently without derived metrics).
 FUNCTION stats_tick_finalize(p_stats)
     IF p_stats = NULL OR p_stats.p_current_tick = NULL THEN
         return ERROR
@@ -206,7 +206,7 @@ FUNCTION stats_tick_finalize(p_stats)
     return OK
 END FUNCTION
 
-// Brief: Haengt den Tick in die Historie ein.
+// Brief: Appends the tick to history.
 FUNCTION stats_tick_commit(p_stats)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
@@ -229,10 +229,10 @@ FUNCTION stats_tick_commit(p_stats)
 END FUNCTION
 
 //////////////////////////////////////////////////////////
-// Zugriff/Kompatibilitaet
+// Access/compatibility
 //////////////////////////////////////////////////////////
 
-// Brief: Kompatibilitaetsfunktion fuer bestehende Aufrufstellen.
+// Brief: Compatibility function for existing call sites.
 FUNCTION Stats_RecordTick(p_stats, current_tick)
     status <- stats_tick_begin(p_stats, current_tick)
     IF status != OK THEN
@@ -257,9 +257,9 @@ END FUNCTION
 //////////////////////////////////////////////////////////
 // Summary Builder
 //////////////////////////////////////////////////////////
-// Brief: Baut die finale Gesamtstatistik, indem alle gespeicherten
-// Tick-Snapshots in der StatList per Schleife nacheinander
-// durchlaufen und in das externe Ergebnisobjekt uebertragen werden.
+// Brief: Builds the final overall statistics by iterating all stored
+// tick snapshots in StatList sequentially in a loop
+// and transferring them into the external result object.
 FUNCTION stats_build_summary(p_stats, p_summary)
     IF p_stats = NULL OR p_summary = NULL THEN
         return ERROR

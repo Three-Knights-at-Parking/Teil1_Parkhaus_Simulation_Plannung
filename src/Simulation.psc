@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
-// Modul: Simulation
-// Abhaengigkeiten: parkhaus, queue, stats, rng, demand, gate_routing, savehandler
+// Module: Simulation
+// Dependencies: parkhaus, queue, stats, rng, demand, gate_routing, savehandler
 //////////////////////////////////////////////////////////
 
 //@brief: simulation initialisation and configuration
