@@ -93,6 +93,14 @@ FUNCTION simulation_init(p_sim, p_settings, p_stats)
         return ERROR
     END IF
 
+    //Initialisation of Statistik List Object
+    p_StatList <- StatList_init(p_sim)
+    IF P_StatList = NULL THEN
+        RETURN ERROR
+    ELSE
+        p_sim <- p_StatList
+    END IF
+
     return 0
 END FUNCTION
 
@@ -119,8 +127,15 @@ FUNCTION simulation_tick(p_sim)
         status <- Simulation_End(p_sim)
         return status
     END IF
+
     p_sim.current_tick <- p_sim.current_tick + 1
     current_tick       <- p_sim.current_tick
+
+    status <- StatsTick_init(p_sim.StatList, p_sim.settings.capacity, p_sim_current_tick)
+    IF status != OK THEN
+        RETURN ERROR
+    END IF
+
     total_demand <- Demand_GenerateTotalPerTick(
                         p_sim.settings,
                         current_tick,
@@ -170,6 +185,11 @@ FUNCTION Simulation_End(p_sim)
     END IF
 
     status <- OK
+
+    status <- StatsTick_init(p_sim.StatList, p_sim.settings.capacity, p_sim_current_tick)
+    IF status != OK THEN
+        RETURN ERROR
+    END IF
 
     leave_status <- vehicles_leaving_end(p_sim.parkhaus, p_sim.StatList)
     IF leave_status != OK THEN

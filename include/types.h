@@ -160,8 +160,8 @@ struct Settings {
  * @author: ibach
  */
 struct StatsTick {
-    SimulationObject base;
-    uint32_t tick; /**< Current tick of this snapshot. */
+    StatList base;
+    uint32_t current_tick; /**< Current tick of this snapshot. */
     struct StatsTick *p_prev; /**< Previous tick in the statistics list. */
     struct StatsTick *p_next; /**< Next tick in the statistics list. */
 
@@ -255,6 +255,7 @@ struct StatsSummary {
  * @author: ibach
  */
 struct StatList {
+    SimulationObject base;
     StatsTick *p_tick_head; /**< Erster Tick in der Verlaufsliste. */
     StatsTick *p_tick_tail; /**< Letzter Tick in der Verlaufsliste. */
     StatsTick *p_current_tick; /**< Tick-Builder fuer den aktuell laufenden Tick. */

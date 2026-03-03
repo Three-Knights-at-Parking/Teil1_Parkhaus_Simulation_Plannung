@@ -30,7 +30,8 @@
  * @param p_stats         Target container
  * @param capacity_total  Total parking garage capacity
  */
-int stats_init(StatList *p_stats, uint16_t capacity_total);
+int StatsTick_init(StatList *p_stats, uint16_t capacity_total, uint32_t current_tick);
+StatTick* StatTick_inti(Simulation *p_simulation)
 
 /**
  * Frees all elements stored in the tick list.

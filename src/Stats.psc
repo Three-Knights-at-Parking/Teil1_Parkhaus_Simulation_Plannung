@@ -6,27 +6,102 @@
 
 
 //////////////////////////////////////////////////////////
-// Lifecycle: initialize/free container
+// Lifecycle: initialize & create /free container
 //////////////////////////////////////////////////////////
 
 // Brief: Sets all pointers, sums, and totals to defined
 // initial values. Must be executed once before the first tick call.
-FUNCTION stats_init(p_stats, capacity_total)
+FUNCTION StatsTick_init(p_StatList, capacity_total, current_tick)
 
+    p_CurrentTick <- ALLOCATE(StatsTick)
 
-    IF p_stats = NULL THEN
+    IF p_StatList = NULL THEN
         return ERROR
     END IF
 
-    p_stats.p_tick_head <- NULL
-    p_stats.p_tick_tail <- NULL
-    p_stats.p_current_tick <- NULL
+    IF current_tick = NULL THEN
+            return ERROR
+    END IF
+
+    IF capacity_total = NULL THEN
+           return ERROR
+    END IF
+
+    //Moving the Current Tick into the StatList and moving the pushing the last tick back
+    IF p_StatList.p_tick_head = NULL THEN
+        p_StatList.p_tick_head <- p_CurrentTick
+        struct StatsTick *p_prev <- NULL
+    ELSE
+        IF p_StatList.p_current_tick = NULL THEN
+            return ERROR
+        END IF
+        p_CurrentTick.p_prev <- p_StatList.p_tick_tail
+        p_StatList.p_tick_tail.p_next <- p_StatList.p_current_tick
+        p_StatList.p_tick_tail <- p_StatList.p_current_tick
+        p_StatList.p_current_tick <- p_CurrentTick
+    END IF
+
+    current_tick <- current_tick
+
+    capacity_total <- capacity_total
+    capacity_taken <- 0
+    capacity_free <- 0
+
+    arrivals_generated <- 0
+    enqueued <- 0
+    entered <- 0
+    departed <- 0
+
+    queue_length_end <- 0
+    queue_rejections <- 0
+    queue_wait_entered_sum_ticks <- 0
+    queue_wait_entered_count <- 0
+    queue_wait_max_ticks_tick <- 0
+
+    parking_duration_departed_sum_ticks <- 0
+    parking_duration_departed_count <- 0
+
+    blocker_full_active <- 0
+    bad_parking_cases <- 0
 
     return OK
 END FUNCTION
 
 
-FUNCTION stats_free(p_stats)
+FUNCTION StatList_init(p_simulation)
+
+    IF p_simulation = NULL THEN
+        return ERROR
+    END IF
+
+    p_StatList <- ALLOCATE(StatList)
+    IF p_StatList = NULL THEN
+        return ERROR
+    END IF
+
+    p_tick_head <- NULL
+    p_tick_tail <- NULL
+    p_current_tick <- NULL
+
+    RETURN p_StatList
+
+END FUNCTION
+
+
+FUNCTION StatList_free(p_StatList)
+
+    IF p_StatList = NULL THEN
+        return ERROR
+    END IF
+
+    FREE(p_StatList)
+
+    RETURN OK
+
+END FUNCTION
+
+
+FUNCTION StatsTick_free(p_stats)
     IF p_stats = NULL THEN
         return ERROR
     END IF
@@ -45,68 +120,6 @@ FUNCTION stats_free(p_stats)
     return OK
 END FUNCTION
 
-//////////////////////////////////////////////////////////
-// Lifecycle: begin/record
-//////////////////////////////////////////////////////////
-
-// Brief: Creates a new tick builder for the specified tick index.
-// After that, tick raw values may be captured via add/set functions.
-FUNCTION stats_tick_begin(p_stats, tick)
-
-    IF p_stats = NULL THEN
-        return ERROR
-    END IF
-
-    IF p_stats.p_current_tick != NULL THEN
-        return ERROR
-    END IF
-
-    p_tick <- ALLOCATE(StatsTick)
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-
-    MEMSET(p_tick, 0, SIZEOF(StatsTick))
-    p_tick.tick <- tick
-    p_tick.capacity_total <- 0
-
-    p_stats.p_current_tick <- p_tick
-
-    return OK
-END FUNCTION
-
-// @brief: Saving the current Tick
-FUNCTION Stats_RecordTick(p_stats, current_tick)
-
-    IF p_stats = NULL OR p_stats.p_current_tick = NULL THEN
-        return ERROR
-    END IF
-
-    return stats_tick_commit(p_stats)
-END FUNCTION
-
-
-// Brief: Appends the tick to history.
-FUNCTION stats_tick_commit(p_stats)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-
-    p_tick.p_prev <- p_stats.p_tick_tail
-    p_tick.p_next <- NULL
-
-    IF p_stats.p_tick_tail = NULL THEN
-        p_stats.p_tick_head <- p_tick
-    ELSE
-        p_stats.p_tick_tail.p_next <- p_tick
-    END IF
-
-    p_stats.p_tick_tail <- p_tick
-    p_stats.p_current_tick <- NULL
-
-    return OK
-END FUNCTION
 
 //////////////////////////////////////////////////////////
 // Tick raw values: set/add functions
