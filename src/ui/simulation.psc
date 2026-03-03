@@ -79,7 +79,18 @@ FUNCTION simulation_menu(settings)
 
         OUTPUT "Starting simulation..."
 
-        sim_output_path ← CALL start_simulation(settings)  // Provided by simulation/data layer
+        CALL start_simulation(settings)
+
+        CALL ui_statistics_print_header(settings)
+
+        current_tick ← settings.stat_list.p_tick_head
+
+        WHILE current_tick ≠ NULL DO
+            CALL ui_statistics_print_tick(current_tick, settings)
+            current_tick ← current_tick.p_next
+        END WHILE
+
+        CALL ui_statistics_print_final(settings.stats_summary, settings)
 
         OUTPUT "Simulation finished."
 
