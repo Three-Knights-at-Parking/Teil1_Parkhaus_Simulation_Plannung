@@ -9,15 +9,15 @@
 //////////////////////////////////////////////////////////
 FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
     IF p_parkhaus = NULL THEN
-        return ERROR
+        RETURN ERROR
     END IF
 
     IF p_settings = NULL THEN
-        return ERROR
+        RETURN ERROR
     END IF
 
     IF p_gate_queues = NULL THEN
-        return ERROR
+        RETURN ERROR
     END IF
 
     p_parkhaus.base.id   <- 0
@@ -33,21 +33,21 @@ FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
     p_parkhaus.p_parked_head <- NULL
     p_parkhaus.p_parked_tail <- NULL
 
-     return OK
+     RETURN OK
 END FUNCTION
 
 //Moving this to Stats -> Data Analyse 
 FUNCTION parkhaus_get_utilization(p_parkhaus)
      IF p_parkhaus = NULL THEN
-         return 0.0
+         RETURN 0.0
      END IF
 
      IF p_parkhaus.capacity = 0 THEN // CHANGED: from size
-         return 0.0
+         RETURN 0.0
      END IF
 
       utilization <- (p_parkhaus.capacity_taken * 100) / p_parkhaus.capacity
-      return utilization
+      RETURN utilization
 END FUNCTION
 
 
@@ -56,7 +56,7 @@ END FUNCTION
 // @author: ibach
 //////////////////////////////////////////////////////////
 
-FUNCTION parkhaus_tick(p_self, p_settings, p_stats, current_tick)
+FUNCTION parkhaus_tick(p_self, p_settings, p_StatList, current_tick)
     // cast SimulationObject* to Parkhaus*
     p_parkhaus <- (Parkhaus) p_self
 
@@ -68,11 +68,11 @@ FUNCTION parkhaus_tick(p_self, p_settings, p_stats, current_tick)
                   current_tick,
                   p_parkhaus,
                   p_parkhaus.settings,       // or p_sim.settings
-                  p_stats,
+                  p_StatList,
                   p_parkhaus.p_parked_head
               )
     IF status != 0 THEN
-        return
+        RETURN
     END IF
     IF p_settings.num_gates = 1 THEN
 
@@ -81,10 +81,10 @@ FUNCTION parkhaus_tick(p_self, p_settings, p_stats, current_tick)
                       p_parkhaus,
                       p_parkhaus.settings,
                       p_parkhaus.p_parked_head,
-                      p_stats,
+                      p_StatList,
                       p_parkhaus.queue
                   )
-        return status
+        RETURN status
     ELSE
         // subtick based filling according to
         // https://github.com/Three-Knights-at-Parking/Teil1_Documentation/issues/16
@@ -92,7 +92,7 @@ FUNCTION parkhaus_tick(p_self, p_settings, p_stats, current_tick)
                       current_tick,
                       p_parkhaus,
                       p_parkhaus.settings,
-                      p_stats,
+                      p_StatList,
                       p_parkhaus.queue
                   )
          // The gate_time scenario on exit is temporarily ignored
@@ -102,7 +102,7 @@ FUNCTION parkhaus_tick(p_self, p_settings, p_stats, current_tick)
          //    parkhouse_fill_subtick(current_tick, parkhouse, settings, gate_queues)
          //    RETURN OK
          //END IF
-        return status
+        RETURN status
     END IF
 END FUNCTION
 
@@ -113,7 +113,7 @@ END FUNCTION
 // - no Gate_Exit_Time
 // @author: ibach
 //////////////////////////////////////////////////////////
-FUNCTION parkhouse_tick_empty_general(current_tick, p_parkhaus, p_settings, p_stats, p_car_list_head)
+FUNCTION parkhouse_tick_empty_general(current_tick, p_parkhaus, p_settings, p_StatList, p_car_list_head)
     currentNode  <- p_car_list_head
     previousNode <- NULL
 
@@ -131,7 +131,7 @@ FUNCTION parkhouse_tick_empty_general(current_tick, p_parkhaus, p_settings, p_st
         currentNode <- nextNode
     END WHILE
 
-    return OK
+    RETURN OK
 END FUNCTION
 
 
@@ -141,7 +141,7 @@ END FUNCTION
 // @author: ibach
 //////////////////////////////////////////////////////////
 
-FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_stats, p_car_list_head, p_gate_queue)
+FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_StatList, p_car_list_head, p_gate_queue)
 
     // demand is number of vehicles that want to enter at this gate
     demand_remaining <- Queue_GetDemand(p_gate_queue)
@@ -177,10 +177,10 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_sta
 
     // remaining demand goes into queue or gets rejected
     IF demand_remaining > 0 THEN
-        open_demand(p_stats, p_gate_queue, queue_max_len, demand_remaining)
+        open_demand(p_StatList, p_gate_queue, queue_max_len, demand_remaining)
     END IF
 
-    return OK
+    RETURN OK
 END FUNCTION
 
 
@@ -189,7 +189,7 @@ END FUNCTION
 // @author: ibach
 //////////////////////////////////////////////////////////
 
-FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_stats, p_gate_queues)
+FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_StatList, p_gate_queues)
 
     number_of_gates      <- p_settings.num_gates
     max_entries_per_tick <- p_settings.max_entries_per_tick
@@ -213,7 +213,7 @@ FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_stats, p
                     current_tick,
                     p_parkhaus,
                     p_settings,
-                    p_stats,
+                    p_StatList,
                     p_gate_queue,
                     lastCycle
             )
@@ -223,14 +223,14 @@ FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_stats, p
         m <- m + 1
     END WHILE
 
-    return OK
+    RETURN OK
 END FUNCTION
 
 
 // @brief: In this function the single subtick will be run
 // @author: ibach
 // -> parallel checking of all Entrys for an euqal entry possibility
-FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_stats, p_gate_queue, lastCycle)
+FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_StatList, p_gate_queue, lastCycle)
 
     queue_blocked    <- FALSE
     required_space   <- 0
@@ -261,10 +261,10 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_
 
     IF (demand_remaining > 0) AND (lastCycle = TRUE) THEN
         //Stats?
-        open_demand(p_stats, p_gate_queue, p_settings.queue_max_len, demand_remaining)
+        open_demand(p_StatList, p_gate_queue, p_settings.queue_max_len, demand_remaining)
     END IF
 
-    return OK
+    RETURN OK
 END FUNCTION
 
 
@@ -276,20 +276,20 @@ END FUNCTION
 FUNCTION parkhaus_enqueue_at_gate(p_parkhaus, gate_index, p_vehicle)
     p_gate_queue <- p_parkhaus.gate_queues[gate_index]
     IF p_gate_queue = NULL THEN
-        return ERROR
+        RETURN ERROR
     END IF
     status <- queue_push_back(p_gate_queue, p_vehicle)
-    return status
+    RETURN status
 END FUNCTION
 
 
 FUNCTION parkhaus_set_gate_demand(p_parkhaus, gate_index, demand_value)
     p_gate_queue <- p_parkhaus.gate_queues[gate_index]
     IF p_gate_queue = NULL THEN
-        return ERROR
+        RETURN ERROR
     END IF
     p_gate_queue.demand <- demand_value
-    return OK
+    RETURN OK
 END FUNCTION
 
 
@@ -298,7 +298,7 @@ FUNCTION queue_add_random_vehicle(p_gate_queue)
     p_vehicle <- create_random_vehicle()
     status <- queue_enqueue(p_gate_queue, p_vehicle)
 
-    return status
+    RETURN status
 END FUNCTION
 
 
@@ -322,8 +322,9 @@ FUNCTION fill_from_queue(p_parkhous, p_gate_queue)
 END FUNCTION
 
 
-FUNCTION open_demand(p_stats, p_gate_queue, queue_max_len, demand_remaining)
+FUNCTION open_demand(p_StatList, p_gate_queue, queue_max_len, demand_remaining)
 
+    status <- OK
     open_demand <- demand_remaining
 
     // Remaining possible entries into the queue
@@ -334,21 +335,25 @@ FUNCTION open_demand(p_stats, p_gate_queue, queue_max_len, demand_remaining)
 
     // Remaining possible entries that do not fit in queue -> rejected
     IF open_demand > 0 THEN
-        p_stats.stats_tick_add_queue_rejections(p_stats, open_demand)
+        status = stats_tick_add_queue_rejections(p_StatList, open_demand)
     END IF
 
-    return OK
+    IF status != OK THEN
+        RETURN ERROR
+    ELSE
+        RETURN status
+    END IF
 END FUNCTION
 
 
 FUNCTION car_leaving(p_parkhaus, p_car_list_head, p_car)
 
     IF p_parkhaus = NULL THEN
-        return ERROR
+        RETURN ERROR
     END IF
 
     IF p_car = NULL THEN
-        return ERROR
+        RETURN ERROR
     END IF
 
     required_space <- GetVehicleRequiredSpace(p_car)
@@ -363,7 +368,7 @@ FUNCTION car_leaving(p_parkhaus, p_car_list_head, p_car)
     // yet.
     FREE(p_car)
 
-    return OK
+    RETURN OK
 END FUNCTION
 
 
@@ -379,13 +384,13 @@ END FUNCTION
 FUNCTION update_parkhaus_on_exit(p_parkhaus, required_space)
     p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken - required_space
     p_parkhaus.total_exited <- p_parkhaus.total_exited + 1
-    return
+    RETURN
 END FUNCTION
 
 FUNCTION update_parkhaus_on_entry(p_parkhaus, required_space)
     p_parkhaus.capacity_taken <- p_parkhaus.capacity_taken + required_space
     p_parkhaus.total_entered <- p_parkhaus.total_entered + 1
-    return
+    RETURN
 END FUNCTION
 
 
@@ -396,7 +401,7 @@ END FUNCTION
 
 FUNCTION parkhaus_free(p_parkhaus)
     IF p_parkhaus = NULL THEN
-        return
+        RETURN
     END IF
 
     // free all parked vehicles. Same as before,
@@ -411,6 +416,7 @@ FUNCTION parkhaus_free(p_parkhaus)
         p_gate_queue <- p_parkhaus.gate_queues[i]
 
         WHILE p_gate_queue != NULL DO
+            p_gate_queue <- p_parkhaus.gate_queues[i]
             queue_free(p_gate_queue)
             FREE(p_gate_queue)
             p_parkhaus.gate_queues[i] <- NULL
@@ -422,5 +428,5 @@ FUNCTION parkhaus_free(p_parkhaus)
         p_parkhaus.gate_queues <- NULL
     END IF
 
-    return
+    RETURN
 END FUNCTION
