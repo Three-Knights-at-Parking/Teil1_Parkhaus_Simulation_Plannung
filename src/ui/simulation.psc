@@ -87,7 +87,7 @@ FUNCTION simulation_menu(settings)
 
         CALL ui_statistics_print_header(settings)
 
-        current_tick ← settings.stat_list.p_tick_head
+        current_tick ← g_pStatList.p_tick_head
 
         WHILE current_tick ≠ NULL DO
             CALL ui_statistics_print_tick(current_tick, settings)
