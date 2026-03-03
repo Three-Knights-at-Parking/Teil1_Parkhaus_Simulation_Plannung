@@ -105,8 +105,9 @@ END FUNCTION
 
 //////////////////////////////////////////////////////////
 // Emptying vehicles from Parkhaus
+// - Checks if parked cars need to leave
+// - no Gate_Exit_Time
 //////////////////////////////////////////////////////////
-@brief Checks if parked cars need to leave
 FUNCTION parkhouse_tick_empty_general(current_tick, p_parkhaus, p_settings, p_car_list_head)
     currentNode  <- p_car_list_head
     previousNode <- NULL
@@ -131,6 +132,7 @@ END FUNCTION
 
 //////////////////////////////////////////////////////////
 // Single-gate filling per tick
+// -> Single gate entry
 //////////////////////////////////////////////////////////
 
 FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_car_list_head, p_gate_queue)
@@ -216,7 +218,9 @@ FUNCTION parkhouse_fill_subtick(current_tick, p_parkhaus, p_settings, p_gate_que
     return OK
 END FUNCTION
 
-@brief: In this function the single subtick will be run -> parallel checking of all Entrys for an euqal entry possibility
+
+// @brief: In this function the single subtick will be run
+// -> parallel checking of all Entrys for an euqal entry possibility
 FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_gate_queue, lastCycle)
 
     queue_blocked    <- FALSE
