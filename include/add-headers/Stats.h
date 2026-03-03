@@ -19,11 +19,12 @@
  * 4) stats_tick_commit(...)
  *
  * Jeder commitete Tick wird in einer doppelt verketteten Liste gespeichert
- * (p_tick_head ... p_tick_tail) und gleichzeitig in `StatsSummary` aggregiert.
+ * (p_tick_head ... p_tick_tail). Die Aggregation in `StatsSummary`
+ * erfolgt erst bei Bedarf am Ende der Simulation ueber diese Tick-Historie.
  */
 
 /**
- * Initialisiert den Statistikcontainer inklusive Summenfeldern.
+ * Initialisiert den Statistikcontainer fuer die Tick-Historie.
  *
  * @param p_stats         Zielcontainer
  * @param capacity_total  Gesamtkapazitaet des Parkhauses
@@ -46,7 +47,7 @@ int stats_tick_begin(StatList *p_stats, uint32_t tick);
 int stats_tick_finalize(StatList *p_stats);
 
 /**
- * Haengt den finalisierten Tick an die Liste an und aktualisiert Gesamtwerte.
+ * Haengt den finalisierten Tick an die Liste an.
  */
 int stats_tick_commit(StatList *p_stats);
 
@@ -95,7 +96,10 @@ int stats_tick_set_blocker_full_active(StatList *p_stats, uint8_t active);
 /** Liefert den zuletzt commiteten Tick (Tail) oder NULL. */
 const StatsTick *stats_get_latest_tick(const StatList *p_stats);
 
-/** Liefert die aggregierte Gesamtstatistik oder NULL. */
-const StatsSummary *stats_get_summary(const StatList *p_stats);
+/**
+ * Berechnet die aggregierte Gesamtstatistik aus allen gespeicherten Ticks.
+ * p_summary muss vom Aufrufer bereitgestellt werden.
+ */
+int stats_build_summary(const StatList *p_stats, StatsSummary *p_summary);
 
 #endif //TEIL1_PARKHAUS_SIMULATION_PLANNUNG_STATS_H
