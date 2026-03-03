@@ -55,41 +55,8 @@ int stats_tick_commit(StatList *p_stats);
 /** Sets end-of-tick capacity values. */
 int stats_tick_set_capacity(StatList *p_stats, uint16_t taken, uint16_t free);
 
-/** Increments arrivals for the current tick. */
-int stats_tick_add_arrivals_generated(StatList *p_stats, uint16_t amount);
-
-/** Increments enqueued vehicles for the current tick. */
-int stats_tick_add_enqueued(StatList *p_stats, uint16_t amount);
-
-/** Increments garage entries for the current tick. */
-int stats_tick_add_entered(StatList *p_stats, uint16_t amount);
-
-/** Increments garage exits for the current tick. */
-int stats_tick_add_departed(StatList *p_stats, uint16_t amount);
-
 /** Increments queue rejections for the current tick. */
 int stats_tick_add_queue_rejections(StatList *p_stats, uint16_t amount);
-
-/** Sets queue length at tick end. */
-int stats_tick_set_queue_length_end(StatList *p_stats, uint8_t queue_length_end);
-
-/**
- * Adds waiting time of a vehicle that entered in this tick.
- * Stored as raw sum + counter and averaged in overall metrics.
- */
-int stats_tick_add_entered_queue_wait(StatList *p_stats, uint32_t wait_ticks);
-
-/**
- * Adds parking duration of a vehicle that departed in this tick.
- * Stored as raw sum + counter and averaged in overall metrics.
- */
-int stats_tick_add_departed_parking_duration(StatList *p_stats, uint32_t duration_ticks);
-
-/** Sets number of bad parking cases for this tick. */
-int stats_tick_set_bad_parking_cases(StatList *p_stats, uint16_t bad_cases);
-
-/** Increments number of bad parking cases for this tick. */
-int stats_tick_add_bad_parking_cases(StatList *p_stats, uint16_t amount);
 
 /** Sets whether the "full" blocker was active in this tick (0/1). */
 int stats_tick_add_blocker_full_active(StatList *p_stats);
@@ -104,9 +71,7 @@ int stats_tick_add_blocker_full_active(StatList *p_stats);
  *
  * For car objects, bad parking is counted when `spaces_needed > minimum_spaces`.
  */
-int stats_tick_add_vehicle(StatList *p_stats,
-                           const GenericVehicle *p_vehicle,
-                           uint32_t current_tick);
+int stats_tick_add_vehicle(StatList *p_stats, const GenericVehicle *p_vehicle, uint32_t current_tick);
 
 
 int Stats_RecordTick(StatList *p_stats, uint32_t current_tick);
@@ -117,15 +82,6 @@ const StatsTick *stats_get_latest_tick(const StatList *p_stats);
 /**
  * Computes the aggregated summary statistics from all stored ticks.
  * p_summary must be provided by the caller.
- *
- * Denominator/fallback conventions of `stats_build_summary(...)`:
- * - Tick-based averages/ratios use `total_ticks` as denominator.
- * - `capacity_taken_percent_avg` uses all ticks (`total_ticks`); ticks with `capacity_total=0` contribute 0%.
- * - `queue_wait_avg_ticks` uses number of wait samples (`queue_wait_entered_count`).
- * - `parking_duration_avg_ticks` uses number of departed duration samples.
- * - `bad_parking_share_percent` uses `entered_total` as denominator.
- * - Missing basis data keeps the initialized fallback value (0 for numeric fields,
- *   -1 for `first_full_tick`).
  */
 int stats_build_summary(const StatList *p_stats, StatsSummary *p_summary);
 

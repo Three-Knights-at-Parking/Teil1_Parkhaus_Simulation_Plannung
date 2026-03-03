@@ -95,36 +95,6 @@ FUNCTION stats_tick_add_arrivals_generated(p_stats, amount)
     return OK
 END FUNCTION
 
-// Brief: Increments number of vehicles taken into queue.
-FUNCTION stats_tick_add_enqueued(p_stats, amount)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.enqueued <- p_tick.enqueued + amount
-    return OK
-END FUNCTION
-
-// Brief: Increments number of vehicles that actually entered.
-FUNCTION stats_tick_add_entered(p_stats, amount)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.entered <- p_tick.entered + amount
-    return OK
-END FUNCTION
-
-// Brief: Increments number of departing vehicles.
-FUNCTION stats_tick_add_departed(p_stats, amount)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.departed <- p_tick.departed + amount
-    return OK
-END FUNCTION
-
 // Brief: Increments the number of queue rejections in the current tick.
 FUNCTION stats_tick_add_queue_rejections(p_stats, amount)
     p_tick <- p_stats.p_current_tick
@@ -135,65 +105,8 @@ FUNCTION stats_tick_add_queue_rejections(p_stats, amount)
     return OK
 END FUNCTION
 
-// Brief: Sets queue length at end of tick.
-FUNCTION stats_tick_set_queue_length_end(p_stats, queue_length_end)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.queue_length_end <- queue_length_end
-    return OK
-END FUNCTION
-
-// Brief: Adds wait time + counter for entered vehicles.
-FUNCTION stats_tick_add_entered_queue_wait(p_stats, wait_ticks)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-
-    p_tick.queue_wait_entered_sum_ticks <- p_tick.queue_wait_entered_sum_ticks + wait_ticks
-    p_tick.queue_wait_entered_count <- p_tick.queue_wait_entered_count + 1
-    IF wait_ticks > p_tick.queue_wait_max_ticks_tick THEN
-        p_tick.queue_wait_max_ticks_tick <- wait_ticks
-    END IF
-    return OK
-END FUNCTION
-
-// Brief: Adds parking duration + counter for departed vehicles.
-FUNCTION stats_tick_add_departed_parking_duration(p_stats, duration_ticks)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-
-    p_tick.parking_duration_departed_sum_ticks <- p_tick.parking_duration_departed_sum_ticks + duration_ticks
-    p_tick.parking_duration_departed_count <- p_tick.parking_duration_departed_count + 1
-    return OK
-END FUNCTION
-
-// Brief: Sets number of bad parking cases for the tick.
-FUNCTION stats_tick_set_bad_parking_cases(p_stats, bad_cases)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.bad_parking_cases <- bad_cases
-    return OK
-END FUNCTION
-
-// Brief: Incrementally increases bad parking cases for the tick.
-FUNCTION stats_tick_add_bad_parking_cases(p_stats, amount)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.bad_parking_cases <- p_tick.bad_parking_cases + amount
-    return OK
-END FUNCTION
-
 // Brief: Marks whether the "full" blocker was active in the tick.
-FUNCTION stats_tick_add_blocker_full_active(p_stats, active)
+FUNCTION stats_tick_add_blocker_full_active(p_stats)
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
