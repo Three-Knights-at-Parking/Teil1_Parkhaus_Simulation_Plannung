@@ -1,6 +1,23 @@
 INCLUDE FILE ui.h
 INCLUDE FILE storage.h
 
+/*
+ * @file storage.psc
+ * @brief Storage menu implementation.
+ *
+ * The storage menu allows the user to browse and manage the runtime directory
+ * that contains simulation output.
+ *
+ * Notes:
+ * - Directory reading and entry classification (FILE/DIRECTORY) are assumed to be
+ *   provided by a lower layer via read_directory(...).
+ * - This module handles only UI interaction and calls delete/print operations.
+ */
+
+
+/* ========================================================================= */
+/* Main storage menu                                                         */
+/* ========================================================================= */
 
 FUNCTION print_storagescreen()
 
@@ -25,19 +42,26 @@ FUNCTION storage_menu()
 
     WHILE validation_flag != VALID DO
         choice ← CALL user_input()
-        validation_flag ← CALL validate_user_input(choice, 1)
+        validation_flag ← CALL validate_user_input(choice, STORAGE_MAX_VALID_NUMBER)
     END WHILE
 
     IF choice = 1 THEN
-        CALL browse_directory(runtime_path)
+        CALL browse_directory(RUNTIME_PATH)
         return UI_STORAGE
 
     ELSE IF choice = 0 THEN
         return UI_HOME
     END IF
 
+    // Defensive fallback
+    return UI_STORAGE
+
 END FUNCTION
 
+
+/* ========================================================================= */
+/* Directory browser                                                         */
+/* ========================================================================= */
 
 FUNCTION browse_directory(current_path)
 
@@ -55,7 +79,7 @@ FUNCTION browse_directory(current_path)
     index ← 1
 
     FOR each entry IN entries DO
-        OUTPUT index, " ", entry.name
+        OUTPUT index, " - ", entry.name
         index ← index + 1
     END FOR
 
@@ -74,7 +98,8 @@ FUNCTION browse_directory(current_path)
         return
     END IF
 
-    selected_entry ← entries[choice]
+    // IMPORTANT: menu index starts at 1, array index starts at 0
+    selected_entry ← entries[choice - 1]
 
     IF selected_entry IS DIRECTORY THEN
         CALL directory_options(selected_entry.path)
@@ -85,6 +110,10 @@ FUNCTION browse_directory(current_path)
 
 END FUNCTION
 
+
+/* ========================================================================= */
+/* Delete confirmation                                                       */
+/* ========================================================================= */
 
 FUNCTION deleting_verification(object_path, object_type)
 
@@ -108,7 +137,8 @@ FUNCTION deleting_verification(object_path, object_type)
 
         IF object_type = "Directory" THEN
 
-            IF object_path = runtime_path THEN
+            // Safety: root runtime directory must not be deleted.
+            IF object_path = RUNTIME_PATH THEN
                 OUTPUT "Root runtime directory cannot be deleted."
                 OUTPUT "Press ENTER to continue."
                 INPUT dummy
@@ -130,6 +160,10 @@ FUNCTION deleting_verification(object_path, object_type)
 
 END FUNCTION
 
+
+/* ========================================================================= */
+/* Entry options                                                             */
+/* ========================================================================= */
 
 FUNCTION directory_options(dir_path)
 
@@ -202,6 +236,10 @@ FUNCTION file_options(file_path)
 
 END FUNCTION
 
+
+/* ========================================================================= */
+/* File / directory operations                                               */
+/* ========================================================================= */
 
 FUNCTION print_file_to_terminal(path)
 
