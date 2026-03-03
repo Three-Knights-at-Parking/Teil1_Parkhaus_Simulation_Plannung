@@ -169,7 +169,7 @@ FUNCTION Simulation_End(p_sim)
         return ERROR
     END IF
 
-    p_summary <- NULL
+    p_summary
     statlist_compute_summary(p_sim, p_summary)
 
     savehandler_save_summary(p_sim, p_summary, "stats.csv")
