@@ -129,7 +129,7 @@ struct Settings {
     uint16_t capacity; // Total parking spots per floor ##UI##
     uint8_t floors; // Number of floors. This is currently miscellaneous ##UI##
     uint8_t gates; // Number of gates. This will affect queue time. ##UI##
-    uint16_t gate_entry_inSec; // Time needed for an vehicle to enter der parkhouse ##UI##
+    uint16_t gate_entry_inSec; // Time needed for an vehicle to enter the parkhouse ##UI##
 	uint16_t tick_inSec; //Time in seconds of one Tick ##UI##
 	uint8_t mode_select; //0 = none / 1 = normal / 2 = verbose / 3 = Error ##UI##
 	float entry_probability_car_spawn_prec; // Probability of car entering queue in the first place
