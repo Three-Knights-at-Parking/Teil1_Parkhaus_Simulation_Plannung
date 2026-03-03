@@ -6,7 +6,7 @@
 #ifndef TEIL1_PARKHAUS_SIMULATION_PLANNUNG_STATS_H
 #define TEIL1_PARKHAUS_SIMULATION_PLANNUNG_STATS_H
 
-#include "../types.h"
+#include "types.h"
 
 /**
  * @file Stats.h
