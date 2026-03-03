@@ -18,7 +18,7 @@
 /**
  * @brief Maximum valid menu number on the Home screen (valid range: 0..HOME_MAX_VALID_NUMBER).
  */
-#define HOME_MAX_VALID_NUMBER 3
+#define HOME_MAX_VALID_NUMBER (3)
 
 /**
  * @brief Prints the Home menu screen.
