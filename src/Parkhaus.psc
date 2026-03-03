@@ -158,7 +158,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_Sta
 
         // Is there something in the queue? If not, create a new vehicle in the queue
         IF Queue_IsEmpty(p_gate_queue) THEN
-            queue_add_random_vehicle(p_gate_queue)
+            queue_add_random_vehicle(p_gate_queue, current_tick, p_settings)
             demand_remaining <- demand_remaining - 1
         END IF
 
@@ -177,7 +177,7 @@ FUNCTION parkhouse_tick_fill_general(current_tick, p_parkhaus, p_settings, p_Sta
 
     // remaining demand goes into queue or gets rejected
     IF demand_remaining > 0 THEN
-        open_demand(p_StatList, p_gate_queue, queue_max_len, demand_remaining)
+        open_demand(p_StatList, p_gate_queue, queue_max_len, demand_remaining, current_tick, p_settings)
     END IF
 
     RETURN OK
@@ -240,7 +240,7 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_
 
         // If the queue is empty, a new front vehicle is created
         IF Queue_IsEmpty(p_gate_queue) THEN
-            queue_add_random_vehicle(p_gate_queue)
+            queue_add_random_vehicle(p_gate_queue, current_tick, p_settings)
             demand_remaining <- demand_remaining - 1
         END IF
 
@@ -261,7 +261,7 @@ FUNCTION parkhouse_fill_subtick_routine(current_tick, p_parkhaus, p_settings, p_
 
     IF (demand_remaining > 0) AND (lastCycle = TRUE) THEN
         //Stats?
-        open_demand(p_StatList, p_gate_queue, p_settings.queue_max_len, demand_remaining)
+        open_demand(p_StatList, p_gate_queue, queue_max_len, demand_remaining, current_tick, p_settings)
     END IF
 
     RETURN OK
@@ -292,50 +292,95 @@ FUNCTION parkhaus_set_gate_demand(p_parkhaus, gate_index, demand_value)
 END FUNCTION
 
 
-FUNCTION queue_add_random_vehicle(p_gate_queue)
+FUNCTION queue_add_random_vehicle(p_gate_queue, current_tick, p_settings)
 
-    p_vehicle <- create_random_vehicle()
+    p_vehicle <- create_random_vehicle(current_tick, p_settings)
+    IF p_vehicle = NULL THEN
+        RETURN ERROR
+    END IF
+
     status <- queue_enqueue(p_gate_queue, p_vehicle)
+
+    IF status != OK THEN
+        FREE(p_vehicle)
+        RETURN status
+    END IF
 
     RETURN status
 END FUNCTION
 
+FUNCTION create_random_vehicle(current_tick, p_settings)
 
-FUNKTION park_vehicle(p_gate_queue, p_vehicle)
+    // For now, only cars are generated.
+    created_at <- current_tick
+    parking_time <- rng_parking_time(p_settings.min_parking_ticks, p_settings.max_parking_ticks)
+    spaces_needed <- Car_Space
+
+    p_car <- car_create(created_at, parking_time, spaces_needed)
+    IF p_car = NULL THEN
+        RETURN NULL
+    END IF
+
+    RETURN (GenericVehicle) p_car
+END FUNCTION
 
 
-    vehicle_list_append(GenericVehicle **pp_head, GenericVehicle **pp_tail, GenericVehicle *p_vehicle)
+FUNCTION park_vehicle(p_parkhaus, p_vehicle)
+    IF p_parkhaus = NULL THEN
+        RETURN ERROR
+    END IF
 
-END FUNKTION
+    IF p_vehicle = NULL THEN
+        RETURN ERROR
+    END IF
+
+    vehicle_list_append(&p_parkhaus.p_parked_head, &p_parkhaus.p_parked_tail, p_vehicle)
+
+    RETURN OK
+END FUNCTION
 
 
 FUNCTION fill_from_queue(p_parkhous, p_gate_queue)
 
-    vehicle <- Queue_PopFront(p_gate_queue)
-    base_space     <- GetVehicleBaseSpace(vehicle)
-    required_space <- base_space
+    p_vehicle <- Queue_PopFront(p_gate_queue)
+    IF p_vehicle = NULL THEN
+        RETURN 0
+    END IF
 
-    // Bad parking only possible if double space is available
-    IF get_open_space(p_parkhous) >= 2 * base_space THEN
-        r <- RandomPercent()
-        IF r < GetBadParkingProbability(vehicle) THEN
-            required_space <- 2 * base_space
+    p_car <- (Car) p_vehicle
+    required_space <- p_car.minimum_spaces
+
+    // Bad parking is only possible if double space is available
+    IF get_open_space(p_parkhous) >= 2 * required_space THEN
+        r <- rng_percent()
+        // Assumption for now: 2% chance for bad parking.
+        IF r < 2 THEN
+            required_space <- 2 * required_space
         END IF
     END IF
 
-    // park this vehicle in Parkhaus (caller will call parkhaus_park_vehicle)
+    // Store resulting occupied space on vehicle for leaving logic.
+    p_car.spaces_needed <- required_space
+
+    status <- park_vehicle(p_parkhous, p_vehicle)
+    IF status != OK THEN
+        // safety: free dequeued node if it cannot be parked
+        FREE(p_vehicle)
+        RETURN ERROR
+    END IF
+
     RETURN required_space
 END FUNCTION
 
 
-FUNCTION open_demand(p_StatList, p_gate_queue, queue_max_len, demand_remaining)
+FUNCTION open_demand(p_StatList, p_gate_queue, queue_max_len, demand_remaining, current_tick, p_settings)
 
     status <- OK
     open_demand <- demand_remaining
 
     // Remaining possible entries into the queue
     WHILE (open_demand > 0) AND (Queue_Length(p_gate_queue) < queue_max_len) DO
-        queue_add_random_vehicle(p_gate_queue)
+        queue_add_random_vehicle(p_gate_queue, current_tick, p_settings)
         open_demand <- open_demand - 1
     END WHILE
 

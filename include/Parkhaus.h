@@ -109,7 +109,7 @@
      * @brief Writes remaining demand to the queue and reports queue rejections to stats if needed.
      * @author Simon Ibach
      */
-    int open_demand(StatList *p_StatList, Queue *p_gate_queue, uint16_t queue_max_len, uint16_t demand_remaining);
+    int open_demand(StatList *p_StatList, Queue *p_gate_queue, uint16_t queue_max_len, uint16_t demand_remaining, uint32_t current_tick, Settings *p_settings);
 
     /**
      * @brief Removes a vehicle from the garage and frees the space.
@@ -139,7 +139,20 @@
      * @brief Creates a random vehicle and enqueues it into a gate queue.
      * @author Simon Ibach
      */
-    GenericVehicle* queue_add_random_vehicle(Queue *p_gate_queue);
+    int queue_add_random_vehicle(Queue *p_gate_queue, uint32_t current_tick, Settings *p_settings);
+
+    /**
+     * @brief Creates a random vehicle (currently only cars).
+     * @author Simon Ibach
+     */
+    GenericVehicle *create_random_vehicle(uint32_t current_tick, Settings *p_settings);
+
+    /**
+     * @brief Appends a vehicle to the Parkhaus parked list.
+     * @author Simon Ibach
+     */
+    int park_vehicle(Parkhaus *p_parkhaus, GenericVehicle *p_vehicle);
+
 
 /**
      * @brief Calculates currently available space in the garage.
