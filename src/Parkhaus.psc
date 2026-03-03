@@ -25,7 +25,7 @@ FUNCTION parkhaus_init(p_parkhaus, p_settings, p_gate_queues)
     p_parkhaus.base.tick <- parkhaus_tick
     p_parkhaus.capacity       <- p_settings.capacity
     p_parkhaus.floors         <- p_settings.floors
-    p_parkhaus.capacity_taken <- 0.0
+    p_parkhaus.capacity_taken <- 0
     p_parkhaus.num_gates      <- p_settings.gates
     p_parkhaus.missed_car_entries <- 0
     p_parkhaus.total_entered      <- 0
@@ -49,7 +49,7 @@ FUNCTION parkhaus_get_utilization(p_parkhaus)
          return 0.0
      END IF
 
-      utilization <- (p_parkhaus.capacity_taken * 100.0) / p_parkhaus.capacity
+      utilization <- (p_parkhaus.capacity_taken * 100) / p_parkhaus.capacity
       return utilization
 END FUNCTION
 
