@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
-// Modul: config_file_handler
-// Abhaengigkeiten: types, Datei-I/O, (spaeter JSON-Parser)
+// Module: config_file_handler
+// Dependencies: types, file I/O, (later JSON parser)
 //////////////////////////////////////////////////////////
 
 FUNCTION config_load_settings(p_settings, src_path)

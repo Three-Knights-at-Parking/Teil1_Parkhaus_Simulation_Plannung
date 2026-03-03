@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
-// Modul: Simulation
-// Abhaengigkeiten: parkhaus, queue, stats, rng, demand, gate_routing, savehandler
+// Module: Simulation
+// Dependencies: parkhaus, queue, stats, rng, demand, gate_routing, savehandler
 //////////////////////////////////////////////////////////
 
 //@brief: simulation initialisation and configuration
@@ -19,7 +19,7 @@ FUNCTION simulation_init(p_sim, p_settings, p_stats)
     p_sim.max_ticks     <- p_settings.max_ticks
     p_sim.rand_seed     <- p_settings.rand_seed
 
-    p_sim.stats         <- p_stats
+    p_sim.StatList        <- p_stats
     p_sim.rng <- RNG_Create(p_sim.rand_seed)
     IF p_sim.rng = NULL THEN
         return ERROR
@@ -93,6 +93,14 @@ FUNCTION simulation_init(p_sim, p_settings, p_stats)
         return ERROR
     END IF
 
+    //Initialisation of Statistik List Object
+    p_StatList <- StatList_init(p_sim)
+    IF P_StatList = NULL THEN
+        RETURN ERROR
+    ELSE
+        p_sim <- p_StatList
+    END IF
+
     return 0
 END FUNCTION
 
@@ -119,8 +127,15 @@ FUNCTION simulation_tick(p_sim)
         status <- Simulation_End(p_sim)
         return status
     END IF
+
     p_sim.current_tick <- p_sim.current_tick + 1
     current_tick       <- p_sim.current_tick
+
+    status <- StatsTick_init(p_sim.StatList, p_sim.settings.capacity, p_sim_current_tick)
+    IF status != OK THEN
+        RETURN ERROR
+    END IF
+
     total_demand <- Demand_GenerateTotalPerTick(
                         p_sim.settings,
                         current_tick,
@@ -147,11 +162,11 @@ FUNCTION simulation_tick(p_sim)
     tick(p_sim.parkhaus.base, current_tick)
 
 
-    status <- Stats_RecordTick(p_sim.stats, current_tick)
+    status <- Stats_RecordTick(p_sim.StatList, current_tick)
     IF status != 0 THEN
         return status
     END IF
-    p_tickstats <- Stats_GetLastTick(p_sim.stats)
+    p_tickstats <- stats_get_latest_tick(p_sim.StatList)
     status <- savehandler_save_tick(p_sim, p_tickstats, "stats.csv")
     IF status != 0 THEN
         return status
@@ -169,11 +184,30 @@ FUNCTION Simulation_End(p_sim)
         return ERROR
     END IF
 
-    p_summary
-    statlist_compute_summary(p_sim, p_summary)
+    status <- OK
 
-    savehandler_save_summary(p_sim, p_summary, "stats.csv")
-    graphhandler_generate_from_simulation(p_sim, NULL)
+    status <- StatsTick_init(p_sim.StatList, p_sim.settings.capacity, p_sim_current_tick)
+    IF status != OK THEN
+        RETURN ERROR
+    END IF
+
+    leave_status <- vehicles_leaving_end(p_sim.parkhaus, p_sim.StatList)
+    IF leave_status != OK THEN
+        status <- leave_status
+    END IF
+
+    summary
+    p_summary <- &summary
+    MEMSET(p_summary, 0, SIZEOF(StatsSummary))
+
+    status <- stats_build_summary(p_sim.StatList, p_summary)
+    IF status = OK THEN
+        status <- savehandler_save_summary(p_sim, p_summary, "stats.csv")
+    END IF
+
+    IF status = OK THEN
+        graphhandler_generate_from_simulation(p_sim, NULL)
+    END IF
 
     // free Parkhaus and its children!
     IF p_sim.parkhaus != NULL THEN
@@ -199,7 +233,7 @@ FUNCTION Simulation_End(p_sim)
     END IF
     OUTPUT "Simulation ended"
 
-    return OK
+    return status
 END FUNCTION
 
 

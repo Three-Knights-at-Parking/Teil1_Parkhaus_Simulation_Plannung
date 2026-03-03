@@ -25,14 +25,14 @@ FUNCTION graphhandler_generate_from_file(src_path, dest_path)
     ticks          <- EXTRACT_COLUMN(stats_lines, "tick")
     fill_sizes     <- EXTRACT_COLUMN(stats_lines, "fill_size")
     queue_lengths  <- EXTRACT_COLUMN(stats_lines, "queue_length")
-    missed_entries <- EXTRACT_COLUMN(stats_lines, "missed_entries")
+    queue_rejections <- EXTRACT_COLUMN(stats_lines, "queue_rejections")
 
     // Build data set for plotting library
     // Currently only schematically
     plot_data <- PLOT_DATA_CREATE()
     PLOT_DATA_ADD_SERIES(plot_data, "Fill Size", ticks, fill_sizes)
     PLOT_DATA_ADD_SERIES(plot_data, "Queue Length", ticks, queue_lengths)
-    PLOT_DATA_ADD_SERIES(plot_data, "Missed Entries", ticks, missed_entries)
+    PLOT_DATA_ADD_SERIES(plot_data, "Queue Rejections", ticks, queue_rejections)
 
     // or any library specific implementation
     status <- PLOT_RENDER_TO_FILE(
@@ -69,12 +69,12 @@ FUNCTION graphhandler_generate_from_simulation(p_sim, dest_path)
     ticks          <- p_sim.stats_ticks
     fill_sizes     <- p_sim.stats_fill_sizes
     queue_lengths  <- p_sim.stats_queue_lengths
-    missed_entries <- p_sim.stats_missed_entries
+    queue_rejections <- p_sim.stats_queue_rejections
 
     plot_data <- PLOT_DATA_CREATE()
     PLOT_DATA_ADD_SERIES(plot_data, "Fill Size", ticks, fill_sizes)
     PLOT_DATA_ADD_SERIES(plot_data, "Queue Length", ticks, queue_lengths)
-    PLOT_DATA_ADD_SERIES(plot_data, "Missed Entries", ticks, missed_entries)
+    PLOT_DATA_ADD_SERIES(plot_data, "Queue Rejections", ticks, queue_rejections)
     //Library specific
     status <- PLOT_RENDER_TO_FILE(
                   plot_data,

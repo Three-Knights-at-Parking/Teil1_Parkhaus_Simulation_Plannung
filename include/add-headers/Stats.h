@@ -10,95 +10,67 @@
 
 /**
  * @file Stats.h
- * @brief API fuer Tick-Statistiken und Gesamtaggregation.
+ * @brief API for per-tick statistics and overall aggregation.
  *
- * Erwarteter Ablauf pro Tick:
- * 1) stats_tick_begin(...)
- * 2) waehrend des Ticks mit stats_tick_add_* / stats_tick_set_* befuellen
- * 3) stats_tick_finalize(...)
- * 4) stats_tick_commit(...)
+ * Tick snapshots are stored in a doubly linked list
+ * (p_tick_head ... p_tick_tail) inside `Simulation.StatList`.
+ * Aggregation in `StatsSummary` is built on demand at the end of
+ * the simulation using this history.
+ */
+
+/**
+ * Initializes the statistics container for tick history.
  *
- * Jeder commitete Tick wird in einer doppelt verketteten Liste gespeichert
- * (p_tick_head ... p_tick_tail). Die Aggregation in `StatsSummary`
- * erfolgt erst bei Bedarf am Ende der Simulation ueber diese Tick-Historie.
+ * @param p_stats         Target container
+ * @param capacity_total  Total parking garage capacity
  */
+int StatsTick_init(StatList *p_stats, uint16_t capacity_total, uint32_t current_tick);
 
 /**
- * Initialisiert den Statistikcontainer fuer die Tick-Historie.
- *
- * @param p_stats         Zielcontainer
- * @param capacity_total  Gesamtkapazitaet des Parkhauses
+ * Initializes the statistics list container for a simulation.
  */
-int stats_init(StatList *p_stats, uint16_t capacity_total);
+StatList *StatList_init(Simulation *p_simulation);
 
 /**
- * Gibt alle in der Tick-Liste gespeicherten Elemente frei.
+ * Frees the statistics list container itself.
  */
-int stats_free(StatList *p_stats);
+int StatList_free(StatList *p_stats);
 
 /**
- * Startet einen neuen Tick-Builder (p_current_tick).
+ * Frees all elements stored in the tick list.
  */
-int stats_tick_begin(StatList *p_stats, uint32_t tick);
+int StatsTick_free(StatList *p_stats);
 
-/**
- * Berechnet Tick-interne Kennzahlen (z.B. Durchschnitte).
- */
-int stats_tick_finalize(StatList *p_stats);
-
-/**
- * Haengt den finalisierten Tick an die Liste an.
- */
-int stats_tick_commit(StatList *p_stats);
-
-/** Setzt Tick-Ende-Kapazitaetswerte. */
+/** Sets end-of-tick capacity values. */
 int stats_tick_set_capacity(StatList *p_stats, uint16_t taken, uint16_t free);
 
-/** Erhoeht Ankuenfte fuer den laufenden Tick. */
-int stats_tick_add_arrivals_generated(StatList *p_stats, uint16_t amount);
-
-/** Erhoeht Queue-Aufnahmen fuer den laufenden Tick. */
-int stats_tick_add_enqueued(StatList *p_stats, uint16_t amount);
-
-/** Erhoeht Einfahrten ins Parkhaus fuer den laufenden Tick. */
-int stats_tick_add_entered(StatList *p_stats, uint16_t amount);
-
-/** Erhoeht Ausfahrten aus dem Parkhaus fuer den laufenden Tick. */
-int stats_tick_add_departed(StatList *p_stats, uint16_t amount);
-
-/** Erhoeht Anzahl Queue-Rejections fuer den laufenden Tick. */
+/** Increments queue rejections for the current tick. */
 int stats_tick_add_queue_rejections(StatList *p_stats, uint16_t amount);
 
-/** Setzt Queue-Laenge am Tick-Ende. */
-int stats_tick_set_queue_length_end(StatList *p_stats, uint8_t queue_length_end);
+/** Increments generated arrivals for the current tick. */
+int stats_tick_add_arrivals_generated(StatList *p_stats, uint16_t amount);
+
+/** Sets whether the "full" blocker was active in this tick (0/1). */
+int stats_tick_add_blocker_full_active(StatList *p_stats);
 
 /**
- * Addiert Wartezeit eines Fahrzeugs, das in diesem Tick eingetreten ist.
- * Wird als Rohsumme + Zaehler gespeichert und in Gesamtwerten gemittelt.
+ * Records vehicle-based metrics into the current tick.
+ *
+ * The function derives values from GenericVehicle timestamps relative
+ * to `current_tick`:
+ * - queue wait + entered counter if `park_house_entered == current_tick`
+ * - parking duration + departed counter if `park_house_left == current_tick`
+ *
+ * For car objects, bad parking is counted when `spaces_needed > minimum_spaces`.
  */
-int stats_tick_add_entered_queue_wait(StatList *p_stats, uint32_t wait_ticks);
+int stats_tick_add_vehicle(StatList *p_stats, const GenericVehicle *p_vehicle, uint32_t current_tick);
 
-/**
- * Addiert Parkdauer eines Fahrzeugs, das in diesem Tick ausgefahren ist.
- * Wird als Rohsumme + Zaehler gespeichert und in Gesamtwerten gemittelt.
- */
-int stats_tick_add_departed_parking_duration(StatList *p_stats, uint32_t duration_ticks);
-
-/** Setzt Anzahl Bad-Parking-Faelle fuer diesen Tick. */
-int stats_tick_set_bad_parking_cases(StatList *p_stats, uint16_t bad_cases);
-
-/** Erhoeht Anzahl Bad-Parking-Faelle fuer diesen Tick. */
-int stats_tick_add_bad_parking_cases(StatList *p_stats, uint16_t amount);
-
-/** Setzt, ob der Blocker "voll" in diesem Tick aktiv war (0/1). */
-int stats_tick_set_blocker_full_active(StatList *p_stats, uint8_t active);
-
-/** Liefert den zuletzt commiteten Tick (Tail) oder NULL. */
+/** Returns the most recently committed tick (tail) or NULL. */
 const StatsTick *stats_get_latest_tick(const StatList *p_stats);
 
 /**
- * Berechnet die aggregierte Gesamtstatistik aus allen gespeicherten Ticks.
- * p_summary muss vom Aufrufer bereitgestellt werden.
+ * Computes the aggregated summary statistics from all stored ticks.
+ * p_summary must be provided by the caller.
  */
 int stats_build_summary(const StatList *p_stats, StatsSummary *p_summary);
 

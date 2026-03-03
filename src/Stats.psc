@@ -1,36 +1,117 @@
 //////////////////////////////////////////////////////////
-// Modul: Stats
-// Abhaengigkeiten: types, parkhaus, queue
-//////////////////////////////////////////////////////////
-// Beschreibung:
-// Dieses Modul verwaltet die komplette Statistik-Pipeline der Simulation.
-//
-// 1) Tick-Erfassung (Rohwerte)
-//    - Ein Tick wird mit `stats_tick_begin` gestartet.
-//    - Waehrend des Ticks werden Rohdaten per `stats_tick_add_*`
-//      und `stats_tick_set_*` gesammelt.
-//
-// 2) Tick-Abschluss
-//    - `stats_tick_finalize` validiert den aktuellen Tick-Builder.
-//    - `stats_tick_commit` haengt den Tick in die Historie an
-//      (doppelt verkettete Liste).
-//
-// 3) Gesamtstatistik
-//    - `StatsSummary` speichert Summen, Mittelwerte und Peak-Werte.
-//    - Die Aggregation wird bei Bedarf am Ende aus allen gespeicherten
-//      Ticks Schritt fuer Schritt neu berechnet.
+// Module: Stats
+// @author: ibach
 //////////////////////////////////////////////////////////
 
+
+
 //////////////////////////////////////////////////////////
-// Lifecycle: Container initialisieren/freigeben
+// Lifecycle: initialize & create /free container
 //////////////////////////////////////////////////////////
 
-// Brief: Setzt alle Pointer, Summen und Gesamtwerte auf definierte
-// Startwerte. Muss vor dem ersten Tick-Aufruf einmalig ausgefuehrt werden.
-FUNCTION stats_init(p_stats, capacity_total)
+// Brief: Sets all pointers, sums, and totals to defined
+// initial values. Must be executed once before the first tick call.
+FUNCTION StatsTick_init(p_StatList, capacity_total, current_tick)
+
+    p_CurrentTick <- ALLOCATE(StatsTick)
+
+    IF p_StatList = NULL THEN
+        return ERROR
+    END IF
+
+    IF current_tick = NULL THEN
+            return ERROR
+    END IF
+
+    IF capacity_total = NULL THEN
+           return ERROR
+    END IF
+
+    //Moving the Current Tick into the StatList and moving the pushing the last tick back
+    IF p_StatList.p_tick_head = NULL THEN
+        p_StatList.p_tick_head <- p_CurrentTick
+        struct StatsTick *p_prev <- NULL
+    ELSE
+        IF p_StatList.p_current_tick = NULL THEN
+            return ERROR
+        END IF
+        p_CurrentTick.p_prev <- p_StatList.p_tick_tail
+        p_StatList.p_tick_tail.p_next <- p_StatList.p_current_tick
+        p_StatList.p_tick_tail <- p_StatList.p_current_tick
+        p_StatList.p_current_tick <- p_CurrentTick
+    END IF
+
+    current_tick <- current_tick
+
+    capacity_total <- capacity_total
+    capacity_taken <- 0
+    capacity_free <- 0
+
+    arrivals_generated <- 0
+    enqueued <- 0
+    entered <- 0
+    departed <- 0
+
+    queue_length_end <- 0
+    queue_rejections <- 0
+    queue_wait_entered_sum_ticks <- 0
+    queue_wait_entered_count <- 0
+    queue_wait_max_ticks_tick <- 0
+
+    parking_duration_departed_sum_ticks <- 0
+    parking_duration_departed_count <- 0
+
+    blocker_full_active <- 0
+    bad_parking_cases <- 0
+
+    return OK
+END FUNCTION
+
+
+FUNCTION StatList_init(p_simulation)
+
+    IF p_simulation = NULL THEN
+        return ERROR
+    END IF
+
+    p_StatList <- ALLOCATE(StatList)
+    IF p_StatList = NULL THEN
+        return ERROR
+    END IF
+
+    p_tick_head <- NULL
+    p_tick_tail <- NULL
+    p_current_tick <- NULL
+
+    RETURN p_StatList
+
+END FUNCTION
+
+
+FUNCTION StatList_free(p_StatList)
+
+    IF p_StatList = NULL THEN
+        return ERROR
+    END IF
+
+    FREE(p_StatList)
+
+    RETURN OK
+
+END FUNCTION
+
+
+FUNCTION StatsTick_free(p_stats)
     IF p_stats = NULL THEN
         return ERROR
     END IF
+
+    p_current <- p_stats.p_tick_head
+    WHILE p_current != NULL DO
+        p_next <- p_current.p_next
+        FREE(p_current)
+        p_current <- p_next
+    END WHILE
 
     p_stats.p_tick_head <- NULL
     p_stats.p_tick_tail <- NULL
@@ -39,40 +120,14 @@ FUNCTION stats_init(p_stats, capacity_total)
     return OK
 END FUNCTION
 
-//////////////////////////////////////////////////////////
-// Lifecycle: Tick beginnen/finalisieren/committen
-//////////////////////////////////////////////////////////
-
-// Brief: Erzeugt einen neuen Tick-Builder fuer den angegebenen Tick-Index.
-// Danach duerfen Tick-Rohwerte ueber Add/Set-Funktionen erfasst werden.
-FUNCTION stats_tick_begin(p_stats, tick)
-    IF p_stats = NULL THEN
-        return ERROR
-    END IF
-
-    IF p_stats.p_current_tick != NULL THEN
-        return ERROR
-    END IF
-
-    p_tick <- ALLOCATE(StatsTick)
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-
-    MEMSET(p_tick, 0, SIZEOF(StatsTick))
-    p_tick.tick <- tick
-    p_tick.capacity_total <- 0
-
-    p_stats.p_current_tick <- p_tick
-    return OK
-END FUNCTION
 
 //////////////////////////////////////////////////////////
-// Tick-Rohwerte: Set/Add-Funktionen
+// Tick raw values: set/add functions
 //////////////////////////////////////////////////////////
 
-// Brief: Setzt die Kapazitaets-Rohwerte fuer den aktuellen Tick.
+// Brief: Sets the capacity raw values for the current tick.
 FUNCTION stats_tick_set_capacity(p_stats, taken, free)
+
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
@@ -81,171 +136,99 @@ FUNCTION stats_tick_set_capacity(p_stats, taken, free)
     p_tick.capacity_taken <- taken
     p_tick.capacity_free <- free
     p_tick.capacity_total <- taken + free
+
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl neu erzeugter Ankuenfte im aktuellen Tick.
+
+// Brief: Increments number of newly generated arrivals in current tick.
 FUNCTION stats_tick_add_arrivals_generated(p_stats, amount)
+
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
     END IF
     p_tick.arrivals_generated <- p_tick.arrivals_generated + amount
+
     return OK
 END FUNCTION
 
-// Brief: Erhoeht die Anzahl in Queue aufgenommener Fahrzeuge.
-FUNCTION stats_tick_add_enqueued(p_stats, amount)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.enqueued <- p_tick.enqueued + amount
-    return OK
-END FUNCTION
 
-// Brief: Erhoeht die Anzahl effektiv eingefahrener Fahrzeuge.
-FUNCTION stats_tick_add_entered(p_stats, amount)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.entered <- p_tick.entered + amount
-    return OK
-END FUNCTION
-
-// Brief: Erhoeht die Anzahl ausgefahrener Fahrzeuge.
-FUNCTION stats_tick_add_departed(p_stats, amount)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.departed <- p_tick.departed + amount
-    return OK
-END FUNCTION
-
-// Brief: Erhoeht die Anzahl Queue-Rejections im aktuellen Tick.
+// Brief: Increments the number of queue rejections in the current tick.
 FUNCTION stats_tick_add_queue_rejections(p_stats, amount)
+
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
     END IF
     p_tick.queue_rejections <- p_tick.queue_rejections + amount
+
     return OK
 END FUNCTION
 
-// Brief: Setzt die Queue-Laenge am Tick-Ende.
-FUNCTION stats_tick_set_queue_length_end(p_stats, queue_length_end)
+
+// Brief: Marks whether the "full" blocker was active in the tick.
+FUNCTION stats_tick_add_blocker_full_active(p_stats)
+
     p_tick <- p_stats.p_current_tick
     IF p_tick = NULL THEN
         return ERROR
     END IF
-    p_tick.queue_length_end <- queue_length_end
+    p_tick.blocker_full_active <- p_tick.blocker_full_active + 1
+
     return OK
 END FUNCTION
 
-// Brief: Addiert Wartezeit + Zaehler fuer eingetretene Fahrzeuge.
-FUNCTION stats_tick_add_entered_queue_wait(p_stats, wait_ticks)
+
+// Brief: Derives and writes all useful vehicle metrics into current tick.
+FUNCTION stats_tick_add_vehicle(p_stats, p_vehicle, current_tick)
+
     p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
+    IF p_tick = NULL OR p_vehicle = NULL THEN
         return ERROR
     END IF
 
-    p_tick.queue_wait_entered_sum_ticks <- p_tick.queue_wait_entered_sum_ticks + wait_ticks
-    p_tick.queue_wait_entered_count <- p_tick.queue_wait_entered_count + 1
+    // Vehicle entered this tick -> entered counter + queue wait sample.
+    IF p_vehicle.park_house_entered = current_tick THEN
+        p_tick.entered <- p_tick.entered + 1
+
+        IF p_vehicle.park_house_entered >= p_vehicle.created_at_tick THEN
+            wait_ticks <- p_vehicle.park_house_entered - p_vehicle.created_at_tick
+            p_tick.queue_wait_entered_sum_ticks <- p_tick.queue_wait_entered_sum_ticks + wait_ticks
+            p_tick.queue_wait_entered_count <- p_tick.queue_wait_entered_count + 1
+            IF wait_ticks > p_tick.queue_wait_max_ticks_tick THEN
+                p_tick.queue_wait_max_ticks_tick <- wait_ticks
+            END IF
+        END IF
+    END IF
+
+    // Vehicle left this tick -> departed counter + parking duration sample.
+    IF p_vehicle.park_house_left = current_tick THEN
+        p_tick.departed <- p_tick.departed + 1
+
+        IF p_vehicle.park_house_left >= p_vehicle.park_house_entered THEN
+            duration_ticks <- p_vehicle.park_house_left - p_vehicle.park_house_entered
+            p_tick.parking_duration_departed_sum_ticks <- p_tick.parking_duration_departed_sum_ticks + duration_ticks
+            p_tick.parking_duration_departed_count <- p_tick.parking_duration_departed_count + 1
+        END IF
+    END IF
+
+    // Car-specific rule quality metric: required spaces exceed minimum spaces.
+    IF p_vehicle.base.type = CAR THEN
+        p_car <- (Car) p_vehicle
+        IF p_car.spaces_needed > p_car.minimum_spaces THEN
+            p_tick.bad_parking_cases <- p_tick.bad_parking_cases + 1
+        END IF
+    END IF
+
     return OK
 END FUNCTION
 
-// Brief: Addiert Parkdauer + Zaehler fuer ausgefahrene Fahrzeuge.
-FUNCTION stats_tick_add_departed_parking_duration(p_stats, duration_ticks)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-
-    p_tick.parking_duration_departed_sum_ticks <- p_tick.parking_duration_departed_sum_ticks + duration_ticks
-    p_tick.parking_duration_departed_count <- p_tick.parking_duration_departed_count + 1
-    return OK
-END FUNCTION
-
-// Brief: Setzt die Anzahl Bad-Parking-Faelle des Ticks.
-FUNCTION stats_tick_set_bad_parking_cases(p_stats, bad_cases)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.bad_parking_cases <- bad_cases
-    return OK
-END FUNCTION
-
-// Brief: Erhoeht die Anzahl Bad-Parking-Faelle des Ticks inkrementell.
-FUNCTION stats_tick_add_bad_parking_cases(p_stats, amount)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.bad_parking_cases <- p_tick.bad_parking_cases + amount
-    return OK
-END FUNCTION
-
-// Brief: Markiert, ob im Tick der Blocker "voll" aktiv war.
-FUNCTION stats_tick_set_blocker_full_active(p_stats, active)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-    p_tick.blocker_full_active <- active
-    return OK
-END FUNCTION
-
-// Brief: Validiert den Tick-Builder vor dem Commit (derzeit ohne Ableitungen).
-FUNCTION stats_tick_finalize(p_stats)
-    IF p_stats = NULL OR p_stats.p_current_tick = NULL THEN
-        return ERROR
-    END IF
-    return OK
-END FUNCTION
-
-// Brief: Haengt den Tick in die Historie ein.
-FUNCTION stats_tick_commit(p_stats)
-    p_tick <- p_stats.p_current_tick
-    IF p_tick = NULL THEN
-        return ERROR
-    END IF
-
-    p_tick.p_prev <- p_stats.p_tick_tail
-    p_tick.p_next <- NULL
-
-    IF p_stats.p_tick_tail = NULL THEN
-        p_stats.p_tick_head <- p_tick
-    ELSE
-        p_stats.p_tick_tail.p_next <- p_tick
-    END IF
-
-    p_stats.p_tick_tail <- p_tick
-    p_stats.p_current_tick <- NULL
-
-    return OK
-END FUNCTION
 
 //////////////////////////////////////////////////////////
-// Zugriff/Kompatibilitaet
+// Access/compatibility
 //////////////////////////////////////////////////////////
 
-// Brief: Kompatibilitaetsfunktion fuer bestehende Aufrufstellen.
-FUNCTION Stats_RecordTick(p_stats, current_tick)
-    status <- stats_tick_begin(p_stats, current_tick)
-    IF status != OK THEN
-        return status
-    END IF
-
-    status <- stats_tick_finalize(p_stats)
-    IF status != OK THEN
-        return status
-    END IF
-
-    return stats_tick_commit(p_stats)
-END FUNCTION
 
 FUNCTION stats_get_latest_tick(p_stats)
     IF p_stats = NULL THEN
@@ -254,13 +237,16 @@ FUNCTION stats_get_latest_tick(p_stats)
     return p_stats.p_tick_tail
 END FUNCTION
 
+
 //////////////////////////////////////////////////////////
 // Summary Builder
 //////////////////////////////////////////////////////////
-// Brief: Baut die finale Gesamtstatistik, indem alle gespeicherten
-// Tick-Snapshots in der StatList per Schleife nacheinander
-// durchlaufen und in das externe Ergebnisobjekt uebertragen werden.
+// Brief: Builds the final overall statistics by iterating all stored
+// tick snapshots in StatList sequentially in a loop
+// and transferring them into the external result object.
+
 FUNCTION stats_build_summary(p_stats, p_summary)
+
     IF p_stats = NULL OR p_summary = NULL THEN
         return ERROR
     END IF
@@ -330,6 +316,9 @@ FUNCTION stats_build_summary(p_stats, p_summary)
 
         sum_queue_wait_entered_ticks <- sum_queue_wait_entered_ticks + p_tick.queue_wait_entered_sum_ticks
         sum_queue_wait_entered_count <- sum_queue_wait_entered_count + p_tick.queue_wait_entered_count
+        IF p_tick.queue_wait_max_ticks_tick > p_summary.queue_wait_max_ticks THEN
+            p_summary.queue_wait_max_ticks <- p_tick.queue_wait_max_ticks_tick
+        END IF
 
         sum_parking_duration_departed_ticks <- sum_parking_duration_departed_ticks + p_tick.parking_duration_departed_sum_ticks
         sum_parking_duration_departed_count <- sum_parking_duration_departed_count + p_tick.parking_duration_departed_count
@@ -342,6 +331,8 @@ FUNCTION stats_build_summary(p_stats, p_summary)
     END WHILE
 
     IF p_summary.total_ticks > 0 THEN
+        // Utilization average includes all ticks. Ticks with capacity_total=0
+        // contribute 0% utilization by definition.
         p_summary.capacity_taken_percent_avg <- sum_capacity_taken_percent / p_summary.total_ticks
         p_summary.entered_per_tick_avg <- sum_entered / p_summary.total_ticks
         p_summary.departed_per_tick_avg <- sum_departed / p_summary.total_ticks
@@ -350,37 +341,30 @@ FUNCTION stats_build_summary(p_stats, p_summary)
         p_summary.blocker_full_ratio_percent <- (blocker_full_ticks * 100.0) / p_summary.total_ticks
     END IF
 
+    // Wait average is only valid with at least one wait sample.
     IF sum_queue_wait_entered_count > 0 THEN
         p_summary.queue_wait_avg_ticks <- sum_queue_wait_entered_ticks / sum_queue_wait_entered_count
-        p_summary.queue_wait_max_ticks <- p_summary.queue_wait_avg_ticks
+    ELSE
+        // Explicit fallback implementation for missing basis data.
+        p_summary.queue_wait_avg_ticks <- 0
     END IF
 
+    // Parking-duration average is only valid with at least one departed sample.
     IF sum_parking_duration_departed_count > 0 THEN
         p_summary.parking_duration_avg_ticks <- sum_parking_duration_departed_ticks / sum_parking_duration_departed_count
+    ELSE
+        // Explicit fallback implementation for missing basis data.
+        p_summary.parking_duration_avg_ticks <- 0
     END IF
 
-    IF p_summary.enqueued_total > 0 THEN
-        p_summary.bad_parking_share_percent <- (p_summary.bad_parking_cases_total * 100.0) / p_summary.enqueued_total
+    // Bad-parking share is only valid if entered_total > 0.
+    IF p_summary.entered_total > 0 THEN
+        p_summary.bad_parking_share_percent <- (p_summary.bad_parking_cases_total * 100.0) / p_summary.entered_total
+    ELSE
+        // Explicit fallback implementation for missing basis data.
+        p_summary.bad_parking_share_percent <- 0
     END IF
 
     return OK
 END FUNCTION
 
-FUNCTION stats_free(p_stats)
-    IF p_stats = NULL THEN
-        return ERROR
-    END IF
-
-    p_current <- p_stats.p_tick_head
-    WHILE p_current != NULL DO
-        p_next <- p_current.p_next
-        FREE(p_current)
-        p_current <- p_next
-    END WHILE
-
-    p_stats.p_tick_head <- NULL
-    p_stats.p_tick_tail <- NULL
-    p_stats.p_current_tick <- NULL
-
-    return OK
-END FUNCTION

@@ -15,6 +15,8 @@ FUNCTION car_create(created_at, parking_time, spaces_needed)
                          parking_time)
 
     // initialize car-specific fields
+    MinimumSpace Car_Space_Minimum = Car_Space
+    p_car.minimum_spaces <- Car_Space_Minimum
     p_car.spaces_needed <- spaces_needed
 
     return p_car
