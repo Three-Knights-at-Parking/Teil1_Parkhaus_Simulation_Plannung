@@ -172,6 +172,7 @@ typedef struct StatsTick {
     uint32_t queue_rejections; /**< Vehicles that could not queue (tick). */
     uint64_t queue_wait_entered_sum_ticks; /**< Total wait time of all vehicles that entered in this tick. */
     uint32_t queue_wait_entered_count; /**< Number of vehicles entered in this tick for wait-time evaluation. */
+    uint32_t queue_wait_max_ticks_tick; /**< Maximum wait time among entered vehicles in this tick. */
 
     /* Raw parking-duration values */
     uint64_t parking_duration_departed_sum_ticks; /**< Total parking duration of all vehicles that departed in this tick. */

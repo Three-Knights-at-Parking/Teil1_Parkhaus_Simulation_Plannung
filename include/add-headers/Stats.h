@@ -19,8 +19,9 @@
  * 4) stats_tick_commit(...)
  *
  * Each committed tick is stored in a doubly linked list
- * (p_tick_head ... p_tick_tail). Aggregation in `StatsSummary`
- * is only performed on demand at the end of the simulation using this tick history.
+ * (p_tick_head ... p_tick_tail) inside `Simulation.StatList`.
+ * Aggregation in `StatsSummary` is only performed on demand at the
+ * end of the simulation using this tick history.
  */
 
 /**
@@ -92,6 +93,9 @@ int stats_tick_add_bad_parking_cases(StatList *p_stats, uint16_t amount);
 
 /** Sets whether the "full" blocker was active in this tick (0/1). */
 int stats_tick_set_blocker_full_active(StatList *p_stats, uint8_t active);
+
+
+int Stats_RecordTick(StatList *p_stats, uint32_t current_tick);
 
 /** Returns the most recently committed tick (tail) or NULL. */
 const StatsTick *stats_get_latest_tick(const StatList *p_stats);

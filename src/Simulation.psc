@@ -151,7 +151,7 @@ FUNCTION simulation_tick(p_sim)
     IF status != 0 THEN
         return status
     END IF
-    p_tickstats <- Stats_GetLastTick(p_sim.stats)
+    p_tickstats <- stats_get_latest_tick(p_sim.stats)
     status <- savehandler_save_tick(p_sim, p_tickstats, "stats.csv")
     IF status != 0 THEN
         return status
@@ -169,11 +169,19 @@ FUNCTION Simulation_End(p_sim)
         return ERROR
     END IF
 
-    p_summary
-    statlist_compute_summary(p_sim, p_summary)
+    status <- OK
+    summary
+    p_summary <- &summary
+    MEMSET(p_summary, 0, SIZEOF(StatsSummary))
 
-    savehandler_save_summary(p_sim, p_summary, "stats.csv")
-    graphhandler_generate_from_simulation(p_sim, NULL)
+    status <- stats_build_summary(p_sim.StatList, p_summary)
+    IF status = OK THEN
+        status <- savehandler_save_summary(p_sim, p_summary, "stats.csv")
+    END IF
+
+    IF status = OK THEN
+        graphhandler_generate_from_simulation(p_sim, NULL)
+    END IF
 
     // free Parkhaus and its children!
     IF p_sim.parkhaus != NULL THEN
@@ -199,7 +207,7 @@ FUNCTION Simulation_End(p_sim)
     END IF
     OUTPUT "Simulation ended"
 
-    return OK
+    return status
 END FUNCTION
 
 

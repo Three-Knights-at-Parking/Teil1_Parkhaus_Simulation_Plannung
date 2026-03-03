@@ -154,6 +154,9 @@ FUNCTION stats_tick_add_entered_queue_wait(p_stats, wait_ticks)
 
     p_tick.queue_wait_entered_sum_ticks <- p_tick.queue_wait_entered_sum_ticks + wait_ticks
     p_tick.queue_wait_entered_count <- p_tick.queue_wait_entered_count + 1
+    IF wait_ticks > p_tick.queue_wait_max_ticks_tick THEN
+        p_tick.queue_wait_max_ticks_tick <- wait_ticks
+    END IF
     return OK
 END FUNCTION
 
@@ -248,12 +251,14 @@ FUNCTION Stats_RecordTick(p_stats, current_tick)
     return stats_tick_commit(p_stats)
 END FUNCTION
 
+
 FUNCTION stats_get_latest_tick(p_stats)
     IF p_stats = NULL THEN
         return NULL
     END IF
     return p_stats.p_tick_tail
 END FUNCTION
+
 
 //////////////////////////////////////////////////////////
 // Summary Builder
@@ -331,6 +336,9 @@ FUNCTION stats_build_summary(p_stats, p_summary)
 
         sum_queue_wait_entered_ticks <- sum_queue_wait_entered_ticks + p_tick.queue_wait_entered_sum_ticks
         sum_queue_wait_entered_count <- sum_queue_wait_entered_count + p_tick.queue_wait_entered_count
+        IF p_tick.queue_wait_max_ticks_tick > p_summary.queue_wait_max_ticks THEN
+            p_summary.queue_wait_max_ticks <- p_tick.queue_wait_max_ticks_tick
+        END IF
 
         sum_parking_duration_departed_ticks <- sum_parking_duration_departed_ticks + p_tick.parking_duration_departed_sum_ticks
         sum_parking_duration_departed_count <- sum_parking_duration_departed_count + p_tick.parking_duration_departed_count
@@ -353,7 +361,6 @@ FUNCTION stats_build_summary(p_stats, p_summary)
 
     IF sum_queue_wait_entered_count > 0 THEN
         p_summary.queue_wait_avg_ticks <- sum_queue_wait_entered_ticks / sum_queue_wait_entered_count
-        p_summary.queue_wait_max_ticks <- p_summary.queue_wait_avg_ticks
     END IF
 
     IF sum_parking_duration_departed_count > 0 THEN
