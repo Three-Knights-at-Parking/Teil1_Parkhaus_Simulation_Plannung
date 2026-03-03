@@ -79,6 +79,8 @@ FUNCTION ui_start()
 
     END WHILE
 
+    CALL delete_settings(p_settings)    //Free storage of settigs object
+
     return UI_EXIT
 
 END FUNCTION
