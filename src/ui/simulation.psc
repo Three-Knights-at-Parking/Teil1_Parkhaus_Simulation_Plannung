@@ -4,6 +4,10 @@ INCLUDE FILE simulation.h
 INCLUDE FILE storage.h
 
 
+GLOBAL StatList* g_pStatList ← NULL
+GLOBAL StatsSummary* g_pStatsSummary ← NULL
+
+
 FUNCTION print_simulationscreen(settings)
 
     CLEAR Terminal
@@ -108,24 +112,13 @@ FUNCTION simulation_menu(settings)
 END FUNCTION
 
 
-FUNCTION hand_over_simulationdata(pStatsTick)
-
-    current ← pStatsTick            //head of the StatsTick-list
-    index ← 0
-
-    WHILE current != tail DO                            //Storaging the StatsTick-Data tick per tick in a StatsTick-Array
-        StatsTick simulation_data[index] ← current  
-        index++
-        current ← current->pNext
-    END WHILE
-
+FUNCTION hand_over_simulationdata(pStatList)
+    g_pStatList ← pStatList
 END FUNCTION
 
 
-FUNCTION hand_over_endstatistics(StatsGesamte)
-
-    pEndStats ← StatsGesamte
-
+FUNCTION hand_over_simulationdata(pStatList)
+    g_pStatList ← pStatList
 END FUNCTION
 
 
