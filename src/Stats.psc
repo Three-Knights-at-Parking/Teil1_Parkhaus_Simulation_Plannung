@@ -11,9 +11,10 @@
 
 // Brief: Sets all pointers, sums, and totals to defined
 // initial values. Must be executed once before the first tick call.
-FUNCTION StatsTick_init(p_StatList, capacity_total, current_tick)
+FUNCTION StatsTick_init(p_sim, capacity_total, current_tick)
 
     p_CurrentTick <- ALLOCATE(StatsTick)
+    p_StatList <- p_sim.p_StatList
 
     IF p_StatList = NULL THEN
         return ERROR
@@ -27,20 +28,7 @@ FUNCTION StatsTick_init(p_StatList, capacity_total, current_tick)
            return ERROR
     END IF
 
-    //Moving the Current Tick into the StatList and moving the pushing the last tick back
-    IF p_StatList.p_tick_head = NULL THEN
-        p_StatList.p_tick_head <- p_CurrentTick
-        struct StatsTick *p_prev <- NULL
-    ELSE
-        IF p_StatList.p_current_tick = NULL THEN
-            return ERROR
-        END IF
-        p_CurrentTick.p_prev <- p_StatList.p_tick_tail
-        p_StatList.p_tick_tail.p_next <- p_StatList.p_current_tick
-        p_StatList.p_tick_tail <- p_StatList.p_current_tick
-        p_StatList.p_current_tick <- p_CurrentTick
-    END IF
-
+    statlist_append(p_sim, p_CurrentTick)
     current_tick <- current_tick
 
     capacity_total <- capacity_total
@@ -97,7 +85,7 @@ FUNCTION StatList_free(p_StatList)
     IF p_StatList = NULL THEN
         return ERROR
     END IF
-
+    FREE(p_StatList.base)
     FREE(p_StatList)
 
     RETURN OK

@@ -160,10 +160,9 @@ struct Settings {
  * @author: ibach
  */
 struct StatsTick {
-    StatList base;
     uint32_t current_tick; /**< Current tick of this snapshot. */
-    struct StatsTick *p_prev; /**< Previous tick in the statistics list. */
-    struct StatsTick *p_next; /**< Next tick in the statistics list. */
+    StatsTick *p_prev; /**< Previous tick in the statistics list. */
+    StatsTick *p_next; /**< Next tick in the statistics list. */
 
     /* Raw values at tick end */
     uint16_t capacity_total; /**< Total parking garage capacity. */
@@ -190,8 +189,7 @@ struct StatsTick {
     /* Raw quality/blocker values */
     uint16_t blocker_full_active; /**< How often a Gate was blocked in tis Tick */
     uint16_t bad_parking_cases; /**< Number of "badly parked" cases in this tick. */
-
-} StatsTick;
+};
 
 /**
  * Aggregated final evaluation over the complete simulation.
@@ -248,7 +246,7 @@ struct StatsSummary {
 
     /* 5) ADD-ON analysis of individual gates & vehicle types */
 
-} StatsSummary;
+};
 
 /**
  * Statistics container for tick progression and cumulative totals.
