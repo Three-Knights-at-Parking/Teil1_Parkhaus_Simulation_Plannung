@@ -2,7 +2,7 @@
 
 > **Kurs:** Programmieren 1 (TSA-TSL25, Embedded Systems)  
 > **Abgabe:** Teil I – Programmentwurf / Design-Dokumentation  
-> **Sprache:** C 
+> **Sprache:** C
 ---
 ## Projektbeschreibung
 
@@ -25,7 +25,7 @@ Teil1_Parkhaus_Simulation_Plannung/
 │
 ├── docs/                      ← Gesamte Entwurfs-Dokumentation
 │   ├── statistiken.*       ← Übersicht aller Statistiken (pro Zeitschritt + Endsimulation)
-│   ├── datenstrukturen.*     ← Beschreibung aller structs, enums, Typedefs mit Begründung
+│   ├── Erklärung.md     ← Beschreibung aller structs, enums, Typedefs mit Begründung
 │   ├── examples/
 │   │   ├── example_save_file_output
 │   │   ├── example_cli_output
@@ -43,8 +43,7 @@ Teil1_Parkhaus_Simulation_Plannung/
 │   ...
 │
 ├── src/                       ← Pseudocode und Pseudoimplementierungen
-│   ├── main.c                 ← Einstiegspunkt (Stub)
-│   ├── parkhaus.c
+│   ├── parkhaus.psc
 │   ...
 │
 ├── .gitignore                 ← Ignoriert Build-Artefakte, IDE-Ordner etc.
